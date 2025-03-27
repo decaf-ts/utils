@@ -1,24 +1,24 @@
 import {
   BrightBackgroundColors,
   BrightForegroundColors,
-  color,
   ColorizeOptions,
   StandardBackgroundColors,
-  StandardForegroundColors, styles,
-} from "../../src/bin/utils/colors";
+  StandardForegroundColors,
+  style,
+  styles,
+} from "../../src/";
 
 describe("performance tests", () => {
-
-  let iterations = 1000000;
+  const iterations = 1000000;
   it(`Should demonstrate performance benefits of lazy loading colors: ${iterations} iterations`, () => {
-    const text = 'Performance Test';
+    const text = "Performance Test";
 
     // Measure time for lazy loading
     let lazyStartTime: bigint;
     const lazyDurationArr: bigint[] = new Array(iterations);
     for (let i = 0; i < iterations; i++) {
       lazyStartTime = process.hrtime.bigint();
-      const colored = color(text);
+      const colored = style(text);
       // Access only one color to trigger lazy loading
       const _ = colored.red;
 
@@ -30,35 +30,40 @@ describe("performance tests", () => {
     const eagerDurationArr: bigint[] = new Array(iterations);
     for (let i = 0; i < iterations; i++) {
       eagerStartTime = process.hrtime.bigint();
-      const colored = color(text);
+      const colored = style(text);
       // Create all color strings
-      Object.keys(StandardForegroundColors).forEach(color => {
+      Object.keys(StandardForegroundColors).forEach((color) => {
         const _ = colored[color as keyof ColorizeOptions];
       });
-      Object.keys(BrightForegroundColors).forEach(color => {
+      Object.keys(BrightForegroundColors).forEach((color) => {
         const _ = colored[color as keyof ColorizeOptions];
       });
-      Object.keys(StandardBackgroundColors).forEach(color => {
+      Object.keys(StandardBackgroundColors).forEach((color) => {
         const _ = colored[color as keyof ColorizeOptions];
       });
-      Object.keys(BrightBackgroundColors).forEach(color => {
+      Object.keys(BrightBackgroundColors).forEach((color) => {
         const _ = colored[color as keyof ColorizeOptions];
       });
-      Object.keys(styles).forEach(style => {
+      Object.keys(styles).forEach((style) => {
         const _ = colored[style as keyof ColorizeOptions];
       });
       eagerDurationArr[i] = process.hrtime.bigint() - eagerStartTime;
     }
 
-    const lazyDuration = lazyDurationArr.reduce((acc, curr) => acc + curr, BigInt(0)) / BigInt(iterations);
-    const eagerDuration = eagerDurationArr.reduce((acc, curr) => acc + curr, BigInt(0)) / BigInt(iterations);
+    const lazyDuration =
+      lazyDurationArr.reduce((acc, curr) => acc + curr, BigInt(0)) /
+      BigInt(iterations);
+    const eagerDuration =
+      eagerDurationArr.reduce((acc, curr) => acc + curr, BigInt(0)) /
+      BigInt(iterations);
 
     console.log(`Lazy loading time: ${lazyDuration} microseconds`);
     console.log(`Eager loading time: ${eagerDuration} microseconds`);
 
     expect(lazyDuration).toBeLessThan(eagerDuration);
 
-    console.log(`The performance benefits of lazy loading are significant - tested over ${iterations}.\nLazy loading ${(parseFloat((lazyDuration / eagerDuration).toString()) * 100).toFixed(2)}% faster.`);
+    console.log(
+      `The performance benefits of lazy loading are significant - tested over ${iterations}.\nLazy loading ${(parseFloat((lazyDuration / eagerDuration).toString()) * 100).toFixed(2)}% faster.`
+    );
   });
-
-})
+});

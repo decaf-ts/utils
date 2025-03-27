@@ -1,4 +1,8 @@
-import { ChildProcessWithoutNullStreams, spawn, SpawnOptionsWithoutStdio } from "child_process";
+import {
+  ChildProcessWithoutNullStreams,
+  spawn,
+  SpawnOptionsWithoutStdio,
+} from "child_process";
 import { StandardOutputWriter } from "../writers/StandardOutputWriter";
 import { CommandResult } from "./types";
 import { Logging } from "../output/logging";
@@ -12,12 +16,12 @@ import { VerbosityLogger } from "../output/types";
  * It uses a Promise-based locking mechanism to queue function calls.
  *
  * @template R - The return type of the input function.
- * 
+ *
  * @param f - The function to be locked. It can take any number of parameters and return a value of type R.
  * @return A new function with the same signature as the input function, but with sequential execution guaranteed.
- * 
+ *
  * @function lockify
- * 
+ *
  * @mermaid
  * sequenceDiagram
  *   participant Caller
@@ -38,21 +42,29 @@ import { VerbosityLogger } from "../output/types";
  *     LockedFunction-->>Caller: Resolve promise with result
  *   end
  *   LockedFunction->>LockedFunction: Update lock
- * 
+ *
  * @memberOf module:@decaf-ts/utils
  */
 export function lockify<R>(f: (...params: unknown[]) => R) {
-  let lock: Promise<R | void> = Promise.resolve()
+  let lock: Promise<R | void> = Promise.resolve();
   return (...params: unknown[]) => {
-    const result = lock.then(() => f(...params))
-    lock = result.catch(() => {})
-    return result
-  }
+    const result = lock.then(() => f(...params));
+    lock = result.catch(() => {});
+    return result;
+  };
 }
 
-export function chainAbortController(controller: AbortController, ...signals: AbortSignal[]): AbortController;
-export function chainAbortController(...signals: AbortSignal[]): AbortController;
-export function chainAbortController(argument0: AbortController | AbortSignal, ...remainder: AbortSignal[]): AbortController {
+export function chainAbortController(
+  controller: AbortController,
+  ...signals: AbortSignal[]
+): AbortController;
+export function chainAbortController(
+  ...signals: AbortSignal[]
+): AbortController;
+export function chainAbortController(
+  argument0: AbortController | AbortSignal,
+  ...remainder: AbortSignal[]
+): AbortController {
   let signals: AbortSignal[];
   let controller: AbortController;
 
@@ -88,33 +100,41 @@ export function chainAbortController(argument0: AbortController | AbortSignal, .
   return controller;
 }
 
-export function spawnCommand<R = string>(output: StandardOutputWriter<R>, command: string, opts: SpawnOptionsWithoutStdio, abort: AbortController, logger: VerbosityLogger): ChildProcessWithoutNullStreams {
-
-  function spawnInner(command: string, controller: AbortController){
+export function spawnCommand<R = string>(
+  output: StandardOutputWriter<R>,
+  command: string,
+  opts: SpawnOptionsWithoutStdio,
+  abort: AbortController,
+  logger: VerbosityLogger
+): ChildProcessWithoutNullStreams {
+  function spawnInner(command: string, controller: AbortController) {
     const [cmd, argz] = output.parseCommand(command);
     logger.info(`Running command: ${cmd}`);
     logger.debug(`with args: ${argz.join(" ")}`);
     const childProcess = spawn(cmd, argz, {
       ...opts,
       cwd: opts.cwd || process.cwd(),
-      env: Object.assign({}, process.env, opts.env, { PATH: process.env.PATH,}),
+      env: Object.assign({}, process.env, opts.env, { PATH: process.env.PATH }),
       shell: opts.shell || false,
-      signal: controller.signal
+      signal: controller.signal,
     });
     logger.verbose(`pid : ${childProcess.pid}`);
     return childProcess;
   }
 
   const m = command.match(/[<>$#]/g);
-  if(m)
-    throw new Error(`Invalid command: ${command}. contains invalid characters: ${m}`);
-  if (command.includes(" | ")){
+  if (m)
+    throw new Error(
+      `Invalid command: ${command}. contains invalid characters: ${m}`
+    );
+  if (command.includes(" | ")) {
     const cmds = command.split(" | ");
     const spawns = [];
     const controllers = new Array(cmds.length);
     controllers[0] = abort;
     for (let i = 0; i < cmds.length; i++) {
-      if (i !== 0) controllers[i] = chainAbortController(controllers[i - 1].signal);
+      if (i !== 0)
+        controllers[i] = chainAbortController(controllers[i - 1].signal);
       spawns.push(spawnInner(cmds[i], controllers[i]));
       if (i === 0) continue;
       spawns[i - 1].stdout.pipe(spawns[i].stdin);
@@ -170,78 +190,88 @@ export function spawnCommand<R = string>(output: StandardOutputWriter<R>, comman
  *
  * @memberOf module:@decaf-ts/utils
  */
-export async function runCommand<R = string>(command: string, opts: SpawnOptionsWithoutStdio = {}, outputConstructor: OutputWriterConstructor<R> = StandardOutputWriter<R>, ...args: unknown[]): Promise<R> {
-  const logger = Logging.for(runCommand)
+export async function runCommand<R = string>(
+  command: string,
+  opts: SpawnOptionsWithoutStdio = {},
+  outputConstructor: OutputWriterConstructor<R> = StandardOutputWriter<R>,
+  ...args: unknown[]
+): Promise<R> {
+  const logger = Logging.for(runCommand);
+  const abort = new AbortController();
+
+  const cached: {
+    logs: string[];
+    errs: string[];
+    cmd?: ChildProcessWithoutNullStreams;
+  } = {
+    logs: [],
+    errs: [],
+  };
+
   const lock = new Promise<R>((resolve, reject) => {
-    const abort = new AbortController();
-    const logs: string[] = [];
-    const errs: string[] = [];
-    let childProcess: ChildProcessWithoutNullStreams;
     let output;
     try {
-      output = new outputConstructor({
-        resolve,
-        reject
-      }, ...args);
+      output = new outputConstructor(
+        {
+          resolve,
+          reject,
+        },
+        ...args
+      );
 
-      childProcess = spawnCommand<R>(output, command, opts, abort, logger);
-    } catch (e: unknown){
+      cached.cmd = spawnCommand<R>(output, command, opts, abort, logger);
+    } catch (e: unknown) {
       throw new Error(`Error running command ${command}: ${e}`);
     }
 
-    childProcess.stdout.setEncoding("utf8");
+    cached.cmd.stdout.setEncoding("utf8");
 
-    childProcess.stdout.on("data", (chunk: any) => {
+    cached.cmd.stdout.on("data", (chunk: any) => {
       chunk = chunk.toString();
-      logs.push(chunk);
+      cached.logs.push(chunk);
       output.data(chunk);
     });
 
-    childProcess.stderr.on("data", (data: any) => {
+    cached.cmd.stderr.on("data", (data: any) => {
       data = data.toString();
-      errs.push(data);
+      cached.errs.push(data);
       output.error(data);
     });
 
-    childProcess.once("error", (err: Error) => {
+    cached.cmd.once("error", (err: Error) => {
       output.errors(err);
     });
 
-    childProcess.once("exit", (code: number = 0) => {
+    cached.cmd.once("exit", (code: number = 0) => {
       output.exit(code);
     });
-
-    Object.assign(lock, {
-      abort: abort,
-      command: command,
-      cmd: childProcess,
-      logs,
-      errs,
-      pipe: async <E>(cb: (r: R) => E) => {
-        const l = logger.for("pipe");
-        try {
-          l.verbose(`Executing pipe function ${command}...`);
-          const result: R = await lock
-          l.verbose(`Piping output to ${cb.name}: ${result}`);
-          return cb(result)
-        } catch (e: unknown) {
-          l.error(`Error piping command output: ${e}`);
-          throw e;
-        }
-      }
-    })
   });
-
+  Object.assign(lock, {
+    abort: abort,
+    command: command,
+    cached: cached,
+    pipe: async <E>(cb: (r: R) => E) => {
+      const l = logger.for("pipe");
+      try {
+        l.verbose(`Executing pipe function ${command}...`);
+        const result: R = await lock;
+        l.verbose(`Piping output to ${cb.name}: ${result}`);
+        return cb(result);
+      } catch (e: unknown) {
+        l.error(`Error piping command output: ${e}`);
+        throw e;
+      }
+    },
+  });
   return lock as CommandResult<R>;
 }
 
-export function runWithRequirements<R = string>(command: string,
-                                                opts: SpawnOptionsWithoutStdio = {},
-                                                outputConstructor: OutputWriterConstructor<R> = StandardOutputWriter<R>,
-                                                requirements: string[],
-                                                ...args: unknown[]): Promise<R> {
-
-  return runCommand<R>(command, opts, outputConstructor,...args)
+export function runWithRequirements<R = string>(
+  command: string,
+  opts: SpawnOptionsWithoutStdio = {},
+  outputConstructor: OutputWriterConstructor<R> = StandardOutputWriter<R>,
+  requirements: string[],
+  ...args: unknown[]
+): Promise<R> {
+  return runCommand<R>(command, opts, outputConstructor, ...args);
 }
-
-

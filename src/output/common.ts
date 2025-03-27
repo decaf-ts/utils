@@ -1,6 +1,6 @@
 import { VerbosityLogger } from "./types";
 import { padEnd } from "../utils/text";
-import slogans from "../../../workdocs/assets/slogans.json";
+import slogans from "../../workdocs/assets/slogans.json";
 import { style } from "../utils/strings";
 
 /**
@@ -16,7 +16,7 @@ const colors = [
   "\x1b[38;5;216m", // light coral
   "\x1b[38;5;224m", // light peach
   "\x1b[38;5;230m", // soft cream
-  "\x1b[38;5;230m"  // soft cream
+  "\x1b[38;5;230m", // soft cream
 ];
 
 /**
@@ -43,9 +43,9 @@ const colors = [
  *     printBanner->>console: Log styled line
  *   end
  */
-export function printBanner(logger?: VerbosityLogger){
+export function printBanner(logger?: VerbosityLogger) {
   const message = getSlogan();
-  const banner: string | string[] =`
+  const banner: string | string[] = `
 #                 ░▒▓███████▓▒░  ░▒▓████████▓▒░  ░▒▓██████▓▒░   ░▒▓██████▓▒░  ░▒▓████████▓▒░       ░▒▓████████▓▒░  ░▒▓███████▓▒░ 
 #      ( (        ░▒▓█▓▒░░▒▓█▓▒░ ░▒▓█▓▒░        ░▒▓█▓▒░░▒▓█▓▒░ ░▒▓█▓▒░░▒▓█▓▒░ ░▒▓█▓▒░                 ░▒▓█▓▒░     ░▒▓█▓▒░        
 #       ) )       ░▒▓█▓▒░░▒▓█▓▒░ ░▒▓█▓▒░        ░▒▓█▓▒░        ░▒▓█▓▒░░▒▓█▓▒░ ░▒▓█▓▒░                 ░▒▓█▓▒░     ░▒▓█▓▒░        
@@ -54,12 +54,14 @@ export function printBanner(logger?: VerbosityLogger){
 #                 ░▒▓█▓▒░░▒▓█▓▒░ ░▒▓█▓▒░        ░▒▓█▓▒░░▒▓█▓▒░ ░▒▓█▓▒░░▒▓█▓▒░ ░▒▓█▓▒░                 ░▒▓█▓▒░            ░▒▓█▓▒░ 
 #                 ░▒▓███████▓▒░  ░▒▓████████▓▒░  ░▒▓██████▓▒░  ░▒▓█▓▒░░▒▓█▓▒░ ░▒▓█▓▒░                 ░▒▓█▓▒░     ░▒▓███████▓▒░  
 #                                                                                                                 
-`.split("\n")
+`.split("\n");
   const maxLength = banner.reduce((max, line) => Math.max(max, line.length), 0);
   banner.push(padEnd(` #  ${message}`, maxLength));
   banner.forEach((line, index) => {
-    (logger ? logger.info.bind(logger) : console.log.bind(console))(style(line).raw(colors[index]));
-  })
+    (logger ? logger.info.bind(logger) : console.log.bind(console))(
+      style(line).raw(colors[index])
+    );
+  });
 }
 
 /**
@@ -88,9 +90,10 @@ export function printBanner(logger?: VerbosityLogger){
  */
 export function getSlogan(i?: number): string {
   try {
-    i = typeof i === "undefined" ? Math.floor(Math.random() * slogans.length) : i;
+    i =
+      typeof i === "undefined" ? Math.floor(Math.random() * slogans.length) : i;
     return slogans[i].Slogan;
-  }  catch (error) {
+  } catch (error) {
     throw new Error("Failed to retrieve package information");
   }
 }

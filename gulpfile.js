@@ -13,7 +13,7 @@ import replace from "gulp-replace";
 import webpack from "webpack-stream";
 import run from "gulp-run-command";
 import process from "node:process";
-import nodeExternals from 'webpack-node-externals';
+import nodeExternals from "webpack-node-externals";
 
 import pkg from "./package.json" with { type: "json" };
 import fs from "fs";
@@ -38,7 +38,7 @@ function patchFiles() {
 function getWebpackConfig(isESM, isDev, isLib, nameOverride = name) {
   const webPackConfig = {
     mode: isDev ? "development" : "production", // can be changed to production to produce minified bundle
-    target: 'node',
+    target: "node",
     module: {
       rules: [
         {
@@ -115,17 +115,24 @@ function exportDefault(isDev, mode) {
         const renamedFile = groups[1] + ".cjs";
         const fileName = groups[1] + ".ts";
 
-        const filePath = path.join(
-          this.file.path.split(name)[0],
-          name,
-          "src",
-          this.file.path
-            .split(name)[1]
-            .split("/")
-            .slice(1, this.file.path.split(name)[1].split("/").length - 1)
-            .join("/"),
-          fileName
-        );
+        let filePath;
+
+        try {
+          filePath = path.join(
+            this.file.path.split(name)[0],
+            name,
+            "src",
+            this.file.path
+              .split(name)[1]
+              .split("/")
+              .slice(1, this.file.path.split(name)[1].split("/").length - 1)
+              .join("/"),
+            fileName
+          );
+        } catch (e) {
+          console.error("Error: ", e);
+          throw e;
+        }
 
         if (!fs.existsSync(filePath))
           return groups[0] + groups[1] + "/index.cjs" + groups[2];
@@ -161,8 +168,9 @@ function exportDefault(isDev, mode) {
 }
 
 function exportBundles(isEsm, isDev) {
-  return bundleFromFile("src/index.ts", isEsm, isDev)
-    .pipe(dest(`./dist${isEsm ? "/esm" : ""}`));
+  return bundleFromFile("src/index.ts", isEsm, isDev).pipe(
+    dest(`./dist${isEsm ? "/esm" : ""}`)
+  );
 }
 
 function exportESMDist(isDev = false) {
@@ -217,18 +225,20 @@ function makeDocs() {
 function bundleFromFile(entryFile, isEsm, isDev, isLib) {
   return src(entryFile)
     .pipe(named())
-    .pipe(webpack(getWebpackConfig(isEsm, isDev, isLib)))
+    .pipe(webpack(getWebpackConfig(isEsm, isDev, isLib)));
 }
 
 function makeCommands(fileName) {
   return function makeCommands() {
-    return src(`./src/bin/bin/${fileName}*`)
+    return src(`./src/bin/${fileName}*`)
       .pipe(named())
       .pipe(webpack(getWebpackConfig(false, false, true, fileName)))
-      .pipe(rename(function changeName(file) {
-        return Object.assign(file, { extname: ".cjs" });
-      }))
-      .pipe(dest('./bin'));
+      .pipe(
+        rename(function changeName(file) {
+          return Object.assign(file, { extname: ".cjs" });
+        })
+      )
+      .pipe(dest("./bin"));
   };
 }
 
@@ -239,7 +249,7 @@ export const dev = series(
       exportDefault(true, "es2022"),
       makeCommands("update-scripts", false),
       makeCommands("tag-release", false),
-      makeCommands("template-setup", false),
+      makeCommands("template-setup", false)
     ),
     exportESMDist(true),
     exportJSDist(true)
@@ -254,7 +264,7 @@ export const prod = series(
       exportDefault(true, "es2022"),
       makeCommands("update-scripts", false),
       makeCommands("tag-release", false),
-      makeCommands("template-setup", false),
+      makeCommands("template-setup", false)
     ),
     exportESMDist(false),
     exportJSDist(false)
