@@ -1,6 +1,6 @@
 import { VerbosityLogger } from "./types";
 import { padEnd } from "../utils/text";
-import slogans from "../../workdocs/assets/slogans.json";
+import slogans from "../assets/slogans.json";
 import { style } from "../utils/strings";
 
 /**
@@ -59,7 +59,7 @@ export function printBanner(logger?: VerbosityLogger) {
   banner.push(padEnd(` #  ${message}`, maxLength));
   banner.forEach((line, index) => {
     (logger ? logger.info.bind(logger) : console.log.bind(console))(
-      style(line).raw(colors[index])
+      style(line).raw(colors[index]).text
     );
   });
 }
@@ -93,7 +93,7 @@ export function getSlogan(i?: number): string {
     i =
       typeof i === "undefined" ? Math.floor(Math.random() * slogans.length) : i;
     return slogans[i].Slogan;
-  } catch (error) {
-    throw new Error("Failed to retrieve package information");
+  } catch (error: unknown) {
+    throw new Error(`Failed to retrieve slogans: ${error}`);
   }
 }

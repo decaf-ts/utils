@@ -1,7 +1,17 @@
-import { DefaultLoggingConfig, DefaultTheme, LogLevel, NumericLogLevels } from "../utils/constants";
-import { LoggingConfig, Theme, ThemeOption, ThemeOptionByLogLevel, VerbosityLogger } from "./types";
+import {
+  DefaultLoggingConfig,
+  DefaultTheme,
+  LogLevel,
+  NumericLogLevels,
+} from "../utils/constants";
+import {
+  LoggingConfig,
+  Theme,
+  ThemeOption,
+  ThemeOptionByLogLevel,
+  VerbosityLogger,
+} from "./types";
 import { ColorizeOptions, style, StyledString } from "../utils/strings";
-
 
 /**
  * @description A minimal logger implementation.
@@ -25,7 +35,6 @@ export class MiniLogger implements VerbosityLogger {
     protected id?: string
   ) {}
 
-
   for(method?: string | ((...args: any[]) => any)): VerbosityLogger {
     method = method
       ? typeof method === "string"
@@ -33,7 +42,7 @@ export class MiniLogger implements VerbosityLogger {
         : method.name
       : undefined;
 
-    return Logging.for([this.context, method].join('.'), this.id);
+    return Logging.for([this.context, method].join("."), this.id);
   }
 
   /**
@@ -45,13 +54,35 @@ export class MiniLogger implements VerbosityLogger {
    * @param stack
    * @return A formatted log string.
    */
-  protected createLog(level: LogLevel, message: string | Error, stack?: string): string {
-    const timestamp = Logging.theme(new Date().toISOString(), "timestamp", level);
-    const lvl: string = Logging.theme(level, "logLevel", level);
-    const msg: string = Logging.theme(typeof message === "string" ? message : (message as Error).message, "message", level);
-    stack = stack ? Logging.theme(level, "stack", level) : undefined;
+  protected createLog(
+    level: LogLevel,
+    message: string | Error,
+    stack?: string
+  ): string {
+    const log: string[] = [];
+    if (this.config.timestamp) {
+      const timestamp = Logging.theme(
+        new Date().toISOString(),
+        "timestamp",
+        level
+      );
+      log.push(timestamp);
+    }
 
-    return `${timestamp} ${lvl.toUpperCase()} ${this.id ? this.id : ""}- ${msg}${stack? `\nStack trace:\n${stack}` : ""}`;
+    const lvl: string = Logging.theme(level, "logLevel", level);
+    log.push(lvl);
+    const msg: string = Logging.theme(
+      typeof message === "string" ? message : (message as Error).message,
+      "message",
+      level
+    );
+    log.push(msg);
+    if (stack) {
+      stack = Logging.theme(level, "stack", level);
+      log.push(`\nStack trace:\n${stack}`);
+    }
+
+    return log.join(" - ");
   }
 
   /**
@@ -64,8 +95,7 @@ export class MiniLogger implements VerbosityLogger {
    * @param stack
    */
   protected log(level: LogLevel, msg: string | Error, stack?: string): void {
-    if (NumericLogLevels[this.config.level] > NumericLogLevels[level])
-      return;
+    if (NumericLogLevels[this.config.level] < NumericLogLevels[level]) return;
     let method;
     switch (level) {
       case LogLevel.info:
@@ -94,7 +124,6 @@ export class MiniLogger implements VerbosityLogger {
   silly(msg: string, verbosity: number = 0): void {
     if (this.config.verbose >= verbosity) this.log(LogLevel.verbose, msg);
   }
-
 
   /**
    * @description Logs a verbose message.
@@ -134,7 +163,7 @@ export class MiniLogger implements VerbosityLogger {
    * @param msg - The message to be logged.
    */
   error(msg: string | Error): void {
-    this.log(LogLevel.info, msg);
+    this.log(LogLevel.error, msg);
   }
 }
 
@@ -143,7 +172,7 @@ export class MiniLogger implements VerbosityLogger {
  * @summary The Logging class provides a centralized logging mechanism with support for
  * different log levels and verbosity. It uses a singleton pattern to maintain a global
  * logger instance and allows creating specific loggers for different classes and methods.
- * 
+ *
  * @class
  */
 export class Logging {
@@ -157,7 +186,9 @@ export class Logging {
    * @description Factory function for creating logger instances.
    * @summary A function that creates new VerbosityLogger instances. By default, it creates a MiniLogger.
    */
-  private static _factory : (...args: unknown[]) => VerbosityLogger = (...args: unknown[]) => new MiniLogger(...args as [keyof MiniLogger]);
+  private static _factory: (...args: unknown[]) => VerbosityLogger = (
+    ...args: unknown[]
+  ) => new MiniLogger(...(args as [keyof MiniLogger]));
 
   /**
    * @description Configuration for the logging system.
@@ -174,7 +205,7 @@ export class Logging {
   /**
    * @description Setter for the logging configuration.
    * @summary Allows updating the global logging configuration.
-   * 
+   *
    * @param config - An object containing verbosity and log level settings.
    */
   static setConfig(config: Partial<LoggingConfig>) {
@@ -184,18 +215,20 @@ export class Logging {
   /**
    * @description Retrieves or creates the global logger instance.
    * @summary Returns the existing global logger or creates a new one if it doesn't exist.
-   * 
+   *
    * @return The global VerbosityLogger instance.
    */
   static get(): VerbosityLogger {
-    this.global = this.global ? this.global : this._factory("Logging", this._config);
+    this.global = this.global
+      ? this.global
+      : this._factory("Logging", this._config);
     return this.global;
   }
 
   /**
    * @description Logs a verbose message.
    * @summary Delegates the verbose logging to the global logger instance.
-   * 
+   *
    * @param msg - The message to be logged.
    * @param verbosity - The verbosity level of the message (default: 0).
    */
@@ -206,7 +239,7 @@ export class Logging {
   /**
    * @description Logs an info message.
    * @summary Delegates the info logging to the global logger instance.
-   * 
+   *
    * @param msg - The message to be logged.
    */
   static info(msg: string): void {
@@ -216,7 +249,7 @@ export class Logging {
   /**
    * @description Logs a debug message.
    * @summary Delegates the debug logging to the global logger instance.
-   * 
+   *
    * @param msg - The message to be logged.
    */
   static debug(msg: string): void {
@@ -236,7 +269,7 @@ export class Logging {
   /**
    * @description Logs an error message.
    * @summary Delegates the error logging to the global logger instance.
-   * 
+   *
    * @param msg - The message to be logged.
    */
   static error(msg: string): void {
@@ -245,20 +278,23 @@ export class Logging {
 
   /**
    * @description Creates a logger for a specific class and optionally for a method.
-   * 
+   *
    * @summary This static method creates a new logger instance using the factory function.
    * It can create loggers for classes (either by name or constructor) and optionally for specific methods.
-   * 
+   *
    * @param clazz - The class for which the logger is being created. Can be a string (class name) or a constructor function.
    * @param id - Optional. An identifier for the logger instance. Currently not used in the function body.
    * @param method - Optional. The method for which the logger is being created. Can be a string (method name) or a function.
    * @returns A new VerbosityLogger instance if no method is specified, or a ClassLogger instance if a method is provided.
    */
-  static for(clazz: string | {new(...args: any[]): any} | ((...args: any[]) => any), id?: string): VerbosityLogger {
-    clazz = typeof clazz === "string"? clazz : clazz.name;
+  static for(
+    clazz: string | { new (...args: any[]): any } | ((...args: any[]) => any),
+    id?: string
+  ): VerbosityLogger {
+    clazz = typeof clazz === "string" ? clazz : clazz.name;
     return this._factory(clazz, this._config, id);
   }
-  
+
   /**
    * @description Creates a logger for a specific reason or context.
    *
@@ -269,30 +305,49 @@ export class Logging {
    * @param id
    * @returns A new VerbosityLogger or ClassLogger instance.
    */
-  static because(reason: string, id?: string,): VerbosityLogger {
+  static because(reason: string, id?: string): VerbosityLogger {
     return this._factory(reason, this._config, id);
   }
 
-  static theme(text: string, type: keyof Theme | keyof LogLevel, loggerLevel: LogLevel, template: Theme = DefaultTheme){
+  static theme(
+    text: string,
+    type: keyof Theme | keyof LogLevel,
+    loggerLevel: LogLevel,
+    template: Theme = DefaultTheme
+  ) {
+    if (!this._config.timestamp) return text;
     const logger = Logging.get().for(this.theme);
 
-    function apply(txt: string, option: keyof ThemeOption, value: number | [number] | [number, number, number] | number[] | string[]): string {
-
+    function apply(
+      txt: string,
+      option: keyof ThemeOption,
+      value: number | [number] | [number, number, number] | number[] | string[]
+    ): string {
       try {
-        let t: string | StyledString = txt;
+        const t: string | StyledString = txt;
         let c = style(t);
 
-        function applyColor(val: number | [number] | [number, number, number], isBg = false): StyledString{
-          let f: typeof c.background | typeof c.foreground | typeof c.rgb | typeof c.color256 = isBg ? c.background : c.foreground;
-          if (!Array.isArray(val)){
-            return (f as typeof c.background | typeof c.foreground)(value as number);
+        function applyColor(
+          val: number | [number] | [number, number, number],
+          isBg = false
+        ): StyledString {
+          let f:
+            | typeof c.background
+            | typeof c.foreground
+            | typeof c.rgb
+            | typeof c.color256 = isBg ? c.background : c.foreground;
+          if (!Array.isArray(val)) {
+            return (f as typeof c.background | typeof c.foreground).call(
+              c,
+              value as number
+            );
           }
-          switch (val.length){
+          switch (val.length) {
             case 1:
-              f = isBg ? c.bgColor256 :c.color256;
+              f = isBg ? c.bgColor256 : c.color256;
               return (f as typeof c.bgColor256 | typeof c.color256)(val[0]);
             case 3:
-              f = isBg ? c.bgRgb :c.rgb;
+              f = isBg ? c.bgRgb : c.rgb;
               return c.rgb(val[0], val[1], val[2]);
             default:
               logger.error(`Not a valid color option: ${option}`);
@@ -301,8 +356,11 @@ export class Logging {
         }
 
         function applyStyle(v: number | string): void {
-          t = (typeof v === "number" ? c.style(v) : c[v as keyof ColorizeOptions] as string);
-          c = style(t as string)
+          if (typeof v === "number") {
+            c = c.style(v);
+          } else {
+            c = c[v as keyof ColorizeOptions] as StyledString;
+          }
         }
 
         switch (option) {
@@ -310,13 +368,12 @@ export class Logging {
           case "fg":
             return applyColor(value as number).text;
           case "style":
-
-
-            if (Array.isArray(value)){
+            if (Array.isArray(value)) {
               value.forEach(applyStyle);
+            } else {
+              applyStyle(value as number | string);
             }
-            applyStyle(value as number | string);
-            return t;
+            return c.text;
           default:
             logger.error(`Not a valid theme option: ${option}`);
             return t;
@@ -329,19 +386,31 @@ export class Logging {
     }
 
     const individualTheme = template[type as keyof Theme];
-    if (!individualTheme || !Object.keys(individualTheme).length)
+    if (!individualTheme || !Object.keys(individualTheme).length) {
       return text;
+    }
 
     let actualTheme: ThemeOption = individualTheme as ThemeOption;
 
-    if (Object.keys(individualTheme)[0] in LogLevel)
-      actualTheme = (individualTheme as ThemeOptionByLogLevel)[loggerLevel] || {};
+    const logLevels = Object.assign({}, LogLevel);
+    if (Object.keys(individualTheme)[0] in logLevels)
+      actualTheme =
+        (individualTheme as ThemeOptionByLogLevel)[loggerLevel] || {};
 
     return Object.keys(actualTheme).reduce((acc: string, key: string) => {
       const val = (actualTheme as ThemeOption)[key as keyof ThemeOption];
       if (val)
-        return apply(acc, key as keyof ThemeOption, val as number | [number] | [number, number, number] | number[] | string[]);
+        return apply(
+          acc,
+          key as keyof ThemeOption,
+          val as
+            | number
+            | [number]
+            | [number, number, number]
+            | number[]
+            | string[]
+        );
       return acc;
-    }, "");
+    }, text);
   }
 }

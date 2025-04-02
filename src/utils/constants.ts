@@ -6,7 +6,7 @@ import { LoggingConfig, Theme } from "../output/types";
  * @const AnsiReset
  * @memberOf module:@decaf-ts/utils
  */
-export const AnsiReset = '\x1b[0m';
+export const AnsiReset = "\x1b[0m";
 
 /**
  * @description Standard foreground color codes for ANSI text formatting.
@@ -31,7 +31,7 @@ export const StandardForegroundColors = {
   magenta: 35,
   cyan: 36,
   white: 37,
-}
+};
 
 /**
  * @description Bright foreground color codes for ANSI text formatting.
@@ -56,7 +56,7 @@ export const BrightForegroundColors = {
   brightMagenta: 95,
   brightCyan: 96,
   brightWhite: 97,
-}
+};
 
 /**
  * @description Standard background color codes for ANSI text formatting.
@@ -81,7 +81,7 @@ export const StandardBackgroundColors = {
   bgMagenta: 45,
   bgCyan: 46,
   bgWhite: 47,
-}
+};
 
 /**
  * @description Bright background color codes for ANSI text formatting.
@@ -105,8 +105,8 @@ export const BrightBackgroundColors = {
   bgBrightBlue: 104,
   bgBrightMagenta: 105,
   bgBrightCyan: 106,
-  bgBrightWhite: 107
-}
+  bgBrightWhite: 107,
+};
 
 /**
  * @description Text style codes for ANSI text formatting.
@@ -149,7 +149,7 @@ export const styles = {
   noInverse: 27,
   noHidden: 28,
   noStrikethrough: 29,
-}
+};
 
 /**
  * @description Default encoding for text operations.
@@ -165,7 +165,8 @@ export const Encoding = "utf-8";
  * @const {RegExp} SemVersionRegex
  * @memberOf module:@decaf-ts/utils
  */
-export const SemVersionRegex = /^(\d+)\.(\d+)\.(\d+)(?:-([0-9A-Za-z-]+(?:\.[0-9A-Za-z])))/g
+export const SemVersionRegex =
+  /^(\d+)\.(\d+)\.(\d+)(?:-([0-9A-Za-z-]+(?:\.[0-9A-Za-z])))/g;
 
 /**
  * @description Enum for semantic version components.
@@ -212,7 +213,7 @@ export enum Tokens {
   /** Docker authentication token file name. */
   DOCKER = ".dockertoken",
   /** Confluence authentication token file name. */
-  CONFLUENCE = ".confluence-token"
+  CONFLUENCE = ".confluence-token",
 }
 
 /**
@@ -279,30 +280,31 @@ export const NumericLogLevels = {
  */
 export const DefaultTheme: Theme = {
   class: {
-    fg: 4
+    fg: 34,
   },
   id: {
-    fg: 36
+    fg: 36,
   },
   stack: {},
   timestamp: {},
   message: {
     error: {
-      fg: 34
-    }
+      fg: 31,
+    },
   },
   method: {},
   logLevel: {
     error: {
-      fg: 6
+      fg: 31,
+      style: ["bold"],
     },
     info: {},
     verbose: {},
     debug: {
-      fg: 7
+      fg: 33,
     },
-  }
-}
+  },
+};
 
 /**
  * @description Default configuration for logging.
@@ -326,4 +328,4 @@ export const DefaultLoggingConfig: LoggingConfig = {
   timestampFormat: "HH:mm:ss.SSS",
   context: true,
   theme: DefaultTheme,
-}
+};

@@ -247,9 +247,9 @@ export const dev = series(
     series(
       exportDefault(true, "commonjs"),
       exportDefault(true, "es2022"),
-      makeCommands("update-scripts", false),
-      makeCommands("tag-release", false),
-      makeCommands("template-setup", false)
+      makeCommands("update-scripts"),
+      makeCommands("tag-release"),
+      makeCommands("template-setup")
     ),
     exportESMDist(true),
     exportJSDist(true)
@@ -262,9 +262,9 @@ export const prod = series(
     series(
       exportDefault(true, "commonjs"),
       exportDefault(true, "es2022"),
-      makeCommands("update-scripts", false),
-      makeCommands("tag-release", false),
-      makeCommands("template-setup", false)
+      makeCommands("update-scripts"),
+      makeCommands("tag-release"),
+      makeCommands("template-setup")
     ),
     exportESMDist(false),
     exportJSDist(false)
