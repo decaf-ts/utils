@@ -329,3 +329,5 @@ export const DefaultLoggingConfig: LoggingConfig = {
   context: true,
   theme: DefaultTheme,
 };
+
+export const AbortCode = "Aborted";

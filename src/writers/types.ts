@@ -28,4 +28,8 @@ export type OutputType = "stdout" | "stderr";
  *
  * @memberOf module:@decaf-ts/utils
  */
-export type OutputWriterConstructor<R = string, C extends StandardOutputWriter<R> = StandardOutputWriter<R>, E = number> = {new(lock: PromiseExecutor<R, E>, ...args: unknown[]): C};
+export type OutputWriterConstructor<
+  R = string,
+  C extends StandardOutputWriter<R> = StandardOutputWriter<R>,
+  E = number,
+> = { new (cmd: string, lock: PromiseExecutor<R, E>, ...args: unknown[]): C };

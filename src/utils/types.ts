@@ -27,7 +27,9 @@ export interface PromiseExecutor<R, E = Error> {
  * @extends Promise<R>
  * @memberOf module:@decaf-ts/utils
  */
-export interface CommandResult<R = void> extends Promise<R> {
+export interface CommandResult<R = void> {
+  promise: Promise<R>;
+
   /**
    * @description Controller to abort the command execution.
    * @summary Provides a mechanism to cancel the ongoing command execution.
@@ -40,25 +42,23 @@ export interface CommandResult<R = void> extends Promise<R> {
    */
   command: string;
 
-  cached: {
-    /**
-     * @description The child process object.
-     * @summary Represents the Node.js child process that was spawned to execute the command.
-     */
-    cmd?: ChildProcessWithoutNullStreams;
+  /**
+   * @description The child process object.
+   * @summary Represents the Node.js child process that was spawned to execute the command.
+   */
+  cmd?: ChildProcessWithoutNullStreams;
 
-    /**
-     * @description Array of stdout logs.
-     * @summary Contains all the standard output messages produced during the command execution.
-     */
-    logs: string[];
+  /**
+   * @description Array of stdout logs.
+   * @summary Contains all the standard output messages produced during the command execution.
+   */
+  logs: string[];
 
-    /**
-     * @description Array of stderr logs.
-     * @summary Contains all the standard error messages produced during the command execution.
-     */
-    errs: string[];
-  };
+  /**
+   * @description Array of stderr logs.
+   * @summary Contains all the standard error messages produced during the command execution.
+   */
+  errs: string[];
 
   /**
    * @description allows chaining commands.

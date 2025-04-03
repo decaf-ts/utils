@@ -13,17 +13,17 @@ export interface OutputWriter {
    * @description Handles the output of data chunks.
    * @summary Processes and writes a chunk of data to the output stream.
    * This method is typically used for standard output operations.
-   * 
+   *
    * @param chunk - The data to be written. Can be of any type.
    * @return void
    */
-  data(chunk: any): void
+  data(chunk: any): void;
 
   /**
    * @description Handles error output.
    * @summary Processes and writes error information to the error output stream.
    * This method is used for non-critical errors or warnings.
-   * 
+   *
    * @param chunk - The error data to be written. Can be of any type.
    * @return void
    */
@@ -33,7 +33,7 @@ export interface OutputWriter {
    * @description Handles critical errors.
    * @summary Processes and writes critical error information.
    * This method is used for handling and reporting Error objects.
-   * 
+   *
    * @param err - The Error object to be processed and written.
    * @return void
    */
@@ -43,9 +43,10 @@ export interface OutputWriter {
    * @description Manages the program exit process.
    * @summary Handles the termination of the program with a specified exit code.
    * This method is called when the program needs to exit, either successfully or due to an error.
-   * 
+   *
    * @param code - The exit code to be used when terminating the program.
+   * @param logs
    * @return void
    */
-  exit(code: number): void;
+  exit(code: number, logs: string[]): void;
 }

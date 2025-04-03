@@ -4,7 +4,7 @@
 /workdocs/coverage
 /workdocs/drawings/*
 !/workdocs/drawings/*.drawio
-/workdocs/resources/*
+/workdocs/resources/**/*
 !/workdocs/resources/junit/.gitlock
 !/workdocs/resources/html/.gitlock
 /workdocs/uml/*

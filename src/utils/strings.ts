@@ -2,9 +2,17 @@ import {
   BrightBackgroundColors,
   BrightForegroundColors,
   StandardBackgroundColors,
-  StandardForegroundColors, styles,
+  StandardForegroundColors,
+  styles,
 } from "./constants";
-import { clear, colorize256, colorizeANSI, colorizeRGB, raw, applyStyle } from "./colors";
+import {
+  clear,
+  colorize256,
+  colorizeANSI,
+  colorizeRGB,
+  raw,
+  applyStyle,
+} from "./colors";
 
 /**
  * @description Options for text colorization using ANSI codes.
@@ -30,23 +38,24 @@ import { clear, colorize256, colorizeANSI, colorizeRGB, raw, applyStyle } from "
  *
  * @memberOf module:@decaf-ts/utils
  */
-export type ColorizeOptions = {[k in keyof typeof StandardForegroundColors]: StyledString}
-  & {[k in keyof typeof BrightForegroundColors]: StyledString}
-  & {[k in keyof typeof StandardBackgroundColors]: StyledString}
-  & {[k in keyof typeof BrightBackgroundColors]: StyledString}
-  & {[k in keyof typeof styles]: StyledString}
-  & {
-  clear: () => StyledString,
-  raw: (raw: string) => StyledString,
-  foreground: (n: number) => StyledString,
-  background: (n: number) => StyledString,
-  style: (n: number | keyof typeof styles) => StyledString,
-  color256: (n: number) => StyledString,
-  bgColor256: (n: number) => StyledString,
-  rgb: (r: number, g: number, b: number) => StyledString,
-  bgRgb: (r: number, g: number, b: number) => StyledString,
-  text: string
-}
+export type ColorizeOptions = {
+  [k in keyof typeof StandardForegroundColors]: StyledString;
+} & { [k in keyof typeof BrightForegroundColors]: StyledString } & {
+  [k in keyof typeof StandardBackgroundColors]: StyledString;
+} & { [k in keyof typeof BrightBackgroundColors]: StyledString } & {
+  [k in keyof typeof styles]: StyledString;
+} & {
+  clear: () => StyledString;
+  raw: (raw: string) => StyledString;
+  foreground: (n: number) => StyledString;
+  background: (n: number) => StyledString;
+  style: (n: number | keyof typeof styles) => StyledString;
+  color256: (n: number) => StyledString;
+  bgColor256: (n: number) => StyledString;
+  rgb: (r: number, g: number, b: number) => StyledString;
+  bgRgb: (r: number, g: number, b: number) => StyledString;
+  text: string;
+};
 
 /**
  * @description A class that extends string functionality with ANSI color and style options.
@@ -362,33 +371,33 @@ export class StyledString implements ColorizeOptions {
     // Basic colors
     Object.entries(StandardForegroundColors).forEach(([name, code]) => {
       Object.defineProperty(this, name, {
-        get: () => this.foreground(code)
+        get: () => this.foreground(code),
       });
     });
 
     Object.entries(BrightForegroundColors).forEach(([name, code]) => {
       Object.defineProperty(this, name, {
-        get: () => this.foreground(code)
+        get: () => this.foreground(code),
       });
     });
 
     // Background colors
     Object.entries(StandardBackgroundColors).forEach(([name, code]) => {
       Object.defineProperty(this, name, {
-        get: () => this.background(code)
+        get: () => this.background(code),
       });
     });
 
     Object.entries(BrightBackgroundColors).forEach(([name, code]) => {
       Object.defineProperty(this, name, {
-        get: () => this.background(code)
+        get: () => this.background(code),
       });
     });
 
     // Styles
     Object.entries(styles).forEach(([name, code]) => {
       Object.defineProperty(this, name, {
-        get: () => this.background(code)
+        get: () => this.background(code),
       });
     });
   }
@@ -400,7 +409,7 @@ export class StyledString implements ColorizeOptions {
    */
   clear(): StyledString {
     this.text = clear(this.text);
-    return this
+    return this;
   }
 
   /**
@@ -411,7 +420,7 @@ export class StyledString implements ColorizeOptions {
    */
   raw(rawAnsi: string): StyledString {
     this.text = raw(this.text, rawAnsi);
-    return this
+    return this;
   }
 
   /**
@@ -422,7 +431,7 @@ export class StyledString implements ColorizeOptions {
    */
   foreground(n: number): StyledString {
     this.text = colorizeANSI(this.text, n);
-    return this
+    return this;
   }
 
   /**
@@ -433,7 +442,7 @@ export class StyledString implements ColorizeOptions {
    */
   background(n: number): StyledString {
     this.text = colorizeANSI(this.text, n, true);
-    return this
+    return this;
   }
 
   /**
@@ -448,7 +457,7 @@ export class StyledString implements ColorizeOptions {
       return this;
     }
     this.text = applyStyle(this.text, n);
-    return this
+    return this;
   }
 
   /**
@@ -459,7 +468,7 @@ export class StyledString implements ColorizeOptions {
    */
   color256(n: number): StyledString {
     this.text = colorize256(this.text, n);
-    return this
+    return this;
   }
 
   /**
@@ -470,7 +479,7 @@ export class StyledString implements ColorizeOptions {
    */
   bgColor256(n: number): StyledString {
     this.text = colorize256(this.text, n, true);
-    return this
+    return this;
   }
 
   /**
@@ -498,10 +507,13 @@ export class StyledString implements ColorizeOptions {
     this.text = colorizeRGB(this.text, r, g, b, true);
     return this;
   }
+
+  toString() {
+    return this.text;
+  }
 }
 
-
-   /**
+/**
  * @description Applies styling to a given text string.
  * @summary This function takes a string and returns a StyledString object, which is an enhanced
  * version of the original string with additional methods for applying various ANSI color and style
@@ -516,7 +528,7 @@ export class StyledString implements ColorizeOptions {
  * @memberOf module:@decaf-ts/utils
  */
 export function style(...t: string[]): StyledString {
-  return new StyledString(t.join(' '));
+  return new StyledString(t.join(" "));
   // const mapper = {
   //   clear: () => {
   //     text = clear(text);

@@ -8,6 +8,7 @@ import { CommandResult } from "./types";
 import { Logging } from "../output/logging";
 import { OutputWriterConstructor } from "../writers/types";
 import { VerbosityLogger } from "../output/types";
+import { AbortCode } from "./constants";
 
 /**
  * @description Creates a locked version of a function.
@@ -190,20 +191,22 @@ export function spawnCommand<R = string>(
  *
  * @memberOf module:@decaf-ts/utils
  */
-export async function runCommand<R = string>(
+export function runCommand<R = string>(
   command: string,
   opts: SpawnOptionsWithoutStdio = {},
-  outputConstructor: OutputWriterConstructor<R> = StandardOutputWriter<R>,
+  outputConstructor: OutputWriterConstructor<
+    R,
+    StandardOutputWriter<R>,
+    Error
+  > = StandardOutputWriter<R>,
   ...args: unknown[]
-): Promise<R> {
+): CommandResult<R> {
   const logger = Logging.for(runCommand);
   const abort = new AbortController();
 
-  const cached: {
-    logs: string[];
-    errs: string[];
-    cmd?: ChildProcessWithoutNullStreams;
-  } = {
+  const result: Omit<CommandResult, "promise" | "pipe"> = {
+    abort: abort,
+    command: command,
     logs: [],
     errs: [],
   };
@@ -212,6 +215,7 @@ export async function runCommand<R = string>(
     let output;
     try {
       output = new outputConstructor(
+        command,
         {
           resolve,
           reject,
@@ -219,37 +223,37 @@ export async function runCommand<R = string>(
         ...args
       );
 
-      cached.cmd = spawnCommand<R>(output, command, opts, abort, logger);
+      result.cmd = spawnCommand<R>(output, command, opts, abort, logger);
     } catch (e: unknown) {
-      throw new Error(`Error running command ${command}: ${e}`);
+      return reject(new Error(`Error running command ${command}: ${e}`));
     }
 
-    cached.cmd.stdout.setEncoding("utf8");
+    result.cmd.stdout.setEncoding("utf8");
 
-    cached.cmd.stdout.on("data", (chunk: any) => {
+    result.cmd.stdout.on("data", (chunk: any) => {
       chunk = chunk.toString();
-      cached.logs.push(chunk);
+      result.logs.push(chunk);
       output.data(chunk);
     });
 
-    cached.cmd.stderr.on("data", (data: any) => {
+    result.cmd.stderr.on("data", (data: any) => {
       data = data.toString();
-      cached.errs.push(data);
+      result.errs.push(data);
       output.error(data);
     });
 
-    cached.cmd.once("error", (err: Error) => {
-      output.errors(err);
+    result.cmd.once("error", (err: Error) => {
+      output.exit(err.message, result.errs);
     });
 
-    cached.cmd.once("exit", (code: number = 0) => {
-      output.exit(code);
+    result.cmd.once("exit", (code: number = 0) => {
+      if (abort.signal.aborted && code === null) code = AbortCode as any;
+      output.exit(code, code === 0 ? result.logs : result.errs);
     });
   });
-  Object.assign(lock, {
-    abort: abort,
-    command: command,
-    cached: cached,
+
+  Object.assign(result, {
+    promise: lock,
     pipe: async <E>(cb: (r: R) => E) => {
       const l = logger.for("pipe");
       try {
@@ -263,15 +267,6 @@ export async function runCommand<R = string>(
       }
     },
   });
-  return lock as CommandResult<R>;
-}
 
-export function runWithRequirements<R = string>(
-  command: string,
-  opts: SpawnOptionsWithoutStdio = {},
-  outputConstructor: OutputWriterConstructor<R> = StandardOutputWriter<R>,
-  requirements: string[],
-  ...args: unknown[]
-): Promise<R> {
-  return runCommand<R>(command, opts, outputConstructor, ...args);
+  return result as CommandResult<R>;
 }

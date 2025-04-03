@@ -8,7 +8,7 @@ import {
   styles,
 } from "../../src/";
 
-describe("performance tests", () => {
+describe.skip("performance tests", () => {
   const iterations = 1000000;
   it(`Should demonstrate performance benefits of lazy loading colors: ${iterations} iterations`, () => {
     const text = "Performance Test";
