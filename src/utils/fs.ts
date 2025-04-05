@@ -220,24 +220,24 @@ export async function getDependencies(path: string = process.cwd()) {
 export async function updateDependencies() {
   const log = logger.for(updateDependencies);
   log.info("checking for updates...");
-  await runCommand("npx npm-check-updates -u");
+  await runCommand("npx npm-check-updates -u").promise;
   log.info("updating...");
-  await runCommand("npx npm run do-install");
+  await runCommand("npx npm run do-install").promise;
 }
 
 export async function pushToGit() {
   const log = logger.for(pushToGit);
-  const gitUser = await runCommand("git config user.name");
-  const gitEmail = await runCommand("git config user.email");
+  const gitUser = await runCommand("git config user.name").promise;
+  const gitEmail = await runCommand("git config user.email").promise;
   log.verbose(`cached git id: ${gitUser}/${gitEmail}. changing to automation`);
-  await runCommand('git config user.email "automation@decaf.ts"');
-  await runCommand('git config user.name "decaf"');
+  await runCommand('git config user.email "automation@decaf.ts"').promise;
+  await runCommand('git config user.name "decaf"').promise;
   log.info("Pushing changes to git...");
-  await runCommand("git add .");
-  await runCommand(`git commit -m "refs #1 - after repo setup"`);
-  await runCommand("git push");
-  await runCommand(`git config user.email "${gitEmail}"`);
-  await runCommand(`git config user.name "${gitUser}"`);
+  await runCommand("git add .").promise;
+  await runCommand(`git commit -m "refs #1 - after repo setup"`).promise;
+  await runCommand("git push").promise;
+  await runCommand(`git config user.email "${gitEmail}"`).promise;
+  await runCommand(`git config user.name "${gitUser}"`).promise;
   log.verbose(`reverted to git id: ${gitUser}/${gitEmail}`);
 }
 
@@ -246,21 +246,30 @@ export async function installDependencies(dependencies: {
   dev: string[];
   peer: string[];
 }) {
+  const log = logger.for(installDependencies);
   const { prod, dev, peer } = dependencies;
   if (prod.length) {
-    logger.info(`Installing dependencies ${prod.join(", ")}...`);
-    await runCommand(`npm install ${prod.join(" ")}`, { cwd: process.cwd() });
+    log.info(`Installing dependencies ${prod.join(", ")}...`);
+    await runCommand(`npm install ${prod.join(" ")}`, { cwd: process.cwd() })
+      .promise;
   }
   if (dev.length) {
-    logger.info(`Installing devDependencies ${dev.join(", ")}...`);
+    log.info(`Installing devDependencies ${dev.join(", ")}...`);
     await runCommand(`npm install --save-dev ${dev.join(" ")}`, {
       cwd: process.cwd(),
-    });
+    }).promise;
   }
   if (peer.length) {
-    logger.info(`Installing peerDependencies ${peer.join(", ")}...`);
+    log.info(`Installing peerDependencies ${peer.join(", ")}...`);
     await runCommand(`npm install --save-peer ${peer.join(" ")}`, {
       cwd: process.cwd(),
-    });
+    }).promise;
   }
+}
+
+export async function normalizeImport<T>(
+  importPromise: Promise<T>
+): Promise<T> {
+  // CommonJS's `module.exports` is wrapped as `default` in ESModule.
+  return importPromise.then((m: any) => (m.default || m) as T);
 }
