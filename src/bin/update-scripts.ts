@@ -4,13 +4,14 @@ import { CommandOptions } from "../cli/types";
 import { ParseArgsResult } from "../input";
 import { HttpClient, setPackageAttribute, writeFile } from "../utils";
 
-const baseUrl = "https://raw.githubusercontent.com/decaf-ts/ts-workspace/master"
+const baseUrl =
+  "https://raw.githubusercontent.com/decaf-ts/ts-workspace/master";
 
 const options = {
   templates: [
     ".github/ISSUE_TEMPLATE/bug_report.md",
     ".github/ISSUE_TEMPLATE/feature_request.md",
-    ".github/FUNDING.yml"
+    ".github/FUNDING.yml",
   ],
   workflows: [
     ".github/workflows/codeql_analysis.yml",
@@ -36,73 +37,87 @@ const options = {
     ".run/Unit Tests.run.xml",
     ".run/update-scripts.run.xml",
   ],
-  docs : [
+  docs: [
     "workdocs/tutorials/Contributing.md",
     "workdocs/tutorials/Documentation.md",
     "workdocs/tutorials/For Developers.md",
   ],
-  styles: [
-    ".prettierrc",
-    ".eslint.config.js",
-  ],
+  styles: [".prettierrc", ".eslint.config.js"],
   scripts: [
     "bin/tag-release.sh",
     "bin/template_setup.sh",
     "bin/update-scripts.cjs",
     "bin/tag-release.cjs",
-    "bin/template-setup.cjs"
-  ]
-}
+    "bin/template-setup.cjs",
+  ],
+};
 
 const args = {
   all: {
     type: "boolean",
-    default: true
+    default: true,
   },
   license: {
-    type: 'multiselect',
-    name: 'license',
-    message: 'Pick the license',
+    type: "multiselect",
+    name: "license",
+    message: "Pick the license",
     choices: [
-      { title: 'MIT', value: 'MIT' },
-      { title: 'GPL', value: 'GPL' },
-      { title: 'LGPL', value: 'LGPL' },
-      { title: 'AGPL', value: 'AGPL' },
-      { title: 'Apache', value: 'Apache' },
+      { title: "MIT", value: "MIT" },
+      { title: "GPL", value: "GPL" },
+      { title: "LGPL", value: "LGPL" },
+      { title: "AGPL", value: "AGPL" },
+      { title: "Apache", value: "Apache" },
     ],
-    default: "MIT"
+    default: "MIT",
   },
   scripts: {
     type: "boolean",
-    default: false
+    default: false,
   },
   styles: {
     type: "boolean",
-    default: false
+    default: false,
   },
   docs: {
     type: "boolean",
-    default: false
+    default: false,
   },
   ide: {
     type: "boolean",
-    default: false
+    default: false,
   },
   workflows: {
     type: "boolean",
-    default: false
+    default: false,
   },
   templates: {
     type: "boolean",
-    default: false
-  }
-}
+    default: false,
+  },
+};
 
+/**
+ * @class TemplateSync
+ * @extends {Command<CommandOptions<typeof args>, void>}
+ * @category scripts
+ * @description A command-line tool for synchronizing project templates and configurations.
+ * @summary This class provides functionality to download and update various project files and configurations from a remote repository.
+ * It supports updating licenses, IDE configurations, scripts, styles, documentation, workflows, and templates.
+ *
+ * @param {CommandOptions<typeof args>} args - The command options for TemplateSync
+ */
 class TemplateSync extends Command<CommandOptions<typeof args>, void> {
-  constructor(options: CommandOptions<typeof args>) {
-    super("TemplateSync", options);
+  constructor() {
+    super("TemplateSync", args);
   }
 
+  /**
+   * @description Downloads files for a specific option category.
+   * @summary This method downloads all files associated with a given option key from the remote repository.
+   * @param {keyof typeof options} key - The key representing the option category to download
+   * @returns {Promise<void>}
+   * @throws {Error} If the specified option key is not found
+   */
   async downloadOption(key: keyof typeof options): Promise<void> {
     if (!(key in options)) {
       throw new Error(`Option "${key}" not found in options`);
@@ -117,52 +132,126 @@ class TemplateSync extends Command<CommandOptions<typeof args>, void> {
     }
   }
 
-  async getLicense(license: "MIT" | "GPL" | "Apache" | "LGPL" | "AGPL"){
+  /**
+   * @description Downloads and sets up the specified license.
+   * @summary This method downloads the chosen license file, saves it to the project, and updates the package.json license field.
+   * @param {"MIT" | "GPL" | "Apache" | "LGPL" | "AGPL"} license - The license to download and set up
+   * @returns {Promise<void>}
+   */
+  async getLicense(license: "MIT" | "GPL" | "Apache" | "LGPL" | "AGPL") {
     this.log.info(`Downloading ${license} license`);
-    const data = await HttpClient.downloadFile(`${baseUrl}/workdocs/licenses/${license}.md`);
+    const data = await HttpClient.downloadFile(
+      `${baseUrl}/workdocs/licenses/${license}.md`
+    );
     writeFile(path.join(process.cwd(), "LICENSE.md"), data);
     setPackageAttribute("license", license);
   }
 
+  /**
+   * @description Downloads IDE configuration files.
+   * @returns {Promise<void>}
+   */
   getIde = () => this.downloadOption("ide");
+
+  /**
+   * @description Downloads script files.
+   * @returns {Promise<void>}
+   */
   getScripts = () => this.downloadOption("scripts");
+
+  /**
+   * @description Downloads style configuration files.
+   * @returns {Promise<void>}
+   */
   getStyles = () => this.downloadOption("styles");
+
+  /**
+   * @description Downloads template files.
+   * @returns {Promise<void>}
+   */
   getTemplates = () => this.downloadOption("templates");
+
+  /**
+   * @description Downloads workflow configuration files.
+   * @returns {Promise<void>}
+   */
   getWorkflows = () => this.downloadOption("workflows");
+
+  /**
+   * @description Downloads documentation files.
+   * @returns {Promise<void>}
+   */
   getDocs = () => this.downloadOption("docs");
 
+  /**
+   * @description Runs the template synchronization process.
+   * @summary This method orchestrates the downloading of various project components based on the provided arguments.
+   * @param {ParseArgsResult} args - The parsed command-line arguments
+   * @returns {Promise<void>}
+   *
+   * @mermaid
+   * sequenceDiagram
+   *   participant T as TemplateSync
+   *   participant L as getLicense
+   *   participant I as getIde
+   *   participant S as getScripts
+   *   participant St as getStyles
+   *   participant D as getDocs
+   *   participant W as getWorkflows
+   *   participant Te as getTemplates
+   *   T->>T: Parse arguments
+   *   alt all flag is true
+   *     T->>T: Set all component flags to true
+   *   end
+   *   alt license is specified
+   *     T->>L: getLicense(license)
+   *   end
+   *   alt ide flag is true
+   *     T->>I: getIde()
+   *   end
+   *   alt scripts flag is true
+   *     T->>S: getScripts()
+   *   end
+   *   alt styles flag is true
+   *     T->>St: getStyles()
+   *   end
+   *   alt docs flag is true
+   *     T->>D: getDocs()
+   *   end
+   *   alt workflows flag is true
+   *     T->>W: getWorkflows()
+   *   end
+   *   alt templates flag is true
+   *     T->>Te: getTemplates()
+   *   end
+   */
+  async run(args: ParseArgsResult) {
+    const { license } = args.values;
+    let { all, scripts, styles, docs, ide, workflows, templates } = args.values;
+
+    if (scripts || styles || docs || ide || workflows || templates) all = false;
+
+    if (all) {
+      scripts = true;
+      styles = true;
+      docs = true;
+      ide = true;
+      workflows = true;
+      templates = true;
+    }
+    if (license) await this.getLicense(license as "MIT");
+    if (ide) await this.getIde();
+    if (scripts) await this.getScripts();
+    if (styles) await this.getStyles();
+    if (docs) await this.getDocs();
+    if (workflows) await this.getWorkflows();
+    if (templates) await this.getTemplates();
+  }
 }
 
-new TemplateSync(args).run(async function(this: TemplateSync, args: ParseArgsResult){
-  const {license} = args.values;
-  let {all, scripts, styles, docs, ide, workflows, templates } = args.values;
-
-  if (scripts || styles || docs || ide || workflows || templates)
-    all = false;
-
-  if (all){
-    scripts = true;
-    styles = true;
-    docs = true;
-    ide = true;
-    workflows = true;
-    templates = true;
-  }
-  if (license)
-    await this.getLicense(license as "MIT");
-  if (ide)
-    await this.getIde();
-  if (scripts)
-    await this.getScripts();
-  if (styles)
-    await this.getStyles();
-  if (docs)
-    await this.getDocs();
-  if (workflows)
-    await this.getWorkflows();
-  if (templates)
-    await this.getTemplates();
-}).then(() => TemplateSync.log.info("Template updated successfully"))
+new TemplateSync()
+  .execute()
+  .then(() => TemplateSync.log.info("Template updated successfully"))
   .catch((e: unknown) => {
     TemplateSync.log.error(`Error preparing template: ${e}`);
     process.exit(1);

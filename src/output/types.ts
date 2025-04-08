@@ -1,12 +1,9 @@
-import {
-  BrightBackgroundColors,
-  BrightForegroundColors,
-  LogLevel,
-  StandardBackgroundColors,
-  StandardForegroundColors, styles,
-} from "../utils/constants";
+import { LogLevel, styles } from "../utils/constants";
 
-
+export type LoggingContext =
+  | string
+  | { new (...args: any[]): any }
+  | ((...args: any[]) => any);
 
 /**
  * @description Interface for a logger with verbosity levels.
@@ -44,7 +41,9 @@ export interface VerbosityLogger {
    * @param {string} msg - The message to log.
    */
   debug(msg: string): void;
-  for(method?: string | Function): VerbosityLogger
+  for(method?: string | Function): VerbosityLogger;
+
+  setConfig(config: Partial<LoggingConfig>): void;
 }
 
 /**
@@ -56,15 +55,14 @@ export interface VerbosityLogger {
  * @memberOf module:@decaf-ts/utils
  */
 export type LoggingConfig = {
-  level: LogLevel,
-  verbose: number
-  style?: boolean,
-  timestamp?: boolean,
-  timestampFormat?: string,
-  context?: boolean,
-  theme?: Theme
-}
-
+  level: LogLevel;
+  verbose: number;
+  style?: boolean;
+  timestamp?: boolean;
+  timestampFormat?: string;
+  context?: boolean;
+  theme?: Theme;
+};
 
 /**
  /**
@@ -114,37 +112,37 @@ export interface Theme {
   /**
    * @description Styling for class names in the output.
    */
-  class: ThemeOption | ThemeOptionByLogLevel,
+  class: ThemeOption | ThemeOptionByLogLevel;
 
   /**
    * @description Styling for timestamps in the output.
    */
-  timestamp: ThemeOption | ThemeOptionByLogLevel,
+  timestamp: ThemeOption | ThemeOptionByLogLevel;
 
   /**
    * @description Styling for the main message text in the output.
    */
-  message: ThemeOption | ThemeOptionByLogLevel,
+  message: ThemeOption | ThemeOptionByLogLevel;
 
   /**
    * @description Styling for method names in the output.
    */
-  method: ThemeOption | ThemeOptionByLogLevel,
+  method: ThemeOption | ThemeOptionByLogLevel;
 
   /**
    * @description Styling for identifier elements in the output.
    */
-  id: ThemeOption | ThemeOptionByLogLevel,
+  id: ThemeOption | ThemeOptionByLogLevel;
 
   /**
    * @description Styling for identifier elements in the output.
    */
-  stack: ThemeOption,
+  stack: ThemeOption;
 
   /**
    * @description Styling for different log levels in the output.
    */
-  logLevel: ThemeOptionByLogLevel
+  logLevel: ThemeOptionByLogLevel;
 }
 
 /**

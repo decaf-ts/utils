@@ -1,43 +1,52 @@
 import fs from "fs";
 import { Encoding, SetupScriptKey, Tokens } from "../utils/constants";
-import { patchFile, pushToGit, updateDependencies, writeFile } from "../utils/fs";
+import {
+  patchFile,
+  pushToGit,
+  updateDependencies,
+  writeFile,
+} from "../utils/fs";
 import { Command } from "../cli/command";
 import { CommandOptions } from "../cli/types";
 import { ParseArgsResult, UserInput } from "../input";
 import { HttpClient, runCommand } from "../utils";
 import path from "path";
 
-const baseUrl = "https://raw.githubusercontent.com/decaf-ts/ts-workspace/master"
+const baseUrl =
+  "https://raw.githubusercontent.com/decaf-ts/ts-workspace/master";
 
 const options = {
   org: {
     type: "text",
     short: "o",
-    default: "decaf-ts"
+    default: "decaf-ts",
   },
   name: {
     type: "string",
     short: "n",
-    default: undefined
+    default: undefined,
   },
   author: {
     type: "string",
     short: "a",
-    default: undefined
+    default: undefined,
   },
   license: {
     type: "string",
     short: "l",
-    default: "MIT"
-  }
-}
+    default: "MIT",
+  },
+};
 
-class TemplateSetupScript extends Command<CommandOptions<typeof options>, void>{
-  constructor(opts: CommandOptions<typeof options>) {
-    super("TemplateSetupScript", opts);
+class TemplateSetupScript extends Command<
+  CommandOptions<typeof options>,
+  void
+> {
+  constructor() {
+    super("TemplateSetupScript", options);
   }
 
-  async fixPackage(pkgName: string, author: string, license: string){
+  async fixPackage(pkgName: string, author: string, license: string) {
     try {
       const pkg = JSON.parse(fs.readFileSync("package.json", Encoding));
       delete pkg[SetupScriptKey];
@@ -51,7 +60,7 @@ class TemplateSetupScript extends Command<CommandOptions<typeof options>, void>{
     }
   }
 
-  async createTokenFiles(){
+  async createTokenFiles() {
     const log = this.log.for(this.createTokenFiles);
     Object.values(Tokens).forEach((token) => {
       try {
@@ -70,30 +79,45 @@ class TemplateSetupScript extends Command<CommandOptions<typeof options>, void>{
       } catch (e: unknown) {
         throw new Error(`Error creating token file ${token}: ${e}`);
       }
-    })
+    });
   }
 
-  async getOrg(): Promise<string>{
-    const org = await UserInput.askText("Organization", "Enter the organization name (will be used to scope your npm project. leave blank to create a unscoped project):");
-    const confirmation = await UserInput.askConfirmation("Confirm organization", "Is this organization correct?", true);
+  async getOrg(): Promise<string> {
+    const org = await UserInput.askText(
+      "Organization",
+      "Enter the organization name (will be used to scope your npm project. leave blank to create a unscoped project):"
+    );
+    const confirmation = await UserInput.askConfirmation(
+      "Confirm organization",
+      "Is this organization correct?",
+      true
+    );
     if (!confirmation) {
       return this.getOrg();
     }
     return org;
   }
 
-  async getLicense(license: string): Promise<void>{
+  async getLicense(license: string): Promise<void> {
     this.log.info(`Downloading license ${license}`);
-    const data = await HttpClient.downloadFile(`${baseUrl}/workdocs/licenses/${license}.md`);
+    const data = await HttpClient.downloadFile(
+      `${baseUrl}/workdocs/licenses/${license}.md`
+    );
     writeFile(path.join(process.cwd(), "LICENSE.md"), data);
   }
 
-  patchFiles(org: string, name: string, author: string){
+  patchFiles(org: string, name: string, author: string) {
     const files = [
-      ...fs.readdirSync(path.join(process.cwd(), "src"), {recursive: true, withFileTypes: true}),
-      ...fs.readdirSync(path.join(process.cwd(), "workdocs"), {recursive: true, withFileTypes: true}),
+      ...fs.readdirSync(path.join(process.cwd(), "src"), {
+        recursive: true,
+        withFileTypes: true,
+      }),
+      ...fs.readdirSync(path.join(process.cwd(), "workdocs"), {
+        recursive: true,
+        withFileTypes: true,
+      }),
       ".gitlab-ci.yml",
-      "jsdocs.json"
+      "jsdocs.json",
     ];
 
     for (const file of files) {
@@ -101,46 +125,54 @@ class TemplateSetupScript extends Command<CommandOptions<typeof options>, void>{
         "decaf-ts/ts-workspace": `${org ? `${org}/` : ""}${name}`,
         "decaf-ts": `${org || ""}`,
         "ts-workspace": name,
-        "Tiago Venceslau": author
-      })
+        "Tiago Venceslau": author,
+      });
     }
-
   }
 
-
   async auditFix() {
-    return await runCommand("npm audit fix --force");
+    return await runCommand("npm audit fix --force").promise;
+  }
+
+  async run(args: ParseArgsResult): Promise<void> {
+    let { org, name, author, license } = args.values;
+    if (!org) org = await this.getOrg();
+
+    if (!name)
+      name = await UserInput.insistForText(
+        "name",
+        "Enter the name of your project:",
+        (val) => !!val && val.toString().length > 3
+      );
+
+    if (!author)
+      author = await UserInput.insistForText(
+        "author",
+        "Enter the name of the project's author:",
+        (val) => !!val && val.toString().length > 3
+      );
+
+    if (!license) license = "MIT";
+
+    const pkgName = org ? `@${org}/${name}` : name;
+
+    await this.fixPackage(
+      pkgName as string,
+      author as string,
+      license as string
+    );
+    await this.createTokenFiles();
+    if (license) await this.getLicense(license as string);
+    this.patchFiles(org as string, name as string, author as string);
+    await updateDependencies();
+    await this.auditFix();
+    await pushToGit();
   }
 }
 
-new TemplateSetupScript(options).run(async function (this: TemplateSetupScript, args: ParseArgsResult) {
-  let {org, name, author, license} = args.values;
-  if (!org){
-    org = await this.getOrg();
-  }
-  if (!name){
-    name = await UserInput.insistForText("name", "Enter the name of your project:", (val) =>!!val && val.toString().length > 3);
-  }
-
-  if (!author){
-    author = await UserInput.insistForText("author", "Enter the name of the project's author:", (val) =>!!val && val.toString().length > 3);
-  }
-
-  if (!license){
-    license = "MIT"
-  }
-
-  const pkgName = org ? `@${org}/${name}` : name;
-
-  await this.fixPackage(pkgName as string, author as string, license as string);
-  await this.createTokenFiles();
-  if (license)
-    await this.getLicense(license as string);
-  this.patchFiles(org as string, name as string, author as string);
-  await updateDependencies();
-  await this.auditFix();
-  await pushToGit();
-}).then(() => TemplateSetupScript.log.info("Template updated successfully"))
+new TemplateSetupScript()
+  .execute()
+  .then(() => TemplateSetupScript.log.info("Template updated successfully"))
   .catch((e: unknown) => {
     TemplateSetupScript.log.error(`Error preparing template: ${e}`);
     process.exit(1);

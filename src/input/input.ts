@@ -1,4 +1,13 @@
-import prompts, { Answers, Choice, Falsy, InitialReturnValue, PrevCaller, PromptObject, PromptType, ValueOrFunc } from "prompts";
+import prompts, {
+  Answers,
+  Choice,
+  Falsy,
+  InitialReturnValue,
+  PrevCaller,
+  PromptObject,
+  PromptType,
+  ValueOrFunc,
+} from "prompts";
 import { parseArgs, ParseArgsConfig } from "util";
 import { Writable, Readable } from "stream";
 import { Logging } from "../output/logging";
@@ -11,21 +20,20 @@ import { ParseArgsOptionsConfig, ParseArgsResult } from "./types";
  * It implements the PromptObject interface from the 'prompts' library and offers methods to set
  * various properties of the prompt. The class also includes static methods for common input scenarios
  * and argument parsing.
- * 
+ *
  * @template R - The type of the prompt name, extending string.
- * 
+ *
  * @param name - The name of the prompt, used as the key in the returned answers object.
- * 
+ *
  * @class
  */
 export class UserInput<R extends string = string> implements PromptObject<R> {
-
   private static readonly logger = Logging.for(UserInput);
   /**
    * @description The type of the prompt.
    * @summary Determines the input method (e.g., text, number, confirm).
    */
-  type: PromptType | Falsy | PrevCaller<R, PromptType | Falsy> = "text"
+  type: PromptType | Falsy | PrevCaller<R, PromptType | Falsy> = "text";
 
   /**
    * @description The name of the prompt.
@@ -43,7 +51,10 @@ export class UserInput<R extends string = string> implements PromptObject<R> {
    * @description The initial value of the prompt.
    * @summary The default value presented to the user.
    */
-  initial?: InitialReturnValue | PrevCaller<R, InitialReturnValue | Promise<InitialReturnValue>> | undefined;
+  initial?:
+    | InitialReturnValue
+    | PrevCaller<R, InitialReturnValue | Promise<InitialReturnValue>>
+    | undefined;
 
   /**
    * @description The style of the prompt.
@@ -61,7 +72,9 @@ export class UserInput<R extends string = string> implements PromptObject<R> {
    * @description The validation function for the input.
    * @summary A function to validate the user's input.
    */
-  validate?: PrevCaller<R, boolean | string | Promise<boolean | string>> | undefined;
+  validate?:
+    | PrevCaller<R, boolean | string | Promise<boolean | string>>
+    | undefined;
 
   /**
    * @description The onState callback function.
@@ -180,11 +193,11 @@ export class UserInput<R extends string = string> implements PromptObject<R> {
   /**
    * @description Creates a new UserInput instance.
    * @summary Initializes a new UserInput object with the given name.
-   * 
+   *
    * @param name - The name of the prompt.
    */
   constructor(name: ValueOrFunc<R>) {
-    this.name = name
+    this.name = name;
   }
 
   /**
@@ -220,7 +233,12 @@ export class UserInput<R extends string = string> implements PromptObject<R> {
    * @param value - The initial value.
    * @returns This UserInput instance for method chaining.
    */
-  setInitial(value: InitialReturnValue | PrevCaller<R, InitialReturnValue | Promise<InitialReturnValue>> | undefined): this {
+  setInitial(
+    value:
+      | InitialReturnValue
+      | PrevCaller<R, InitialReturnValue | Promise<InitialReturnValue>>
+      | undefined
+  ): this {
     UserInput.logger.verbose(`Setting initial value to: ${value}`);
     this.initial = value;
     return this;
@@ -259,7 +277,11 @@ export class UserInput<R extends string = string> implements PromptObject<R> {
    * @param value - The validation function.
    * @returns This UserInput instance for method chaining.
    */
-  setValidate(value: PrevCaller<R, boolean | string | Promise<boolean | string>> | undefined): this {
+  setValidate(
+    value:
+      | PrevCaller<R, boolean | string | Promise<boolean | string>>
+      | undefined
+  ): this {
     UserInput.logger.verbose(`Setting validate function`);
     this.validate = value;
     return this;
@@ -363,7 +385,9 @@ export class UserInput<R extends string = string> implements PromptObject<R> {
    * @param value - The increment value.
    * @returns This UserInput instance for method chaining.
    */
-  setIncrement(value: number | PrevCaller<R, number | Falsy> | undefined): this {
+  setIncrement(
+    value: number | PrevCaller<R, number | Falsy> | undefined
+  ): this {
     UserInput.logger.verbose(`Setting increment to: ${value}`);
     this.increment = value;
     return this;
@@ -376,7 +400,9 @@ export class UserInput<R extends string = string> implements PromptObject<R> {
    * @param value - The separator character.
    * @returns This UserInput instance for method chaining.
    */
-  setSeparator(value: string | PrevCaller<R, string | Falsy> | undefined): this {
+  setSeparator(
+    value: string | PrevCaller<R, string | Falsy> | undefined
+  ): this {
     UserInput.logger.verbose(`Setting separator to: ${value}`);
     this.separator = value;
     return this;
@@ -415,7 +441,9 @@ export class UserInput<R extends string = string> implements PromptObject<R> {
    * @param value - The list of choices.
    * @returns This UserInput instance for method chaining.
    */
-  setChoices(value: Choice[] | PrevCaller<R, Choice[] | Falsy> | undefined): this {
+  setChoices(
+    value: Choice[] | PrevCaller<R, Choice[] | Falsy> | undefined
+  ): this {
     UserInput.logger.verbose(`Setting choices: ${JSON.stringify(value)}`);
     this.choices = value;
     return this;
@@ -454,7 +482,9 @@ export class UserInput<R extends string = string> implements PromptObject<R> {
    * @param value - The suggest function.
    * @returns This UserInput instance for method chaining.
    */
-  setSuggest(value: ((input: any, choices: Choice[]) => Promise<any>) | undefined): this {
+  setSuggest(
+    value: ((input: any, choices: Choice[]) => Promise<any>) | undefined
+  ): this {
     UserInput.logger.verbose(`Setting suggest function`);
     this.suggest = value;
     return this;
@@ -514,7 +544,7 @@ export class UserInput<R extends string = string> implements PromptObject<R> {
    * @template R - The type of the prompt name, extending string.
    * @return A Promise that resolves to the user's answer.
    */
-  async ask(){
+  async ask() {
     return (await UserInput.ask(this))[this.name as keyof Answers<R>];
   }
 
@@ -536,14 +566,18 @@ export class UserInput<R extends string = string> implements PromptObject<R> {
    *   A->>A: Process answers
    *   A-->>Caller: Return processed answers
    */
-  static async ask<R extends string = string>(question: UserInput<R> | UserInput<R>[]){
+  static async ask<R extends string = string>(
+    question: UserInput<R> | UserInput<R>[]
+  ) {
     const log = UserInput.logger.for(this.ask);
     if (!Array.isArray(question)) {
       question = [question];
     }
     let answers: Answers<R>;
     try {
-      log.verbose(`Asking questions: ${question.map(q => q.name).join(", ")}`);
+      log.verbose(
+        `Asking questions: ${question.map((q) => q.name).join(", ")}`
+      );
       answers = await prompts(question);
       log.verbose(`Received answers: ${JSON.stringify(answers, null, 2)}`);
     } catch (error: unknown) {
@@ -562,21 +596,26 @@ export class UserInput<R extends string = string> implements PromptObject<R> {
    * @param initial - The initial value presented to the user (optional).
    * @return A Promise that resolves to the number entered by the user.
    */
-  static async askNumber(name: string, question: string, min?: number, max?: number, initial?: number): Promise<number> {
+  static async askNumber(
+    name: string,
+    question: string,
+    min?: number,
+    max?: number,
+    initial?: number
+  ): Promise<number> {
     const log = UserInput.logger.for(this.askNumber);
-    log.verbose(`Asking number input: ${name}, question: ${question}, min: ${min}, max: ${max}, initial: ${initial}`);
+    log.verbose(
+      `Asking number input: ${name}, question: ${question}, min: ${min}, max: ${max}, initial: ${initial}`
+    );
     const userInput = new UserInput(name)
       .setMessage(question)
       .setType("number");
 
-    if (typeof min === 'number')
-      userInput.setMin(min);
+    if (typeof min === "number") userInput.setMin(min);
 
-    if (typeof max === 'number')
-      userInput.setMax(max);
+    if (typeof max === "number") userInput.setMax(max);
 
-    if (typeof initial === 'number')
-      userInput.setInitial(initial);
+    if (typeof initial === "number") userInput.setInitial(initial);
 
     return (await this.ask(userInput))[name];
   }
@@ -590,16 +629,20 @@ export class UserInput<R extends string = string> implements PromptObject<R> {
    * @param initial - The initial value presented to the user (optional).
    * @return A Promise that resolves to the text entered by the user.
    */
-  static async askText(name: string, question: string, mask: string | undefined = undefined, initial?: string): Promise<string> {
+  static async askText(
+    name: string,
+    question: string,
+    mask: string | undefined = undefined,
+    initial?: string
+  ): Promise<string> {
     const log = UserInput.logger.for(this.askText);
-    log.verbose(`Asking text input: ${name}, question: ${question}, mask: ${mask}, initial: ${initial}`);
-    const userInput = new UserInput(name)
-      .setMessage(question);
+    log.verbose(
+      `Asking text input: ${name}, question: ${question}, mask: ${mask}, initial: ${initial}`
+    );
+    const userInput = new UserInput(name).setMessage(question);
 
-    if (mask)
-      userInput.setMask(mask);
-    if (typeof initial ==='string')
-      userInput.setInitial(initial);
+    if (mask) userInput.setMask(mask);
+    if (typeof initial === "string") userInput.setInitial(initial);
     return (await this.ask(userInput))[name];
   }
 
@@ -611,15 +654,20 @@ export class UserInput<R extends string = string> implements PromptObject<R> {
    * @param initial - The initial value presented to the user (optional).
    * @return A Promise that resolves to a boolean representing the user's answer.
    */
-  static async askConfirmation(name: string, question: string, initial?: boolean): Promise<boolean> {
+  static async askConfirmation(
+    name: string,
+    question: string,
+    initial?: boolean
+  ): Promise<boolean> {
     const log = UserInput.logger.for(this.askConfirmation);
-    log.verbose(`Asking confirmation input: ${name}, question: ${question}, initial: ${initial}`);
+    log.verbose(
+      `Asking confirmation input: ${name}, question: ${question}, initial: ${initial}`
+    );
     const userInput = new UserInput(name)
       .setMessage(question)
-      .setType("confirm")
+      .setType("confirm");
 
-    if (typeof initial !== "undefined")
-      userInput.setInitial(initial);
+    if (typeof initial !== "undefined") userInput.setInitial(initial);
     return (await this.ask(userInput))[name];
   }
   /**
@@ -662,30 +710,41 @@ export class UserInput<R extends string = string> implements PromptObject<R> {
    *   end
    *   I-->>Caller: Return undefined if limit reached
    */
-  static async insist<R>(input: UserInput, test: (res: string | number) => boolean, defaultConfirmation: boolean, limit = 1, ): Promise<R | undefined> {
+  static async insist<R>(
+    input: UserInput,
+    test: (res: string | number) => boolean,
+    defaultConfirmation: boolean,
+    limit = 1
+  ): Promise<R | undefined> {
     const log = UserInput.logger.for(this.insist);
-    log.verbose(`Insisting on input: ${input.name}, test: ${test.toString()}, defaultConfirmation: ${defaultConfirmation}, limit: ${limit}`);
+    log.verbose(
+      `Insisting on input: ${input.name}, test: ${test.toString()}, defaultConfirmation: ${defaultConfirmation}, limit: ${limit}`
+    );
     let result: string | number | undefined = undefined;
-    let count = 0
+    let count = 0;
     let confirmation: boolean;
     try {
       do {
-        result = (await UserInput.ask(input))[input.name as keyof Answers<string>] as string;
+        result = (await UserInput.ask(input))[
+          input.name as keyof Answers<string>
+        ] as string;
         if (!test(result)) {
           result = undefined;
           continue;
         }
-        confirmation = await UserInput.askConfirmation(`${input.name}-confirm`, `Is the ${input.type} correct?`, defaultConfirmation);
-        if (!confirmation)
-          result = undefined;
+        confirmation = await UserInput.askConfirmation(
+          `${input.name}-confirm`,
+          `Is the ${input.type} correct?`,
+          defaultConfirmation
+        );
+        if (!confirmation) result = undefined;
       } while (typeof result === "undefined" && limit > 1 && count++ < limit);
     } catch (e: unknown) {
       log.error(`Error while insisting: ${e}`);
       throw e;
     }
 
-    if (typeof result === "undefined")
-      log.info("no selection...");
+    if (typeof result === "undefined") log.info("no selection...");
     return result as R | undefined;
   }
   /**
@@ -701,17 +760,29 @@ export class UserInput<R extends string = string> implements PromptObject<R> {
    * @param limit - The maximum number of attempts allowed (default is -1, meaning unlimited).
    * @return A Promise that resolves to the valid input or undefined if the limit is reached.
    */
-  static async insistForText(name: string, question: string, test: (res: string) => boolean, mask: string | undefined = undefined, initial?: string, defaultConfirmation = false, limit = -1): Promise<string | undefined> {
+  static async insistForText(
+    name: string,
+    question: string,
+    test: (res: string) => boolean,
+    mask: string | undefined = undefined,
+    initial?: string,
+    defaultConfirmation = false,
+    limit = -1
+  ): Promise<string> {
     const log = UserInput.logger.for(this.insistForText);
-    log.verbose(`Insisting for text input: ${name}, question: ${question}, test: ${test.toString()}, mask: ${mask}, initial: ${initial}, defaultConfirmation: ${defaultConfirmation}, limit: ${limit}`);
-    const userInput = new UserInput(name)
-      .setMessage(question);
+    log.verbose(
+      `Insisting for text input: ${name}, question: ${question}, test: ${test.toString()}, mask: ${mask}, initial: ${initial}, defaultConfirmation: ${defaultConfirmation}, limit: ${limit}`
+    );
+    const userInput = new UserInput(name).setMessage(question);
 
-    if (mask)
-      userInput.setMask(mask);
-    if (typeof initial ==='string')
-      userInput.setInitial(initial);
-    return this.insist(userInput, test as (res: string | number) => boolean, defaultConfirmation, limit);
+    if (mask) userInput.setMask(mask);
+    if (typeof initial === "string") userInput.setInitial(initial);
+    return (await this.insist(
+      userInput,
+      test as (res: string | number) => boolean,
+      defaultConfirmation,
+      limit
+    )) as string;
   }
   /**
    * @description Repeatedly asks for number input until a valid response is given or the limit is reached.
@@ -727,22 +798,35 @@ export class UserInput<R extends string = string> implements PromptObject<R> {
    * @param limit - The maximum number of attempts allowed (default is -1, meaning unlimited).
    * @return A Promise that resolves to the valid input or undefined if the limit is reached.
    */
-  static async insistForNumber(name: string, question: string, test: (res: number) => boolean, min?: number, max?: number, initial?: number, defaultConfirmation = false, limit = -1): Promise<string | undefined> {
+  static async insistForNumber(
+    name: string,
+    question: string,
+    test: (res: number) => boolean,
+    min?: number,
+    max?: number,
+    initial?: number,
+    defaultConfirmation = false,
+    limit = -1
+  ): Promise<number> {
     const log = UserInput.logger.for(this.insistForNumber);
-    log.verbose(`Insisting for number input: ${name}, question: ${question}, test: ${test.toString()}, min: ${min}, max: ${max}, initial: ${initial}, defaultConfirmation: ${defaultConfirmation}, limit: ${limit}`);
+    log.verbose(
+      `Insisting for number input: ${name}, question: ${question}, test: ${test.toString()}, min: ${min}, max: ${max}, initial: ${initial}, defaultConfirmation: ${defaultConfirmation}, limit: ${limit}`
+    );
     const userInput = new UserInput(name)
       .setMessage(question)
       .setType("number");
 
-    if (typeof min === 'number')
-      userInput.setMin(min);
+    if (typeof min === "number") userInput.setMin(min);
 
-    if (typeof max === 'number')
-      userInput.setMax(max);
+    if (typeof max === "number") userInput.setMax(max);
 
-    if (typeof initial === 'number')
-      userInput.setInitial(initial);
-    return this.insist(userInput, test as (res: string | number) => boolean, defaultConfirmation, limit);
+    if (typeof initial === "number") userInput.setInitial(initial);
+    return (await this.insist(
+      userInput,
+      test as (res: string | number) => boolean,
+      defaultConfirmation,
+      limit
+    )) as number;
   }
 
   /**
@@ -765,13 +849,15 @@ export class UserInput<R extends string = string> implements PromptObject<R> {
     const log = UserInput.logger.for(this.parseArgs);
     const args: ParseArgsConfig = {
       args: process.argv.slice(2),
-      options: options
-    }
+      options: options,
+    };
     log.debug(`Parsing arguments: ${JSON.stringify(args, null, 2)}`);
     try {
       return parseArgs(args);
     } catch (error: unknown) {
-      log.debug(`Error while parsing arguments:\n${JSON.stringify(args, null, 2)}\n | options\n${JSON.stringify(options, null ,2)}\n | ${error}`);
+      log.debug(
+        `Error while parsing arguments:\n${JSON.stringify(args, null, 2)}\n | options\n${JSON.stringify(options, null, 2)}\n | ${error}`
+      );
       throw new Error(`Error while parsing arguments: ${error}`);
     }
   }

@@ -1,4 +1,5 @@
 import { ChildProcessWithoutNullStreams } from "child_process";
+import { Environment } from "./environment";
 
 /**
  * @description Defines the structure for promise resolution and rejection.
@@ -66,3 +67,7 @@ export interface CommandResult<R = void> {
    */
   pipe: <E>(cb: (r: R) => E) => Promise<E>;
 }
+
+export type EnvironmentFactory<T extends object, E extends Environment<T>> = (
+  ...args: unknown[]
+) => E;

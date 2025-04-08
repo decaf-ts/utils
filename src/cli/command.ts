@@ -9,50 +9,59 @@ import { getDependencies, getPackageVersion } from "../utils/fs";
 import { printBanner } from "../output/common";
 
 /**
- * @description Abstract base class for command implementation.
- * @summary Provides a structure for creating command-line interface commands with input handling, logging, and execution flow.
+ * @class Command
+ * @abstract
  * @template I - The type of input options for the command.
  * @template R - The return type of the command execution.
- * @param name - The name of the command.
- * @param inputs - The input options for the command.
- * @param requirements - The list of required dependencies for the command.
- * @class
+ * @memberOf utils/cli
+ * @description Abstract base class for command implementation.
+ * @summary Provides a structure for creating command-line interface commands with input handling, logging, and execution flow.
+ *
+ * @param {string} name - The name of the command.
+ * @param {CommandOptions<I>} [inputs] - The input options for the command.
+ * @param {string[]} [requirements] - The list of required dependencies for the command.
  */
 export abstract class Command<I, R> {
   /**
+   * @static
    * @description Static logger for the Command class.
+   * @type {VerbosityLogger}
    */
   static log: VerbosityLogger;
 
   /**
+   * @protected
    * @description Instance logger for the command.
+   * @type {VerbosityLogger}
    */
   protected log: VerbosityLogger;
 
-  /**
-   * @description Creates an instance of Command.
-   * @summary Initializes the command with a name, input options, and requirements. Sets up logging for the command.
-   * @param name - The name of the command.
-   * @param inputs - The input options for the command.
-   * @param requirements - The list of required dependencies for the command.
-   */
-  protected constructor(protected name: string,
-                        protected inputs: CommandOptions<I> = Object.assign({}, DefaultCommandValues, DefaultLoggingConfig) as unknown as CommandOptions<I>,
-                        protected requirements: string[] = []){
-    if (!Command.log){
-      Object.defineProperty(Command, "log",{
+  protected constructor(
+    protected name: string,
+    protected inputs: CommandOptions<I> = Object.assign(
+      {},
+      DefaultCommandValues,
+      DefaultLoggingConfig
+    ) as unknown as CommandOptions<I>,
+    protected requirements: string[] = []
+  ) {
+    if (!Command.log) {
+      Object.defineProperty(Command, "log", {
         writable: false,
-        value: Logging.for(this.name)
-      })
+        value: Logging.for(this.name),
+      });
       this.log = Command.log;
     }
     this.log = Command.log.for(this.name);
   }
 
   /**
+   * @protected
+   * @async
    * @description Checks if all required dependencies are present.
    * @summary Retrieves the list of dependencies and compares it against the required dependencies for the command.
-   * @return {Promise<void>} A promise that resolves when the check is complete.
+   * @returns {Promise<void>} A promise that resolves when the check is complete.
+   *
    * @mermaid
    * sequenceDiagram
    *   participant Command
@@ -69,34 +78,49 @@ export abstract class Command<I, R> {
    *   Note over Command: If missing.length > 0, handle missing dependencies
    */
   protected async checkRequirements(): Promise<void> {
-    const {prod, dev, peer} = await getDependencies();
+    const { prod, dev, peer } = await getDependencies();
     const missing = [];
-    const fullList =  Array.from(new Set([...prod, ...dev, ...peer]).values()).map(d => d.name)
+    const fullList = Array.from(
+      new Set([...prod, ...dev, ...peer]).values()
+    ).map((d) => d.name);
     for (const dep of this.requirements)
-      if (!fullList.includes(dep))
-        missing.push(dep);
+      if (!fullList.includes(dep)) missing.push(dep);
 
-    if (!missing.length)
-      return;
-
+    if (!missing.length) return;
   }
 
   /**
+   * @protected
    * @description Provides help information for the command.
    * @summary This method should be overridden in derived classes to provide specific help information.
-   * @param args - The parsed command-line arguments.
-   * @return {string | void} The help information as a string, or void if no information is provided.
+   * @param {ParseArgsResult} args - The parsed command-line arguments.
+   * @returns {void}
    */
-  protected help(args: ParseArgsResult): string | void {
-    return this.log.info(`This is help. I'm no use because I should have been overridden.`);
+  protected help(args: ParseArgsResult): void {
+    return this.log.info(
+      `This is help. I'm no use because I should have been overridden.`
+    );
   }
 
   /**
-   * @description Runs the command with the provided function.
-   * @summary Parses arguments, sets up logging, handles version and help requests, and executes the provided function.
-   * @template C - The type of the command instance.
-   * @param func - The function to be executed as part of the command.
-   * @return {Promise<R | void | string>} A promise that resolves with the result of the command execution.
+   * @protected
+   * @abstract
+   * @description Runs the command with the provided arguments.
+   * @summary This method should be implemented in derived classes to define the command's behavior.
+   * @param {ParseArgsResult} answers - The parsed command-line arguments.
+   * @returns {Promise<R | string | void>} A promise that resolves with the command's result.
+   */
+  protected abstract run<R>(
+    answers: ParseArgsResult
+  ): Promise<R | string | void>;
+
+  /**
+   * @async
+   * @description Executes the command.
+   * @summary This method handles the overall execution flow of the command, including parsing arguments,
+   * setting up logging, checking for version or help requests, and running the command.
+   * @returns {Promise<R | string | void>} A promise that resolves with the command's result.
+   *
    * @mermaid
    * sequenceDiagram
    *   participant Command
@@ -106,6 +130,7 @@ export abstract class Command<I, R> {
    *   participant printBanner
    *   Command->>UserInput: parseArgs(inputs)
    *   UserInput-->>Command: Return ParseArgsResult
+   *   Command->>Command: Process options
    *   Command->>Logging: setConfig(options)
    *   alt version requested
    *     Command->>getPackageVersion: Call
@@ -115,43 +140,44 @@ export abstract class Command<I, R> {
    *   else banner requested
    *     Command->>printBanner: Call
    *   end
-   *   Command->>Command: Execute func
-   *   alt Error occurs
+   *   Command->>Command: run(args)
+   *   alt error occurs
    *     Command->>Command: Log error
-   *     Command->>Command: Throw error
    *   end
    *   Command-->>Command: Return result
    */
-  async run<C extends Command<I, R>>(func: CliFunction<I, R, C>): Promise<R | void | string> {
+  async execute(): Promise<R | string | void> {
     const args: ParseArgsResult = UserInput.parseArgs(this.inputs);
     const options = Object.assign({}, DefaultCommandValues, args.values);
-    const {timestamp, verbose, version, help, logLevel, logStyle, banner} = options;
-    Logging.setConfig({
+    const { timestamp, verbose, version, help, logLevel, logStyle, banner } =
+      options;
+
+    this.log.setConfig({
       ...options,
       timestamp: !!timestamp,
       level: logLevel as LogLevel,
       style: !!logStyle,
-      verbose: verbose as number || 0
-    })
+      verbose: (verbose as number) || 0,
+    });
+
     if (version) {
-      return getPackageVersion()
+      return getPackageVersion();
     }
 
     if (help) {
-      return this.help(args)
+      return this.help(args);
     }
 
-    if (banner)
-      printBanner(this.log);
+    if (banner) printBanner(this.log);
 
     let result;
     try {
-      result = await func.call(this as unknown as C, args, this.log)
+      result = await this.run(args);
     } catch (e: unknown) {
       this.log.error(`Error while running provided cli function: ${e}`);
       throw e;
     }
 
-    return result as R | void | string
+    return result as R;
   }
 }

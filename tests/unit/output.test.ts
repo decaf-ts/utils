@@ -57,7 +57,9 @@ describe("Logging", () => {
       logger.info("This is a test message");
       expect(consoleMock).toBeCalledTimes(1);
       expect(consoleMock).toHaveBeenCalledWith(
-        expect.stringMatching(/.*?-\sinfo\s-\sThis\sis\sa\stest\smessage$/g)
+        expect.stringMatching(
+          /(:?.*?-\s)?info\s-\sThis\sis\sa\stest\smessage$/g
+        )
       );
     });
 
@@ -68,7 +70,7 @@ describe("Logging", () => {
       expect(consoleMock).toHaveBeenCalledWith(
         expect.stringMatching(
           // eslint-disable-next-line no-control-regex
-          /.*?-\s\x1b\[33mdebug\x1b\[0m\s-\sThis\sis\sa\sdebug\smessage$/g
+          /(:?.*?-\s)?\x1b\[33mdebug\x1b\[0m\s-\sThis\sis\sa\sdebug\smessage$/g
         )
       );
     });
@@ -80,7 +82,7 @@ describe("Logging", () => {
       expect(consoleMock).toHaveBeenCalledWith(
         expect.stringMatching(
           // eslint-disable-next-line no-control-regex
-          /.*?-\s\x1b\[1m\x1b\[31merror\x1b\[0m\x1b\[0m\s-\s\x1b\[31mThis\sis\sa\serror\smessage\x1b\[0m$/g
+          /(:?.*?-\s)?\x1b\[1m\x1b\[31merror\x1b\[0m\x1b\[0m\s-\s\x1b\[31mThis\sis\sa\serror\smessage\x1b\[0m$/g
         )
       );
     });

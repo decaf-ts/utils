@@ -6,6 +6,7 @@ import {
 } from "../utils/constants";
 import {
   LoggingConfig,
+  LoggingContext,
   Theme,
   ThemeOption,
   ThemeOptionByLogLevel,
@@ -26,23 +27,33 @@ export class MiniLogger implements VerbosityLogger {
    * @summary Initializes a MiniLogger with the given class name, optional configuration, and method name.
    *
    * @param context - The name of the class using this logger.
-   * @param [config] - Optional logging configuration. Defaults to Info level and verbosity 0.
+   * @param [conf] - Optional logging configuration. Defaults to Info level and verbosity 0.
    * @param [id] - Optional unique identifier for the logger instance.
    */
   constructor(
     protected context: string,
-    protected config: LoggingConfig = DefaultLoggingConfig,
+    protected conf?: Partial<LoggingConfig>,
     protected id?: string
   ) {}
 
-  for(method?: string | ((...args: any[]) => any)): VerbosityLogger {
+  protected config(
+    key: keyof LoggingConfig
+  ): LoggingConfig[keyof LoggingConfig] {
+    if (this.conf && key in this.conf) return this.conf[key];
+    return Logging.getConfig()[key];
+  }
+
+  for(
+    method?: string | ((...args: any[]) => any),
+    config?: Partial<LoggingConfig>
+  ): VerbosityLogger {
     method = method
       ? typeof method === "string"
         ? method
         : method.name
       : undefined;
 
-    return Logging.for([this.context, method].join("."), this.id);
+    return Logging.for([this.context, method].join("."), this.id, config);
   }
 
   /**
@@ -60,7 +71,7 @@ export class MiniLogger implements VerbosityLogger {
     stack?: string
   ): string {
     const log: string[] = [];
-    if (this.config.timestamp) {
+    if (this.config("timestamp")) {
       const timestamp = Logging.theme(
         new Date().toISOString(),
         "timestamp",
@@ -95,7 +106,11 @@ export class MiniLogger implements VerbosityLogger {
    * @param stack
    */
   protected log(level: LogLevel, msg: string | Error, stack?: string): void {
-    if (NumericLogLevels[this.config.level] < NumericLogLevels[level]) return;
+    if (
+      NumericLogLevels[this.config("level") as LogLevel] <
+      NumericLogLevels[level]
+    )
+      return;
     let method;
     switch (level) {
       case LogLevel.info:
@@ -122,7 +137,8 @@ export class MiniLogger implements VerbosityLogger {
    * @param verbosity - The verbosity level of the message (default: 0).
    */
   silly(msg: string, verbosity: number = 0): void {
-    if (this.config.verbose >= verbosity) this.log(LogLevel.verbose, msg);
+    if ((this.config("verbose") as number) >= verbosity)
+      this.log(LogLevel.verbose, msg);
   }
 
   /**
@@ -133,7 +149,8 @@ export class MiniLogger implements VerbosityLogger {
    * @param verbosity - The verbosity level of the message (default: 0).
    */
   verbose(msg: string, verbosity: number = 0): void {
-    if (this.config.verbose >= verbosity) this.log(LogLevel.verbose, msg);
+    if ((this.config("verbose") as number) >= verbosity)
+      this.log(LogLevel.verbose, msg);
   }
 
   /**
@@ -165,6 +182,10 @@ export class MiniLogger implements VerbosityLogger {
   error(msg: string | Error): void {
     this.log(LogLevel.error, msg);
   }
+
+  setConfig(config: Partial<LoggingConfig>) {
+    this.conf = { ...(this.conf || {}), ...config };
+  }
 }
 
 /**
@@ -186,10 +207,17 @@ export class Logging {
    * @description Factory function for creating logger instances.
    * @summary A function that creates new VerbosityLogger instances. By default, it creates a MiniLogger.
    */
-  private static _factory: (...args: unknown[]) => VerbosityLogger = (
-    ...args: unknown[]
-  ) => new MiniLogger(...(args as [keyof MiniLogger]));
-
+  private static _factory: (
+    object: string,
+    config?: Partial<LoggingConfig>,
+    id?: string
+  ) => VerbosityLogger = (
+    object: string,
+    config?: Partial<LoggingConfig>,
+    id?: string
+  ) => {
+    return new MiniLogger(object, config, id);
+  };
   /**
    * @description Configuration for the logging system.
    * @summary Stores the global verbosity level and log level settings.
@@ -212,6 +240,10 @@ export class Logging {
     Object.assign(this._config, config);
   }
 
+  static getConfig(): LoggingConfig {
+    return Object.assign({}, this._config);
+  }
+
   /**
    * @description Retrieves or creates the global logger instance.
    * @summary Returns the existing global logger or creates a new one if it doesn't exist.
@@ -219,9 +251,7 @@ export class Logging {
    * @return The global VerbosityLogger instance.
    */
   static get(): VerbosityLogger {
-    this.global = this.global
-      ? this.global
-      : this._factory("Logging", this._config);
+    this.global = this.global ? this.global : this._factory("Logging");
     return this.global;
   }
 
@@ -276,23 +306,15 @@ export class Logging {
     return this.get().error(msg);
   }
 
-  /**
-   * @description Creates a logger for a specific class and optionally for a method.
-   *
-   * @summary This static method creates a new logger instance using the factory function.
-   * It can create loggers for classes (either by name or constructor) and optionally for specific methods.
-   *
-   * @param clazz - The class for which the logger is being created. Can be a string (class name) or a constructor function.
-   * @param id - Optional. An identifier for the logger instance. Currently not used in the function body.
-   * @param method - Optional. The method for which the logger is being created. Can be a string (method name) or a function.
-   * @returns A new VerbosityLogger instance if no method is specified, or a ClassLogger instance if a method is provided.
-   */
   static for(
-    clazz: string | { new (...args: any[]): any } | ((...args: any[]) => any),
-    id?: string
+    object: LoggingContext,
+    id?: string | Partial<LoggingConfig>,
+    config?: Partial<LoggingConfig>
   ): VerbosityLogger {
-    clazz = typeof clazz === "string" ? clazz : clazz.name;
-    return this._factory(clazz, this._config, id);
+    object = typeof object === "string" ? object : object.name;
+    id = typeof id === "string" ? id : undefined;
+    config = typeof id === "object" ? (id as Partial<LoggingConfig>) : config;
+    return this._factory(object, config, id);
   }
 
   /**
