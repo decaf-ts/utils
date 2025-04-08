@@ -1,12 +1,13 @@
 import { ParseArgsResult } from "../input/types";
 import { VerbosityLogger } from "../output/types";
-import { CliFunction, CommandOptions } from "./types";
+import { CommandOptions } from "./types";
 import { Logging } from "../output/logging";
 import { DefaultLoggingConfig, LogLevel } from "../utils/constants";
 import { UserInput } from "../input/input";
 import { DefaultCommandValues } from "./constants";
 import { getDependencies, getPackageVersion } from "../utils/fs";
 import { printBanner } from "../output/common";
+import { Environment } from "../utils/environment";
 
 /**
  * @class Command
@@ -148,12 +149,14 @@ export abstract class Command<I, R> {
    */
   async execute(): Promise<R | string | void> {
     const args: ParseArgsResult = UserInput.parseArgs(this.inputs);
-    const options = Object.assign({}, DefaultCommandValues, args.values);
+    const env = Environment.accumulate(DefaultLoggingConfig)
+      .accumulate(DefaultCommandValues)
+      .accumulate(args.values);
     const { timestamp, verbose, version, help, logLevel, logStyle, banner } =
-      options;
+      env;
 
     this.log.setConfig({
-      ...options,
+      ...env,
       timestamp: !!timestamp,
       level: logLevel as LogLevel,
       style: !!logStyle,
@@ -172,7 +175,7 @@ export abstract class Command<I, R> {
 
     let result;
     try {
-      result = await this.run(args);
+      result = await this.run(env);
     } catch (e: unknown) {
       this.log.error(`Error while running provided cli function: ${e}`);
       throw e;

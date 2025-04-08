@@ -37,7 +37,7 @@ function patchFiles() {
 
 function getWebpackConfig(isESM, isDev, isLib, nameOverride = name) {
   const webPackConfig = {
-    mode: isDev ? "development" : "production", // can be changed to production to produce minified bundle
+    mode: isDev && !isLib ? "development" : "production", // can be changed to production to produce minified bundle
     target: "node",
     module: {
       rules: [
@@ -77,6 +77,9 @@ function getWebpackConfig(isESM, isDev, isLib, nameOverride = name) {
   if (isLib) {
     webPackConfig.externals = [nodeExternals()];
     webPackConfig.externalsPresets = { node: true };
+    webPackConfig.optimization = {
+      minimize: false,
+    };
   }
 
   if (isESM) webPackConfig.experiments = { outputModule: true };

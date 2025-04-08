@@ -32,9 +32,16 @@ const options = {
     default: undefined,
   },
   license: {
-    type: "string",
-    short: "l",
+    type: "multiselect",
+    message: "Choose a license",
     default: "MIT",
+    choices: [
+      { title: "MIT", value: "MIT" },
+      { title: "LGPL", value: "LGPL" },
+      { title: "Apache", value: "Apache" },
+      { title: "AGPL", value: "AGPL" },
+      { title: "GPL", value: "GPL" },
+    ],
   },
 };
 

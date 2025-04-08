@@ -1,7 +1,6 @@
 import { Environment } from "../../src/utils/environment";
 import { ObjectAccumulator } from "../../src/utils/accumulator";
 import { isBrowser } from "../../src/utils/web";
-import { toENVFormat } from "../../src/utils/text";
 
 jest.mock("../../src/utils/web");
 
@@ -13,6 +12,7 @@ describe("Environment", () => {
   });
 
   it("should create a new Environment instance when no instance exists", () => {
+    // @ts-expect-error jest crap
     const spy = jest.spyOn(Environment, "factory");
 
     // @ts-expect-error method is not public, but we are just testing
@@ -75,8 +75,7 @@ describe("Environment", () => {
   it("should retrieve environment variables from globalThis.ENV in browser", () => {
     jest.unmock("../../src/utils/text");
     (isBrowser as jest.Mock).mockReturnValue(true);
-    const mockENV = { TEST_VAR: "test_value" };
-    (globalThis as any).ENV = mockENV;
+    (globalThis as any).ENV = { TEST_VAR: "test_value" };
 
     const env = Environment["instance"]();
     const accumulated = env.accumulate({ TEST_VAR: "default_value" });
@@ -90,6 +89,7 @@ describe("Environment", () => {
     const mockInstance = {
       keys: jest.fn().mockReturnValue(["testKey", "anotherKey"]),
     };
+    // @ts-expect-error jest crap
     jest.spyOn(Environment, "instance").mockReturnValue(mockInstance as any);
 
     const result = Environment.keys();
@@ -100,7 +100,6 @@ describe("Environment", () => {
 
   it("Should return keys in original format when keys() is called with false parameter", () => {
     const testData = { testKey: "testValue", anotherKey: 123 };
-    const env = Environment;
     Environment.accumulate(testData);
 
     const keys = Environment.keys(false);
