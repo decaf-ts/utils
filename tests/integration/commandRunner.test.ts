@@ -43,7 +43,7 @@ describe("runCommand Integration Tests", () => {
     await expect(commandPromise.promise).rejects.toThrow("ENOENT");
   });
 
-  test.skip("Multiple commands with pipes", async () => {
+  test("Multiple commands with pipes", async () => {
     const commandPromise = runCommand(
       'echo "hello" | tr a-z A-Z'
     ) as CommandResult;

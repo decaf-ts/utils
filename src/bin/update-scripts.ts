@@ -1,8 +1,15 @@
 import path from "path";
 import { Command } from "../cli/command";
 import { CommandOptions } from "../cli/types";
-import { ParseArgsResult } from "../input";
-import { HttpClient, setPackageAttribute, writeFile } from "../utils";
+import {
+  getPackage,
+  HttpClient,
+  patchString,
+  setPackageAttribute,
+  writeFile,
+} from "../utils";
+import { LoggingConfig } from "../output";
+import { DefaultCommandValues } from "../cli";
 
 const baseUrl =
   "https://raw.githubusercontent.com/decaf-ts/ts-workspace/master";
@@ -52,22 +59,14 @@ const options = {
   ],
 };
 
-const args = {
+const argzz = {
   all: {
     type: "boolean",
     default: true,
   },
   license: {
-    type: "multiselect",
-    name: "license",
+    type: "string",
     message: "Pick the license",
-    choices: [
-      { title: "MIT", value: "MIT" },
-      { title: "GPL", value: "GPL" },
-      { title: "LGPL", value: "LGPL" },
-      { title: "AGPL", value: "AGPL" },
-      { title: "Apache", value: "Apache" },
-    ],
     default: "MIT",
   },
   scripts: {
@@ -106,9 +105,33 @@ const args = {
  *
  * @param {CommandOptions<typeof args>} args - The command options for TemplateSync
  */
-class TemplateSync extends Command<CommandOptions<typeof args>, void> {
+class TemplateSync extends Command<CommandOptions<typeof argzz>, void> {
+  private replacements: Record<string, string | number> = {};
+
   constructor() {
-    super("TemplateSync", args);
+    super("TemplateSync", argzz);
+  }
+
+  private loadValuesFromPackage() {
+    const author = getPackage("author") as string;
+    const scopedName = getPackage("name");
+    let name: string = scopedName as string;
+    let org: string | undefined;
+    if (name.startsWith("@")) {
+      const split = name.split("/");
+      name = split[1];
+      org = split[0].replace("@", "");
+    }
+    ["Tiago Venceslau", "TiagoVenceslau", "${author}"].forEach(
+      (el) => (this.replacements[el] = author)
+    );
+    ["TS-Workspace", "ts-workspace", "${name}"].forEach(
+      (el) => (this.replacements[el] = name)
+    );
+    ["decaf-ts", "${org}"].forEach(
+      (el) => (this.replacements[el] = org as string)
+    );
+    this.replacements["${org_or_name}"] = org || name;
   }
 
   /**
@@ -127,7 +150,8 @@ class TemplateSync extends Command<CommandOptions<typeof args>, void> {
     for (const file of files) {
       this.log.info(`Downloading ${file}`);
 
-      const data = await HttpClient.downloadFile(`${baseUrl}/${file}`);
+      let data = await HttpClient.downloadFile(`${baseUrl}/${file}`);
+      data = patchString(data, this.replacements);
       writeFile(path.join(process.cwd(), file), data);
     }
   }
@@ -140,9 +164,9 @@ class TemplateSync extends Command<CommandOptions<typeof args>, void> {
    */
   async getLicense(license: "MIT" | "GPL" | "Apache" | "LGPL" | "AGPL") {
     this.log.info(`Downloading ${license} license`);
-    const data = await HttpClient.downloadFile(
-      `${baseUrl}/workdocs/licenses/${license}.md`
-    );
+    const url = `${baseUrl}/workdocs/licenses/${license}.md`;
+    let data = await HttpClient.downloadFile(url);
+    data = patchString(data, this.replacements);
     writeFile(path.join(process.cwd(), "LICENSE.md"), data);
     setPackageAttribute("license", license);
   }
@@ -225,9 +249,12 @@ class TemplateSync extends Command<CommandOptions<typeof args>, void> {
    *     T->>Te: getTemplates()
    *   end
    */
-  async run(args: ParseArgsResult) {
-    const { license } = args.values;
-    let { all, scripts, styles, docs, ide, workflows, templates } = args.values;
+  async run(
+    args: LoggingConfig &
+      typeof DefaultCommandValues & { [k in keyof typeof argzz]: unknown }
+  ) {
+    const { license } = args;
+    let { all, scripts, styles, docs, ide, workflows, templates } = args;
 
     if (scripts || styles || docs || ide || workflows || templates) all = false;
 
@@ -239,6 +266,7 @@ class TemplateSync extends Command<CommandOptions<typeof args>, void> {
       workflows = true;
       templates = true;
     }
+    this.loadValuesFromPackage();
     if (license) await this.getLicense(license as "MIT");
     if (ide) await this.getIde();
     if (scripts) await this.getScripts();

@@ -8,9 +8,11 @@ import {
 } from "../utils/fs";
 import { Command } from "../cli/command";
 import { CommandOptions } from "../cli/types";
-import { ParseArgsResult, UserInput } from "../input";
 import { HttpClient, runCommand } from "../utils";
 import path from "path";
+import { LoggingConfig } from "../output";
+import { DefaultCommandValues } from "../cli";
+import { UserInput } from "../input/input";
 
 const baseUrl =
   "https://raw.githubusercontent.com/decaf-ts/ts-workspace/master";
@@ -141,8 +143,11 @@ class TemplateSetupScript extends Command<
     return await runCommand("npm audit fix --force").promise;
   }
 
-  async run(args: ParseArgsResult): Promise<void> {
-    let { org, name, author, license } = args.values;
+  async run(
+    args: LoggingConfig &
+      typeof DefaultCommandValues & { [k in keyof typeof options]: unknown }
+  ): Promise<void> {
+    let { org, name, author, license } = args;
     if (!org) org = await this.getOrg();
 
     if (!name)

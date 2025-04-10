@@ -1,8 +1,9 @@
 import { runCommand } from "../utils/utils";
 import { NoCIFLag, SemVersion, SemVersionRegex } from "../utils/constants";
-import { ParseArgsResult } from "../input/types";
 import { UserInput } from "../input/input";
 import { Command } from "../cli/command";
+import { LoggingConfig } from "../output";
+import { DefaultCommandValues } from "../cli";
 
 const options = {
   ci: {
@@ -155,10 +156,13 @@ class ReleaseScript extends Command<typeof options, void> {
    *     R->>N: Publish to npm
    *   end
    */
-  async run(args: ParseArgsResult): Promise<void> {
+  async run(
+    args: LoggingConfig &
+      typeof DefaultCommandValues & { [k in keyof typeof options]: unknown }
+  ): Promise<void> {
     let result: any;
-    const { ci } = args.values;
-    let { tag, message } = args.values;
+    const { ci } = args;
+    let { tag, message } = args;
     tag = await this.prepareVersion(tag as string);
     message = await this.prepareMessage(message as string);
     result = await runCommand(`npm run prepare-release -- ${tag} ${message}`, {

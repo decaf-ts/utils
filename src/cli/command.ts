@@ -1,5 +1,5 @@
 import { ParseArgsResult } from "../input/types";
-import { VerbosityLogger } from "../output/types";
+import { LoggingConfig, VerbosityLogger } from "../output/types";
 import { CommandOptions } from "./types";
 import { Logging } from "../output/logging";
 import { DefaultLoggingConfig, LogLevel } from "../utils/constants";
@@ -112,7 +112,8 @@ export abstract class Command<I, R> {
    * @returns {Promise<R | string | void>} A promise that resolves with the command's result.
    */
   protected abstract run<R>(
-    answers: ParseArgsResult
+    answers: LoggingConfig &
+      typeof DefaultCommandValues & { [k in keyof I]: unknown }
   ): Promise<R | string | void>;
 
   /**
