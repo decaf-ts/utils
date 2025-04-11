@@ -169,7 +169,7 @@ class TemplateSetupScript extends Command<
       "decaf-ts/ts-workspace": `${org ? `${org}/` : ""}${name}`,
       "decaf-ts": `${org || name}`,
       "${org}": `${org || name}`,
-      "${org_or_author}": `${org || author}`,
+      "${org_or_owner}": `${org || author}`,
       "${name}": name as string,
       "ts-workspace": name as string,
       "TS-workspace": name as string,
