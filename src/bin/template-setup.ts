@@ -21,7 +21,6 @@ const options = {
   org: {
     type: "string",
     short: "o",
-    default: "decaf-ts",
   },
   name: {
     type: "string",
