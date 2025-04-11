@@ -8,7 +8,7 @@ import {
 } from "../utils/fs";
 import { Command } from "../cli/command";
 import { CommandOptions } from "../cli/types";
-import { HttpClient, runCommand } from "../utils";
+import { HttpClient, patchString, runCommand } from "../utils";
 import path from "path";
 import { LoggingConfig } from "../output";
 import { DefaultCommandValues } from "../cli";
@@ -44,6 +44,8 @@ class TemplateSetupScript extends Command<
   CommandOptions<typeof options>,
   void
 > {
+  private replacements: Record<string, string | number> = {};
+
   constructor() {
     super("TemplateSetupScript", options);
   }
@@ -102,13 +104,14 @@ class TemplateSetupScript extends Command<
 
   async getLicense(license: string): Promise<void> {
     this.log.info(`Downloading license ${license}`);
-    const data = await HttpClient.downloadFile(
+    let data = await HttpClient.downloadFile(
       `${baseUrl}/workdocs/licenses/${license}.md`
     );
+    data = patchString(data, this.replacements);
     writeFile(path.join(process.cwd(), "LICENSE.md"), data);
   }
 
-  patchFiles(org: string, name: string, author: string) {
+  patchFiles() {
     const files = [
       ...fs.readdirSync(path.join(process.cwd(), "src"), {
         recursive: true,
@@ -123,14 +126,7 @@ class TemplateSetupScript extends Command<
     ];
 
     for (const file of files) {
-      patchFile(path.join(process.cwd(), file as string), {
-        "decaf-ts/ts-workspace": `${org ? `${org}/` : ""}${name}`,
-        "decaf-ts": `${org || name}`,
-        "ts-workspace": name,
-        "TS-workspace": name,
-        "Tiago Venceslau": author,
-        TiagoVenceslau: author,
-      });
+      patchFile(path.join(process.cwd(), file as string), this.replacements);
     }
   }
 
@@ -168,9 +164,23 @@ class TemplateSetupScript extends Command<
       author as string,
       license as string
     );
+
+    this.replacements = {
+      "decaf-ts/ts-workspace": `${org ? `${org}/` : ""}${name}`,
+      "decaf-ts": `${org || name}`,
+      "${org}": `${org || name}`,
+      "${org_or_author}": `${org || author}`,
+      "${name}": name as string,
+      "ts-workspace": name as string,
+      "TS-workspace": name as string,
+      "${author}": author as string,
+      "Tiago Venceslau": author as string,
+      TiagoVenceslau: author as string,
+    };
+
     await this.createTokenFiles();
     if (license) await this.getLicense(license as string);
-    this.patchFiles(org as string, name as string, author as string);
+    this.patchFiles();
     await updateDependencies();
     await this.auditFix();
     await pushToGit();
