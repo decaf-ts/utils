@@ -19,7 +19,7 @@ const baseUrl =
 
 const options = {
   org: {
-    type: "text",
+    type: "string",
     short: "o",
     default: "decaf-ts",
   },
