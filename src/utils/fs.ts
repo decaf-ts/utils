@@ -1,7 +1,7 @@
 import fs from "fs";
 import path from "path";
 import { Logging } from "../output/logging";
-import { patchPlaceholders } from "./text";
+import { patchPlaceholders, patchString } from "./text";
 import { runCommand } from "./utils";
 
 const logger = Logging.for("fs");
@@ -52,7 +52,7 @@ export function patchFile(
   try {
     log.verbose(`Patching file "${path}"...`);
     log.debug(`with value: ${JSON.stringify(values)}`);
-    content = patchPlaceholders(content, values);
+    content = patchString(content, values);
   } catch (error: unknown) {
     throw new Error(`Error patching file: ${error}`);
   }

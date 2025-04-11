@@ -132,9 +132,11 @@ class TemplateSetupScript extends Command<
     for (const file of files) {
       patchFile(path.join(process.cwd(), file as string), {
         "decaf-ts/ts-workspace": `${org ? `${org}/` : ""}${name}`,
-        "decaf-ts": `${org || ""}`,
+        "decaf-ts": `${org || name}`,
         "ts-workspace": name,
+        "TS-workspace": name,
         "Tiago Venceslau": author,
+        TiagoVenceslau: author,
       });
     }
   }
