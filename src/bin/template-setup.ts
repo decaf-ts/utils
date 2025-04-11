@@ -34,16 +34,9 @@ const options = {
     default: undefined,
   },
   license: {
-    type: "multiselect",
+    type: "string",
     message: "Choose a license",
     default: "MIT",
-    choices: [
-      { title: "MIT", value: "MIT" },
-      { title: "LGPL", value: "LGPL" },
-      { title: "Apache", value: "Apache" },
-      { title: "AGPL", value: "AGPL" },
-      { title: "GPL", value: "GPL" },
-    ],
   },
 };
 
