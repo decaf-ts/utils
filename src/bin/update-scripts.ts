@@ -4,6 +4,7 @@ import { CommandOptions } from "../cli/types";
 import {
   getPackage,
   HttpClient,
+  patchPlaceholders,
   patchString,
   setPackageAttribute,
   writeFile,
@@ -49,7 +50,7 @@ const options = {
     "workdocs/tutorials/Documentation.md",
     "workdocs/tutorials/For Developers.md",
   ],
-  styles: [".prettierrc", ".eslint.config.js"],
+  styles: [".prettierrc", "eslint.config.js"],
   scripts: [
     "bin/tag-release.sh",
     "bin/template_setup.sh",
@@ -113,8 +114,9 @@ class TemplateSync extends Command<CommandOptions<typeof argzz>, void> {
   }
 
   private loadValuesFromPackage() {
-    const author = getPackage("author") as string;
-    const scopedName = getPackage("name");
+    const p = process.cwd();
+    const author = getPackage(p, "author") as string;
+    const scopedName = getPackage(p, "name");
     let name: string = scopedName as string;
     let org: string | undefined;
     if (name.startsWith("@")) {
@@ -131,7 +133,7 @@ class TemplateSync extends Command<CommandOptions<typeof argzz>, void> {
     ["decaf-ts", "${org}"].forEach(
       (el) => (this.replacements[el] = org as string)
     );
-    this.replacements["${org_or_name}"] = org || name;
+    this.replacements["${org_or_owner}"] = org || name;
   }
 
   /**
@@ -151,7 +153,7 @@ class TemplateSync extends Command<CommandOptions<typeof argzz>, void> {
       this.log.info(`Downloading ${file}`);
 
       let data = await HttpClient.downloadFile(`${baseUrl}/${file}`);
-      data = patchString(data, this.replacements);
+      data = patchPlaceholders(data, this.replacements);
       writeFile(path.join(process.cwd(), file), data);
     }
   }
