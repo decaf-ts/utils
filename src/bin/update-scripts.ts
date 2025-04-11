@@ -22,7 +22,7 @@ const options = {
     ".github/FUNDING.yml",
   ],
   workflows: [
-    ".github/workflows/codeql_analysis.yml",
+    ".github/workflows/codeql-analysis.yml",
     ".github/workflows/jest-coverage.yaml",
     ".github/workflows/nodejs-build-prod.yaml",
     ".github/workflows/pages.yaml",

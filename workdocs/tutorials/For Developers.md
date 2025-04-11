@@ -188,65 +188,71 @@ When the `-no-ci` flag is passed then you can:
 ```
 ts-workspace
 │
-│   .dockerignore           <-- Defines files by docker in the build image
-│   .gitignore              <-- Defines files ignored to git
-│   .gitlabci               <-- Gi behaviour for gitlab
-│   .npmignore              <-- Defines files ignored by npm
-│   .nmprc                  <-- Defines the Npm registry for this package
-│   .nmptoken               <-- Defines access token for the Npm registry for this package
-│   .prettierrc             <-- style definitions for the project
-│   .snyk                   <-- vulnerability scan (via snyk) config
-│   .token                  <-- token for dependencies in private registries
-│   .eslint.config.js       <-- linting for the project
-│   gulpfile.js             <-- Gulp build scripts. used for building na other features (eg docs)
-│   jest.config.ts          <-- Tests Configuration file
-│   jsdocs.json             <-- jsdoc Documentation generation configuration file
-│   LICENCE.md              <-- Licence disclamer
-│   mdCompile.json          <-- md Documentation generation configuration file
-│   package.json
-│   package-lock.json
-│   README.md               <-- Readme File dynamically compiled from 'workdocs' via the 'docs' npm script
-│   tsconfig.json           <-- Typescript config file. Is overriden in 'gulpfile.js' 
-│
-└───.github
-│   │   ...                 <-- github workflows and templates
-│      
-└───.run
-│   │   ...                 <-- IDE run scripts (WebStorm)
-│   
-│   
-└───bin
-│   │───tag_release.cjs     <-- Script to help with releases
-│   │───template-setup.cjs  <-- Script that runs on first npm install and configures the repo
-│   └───update-scripts.cjs  <-- Retrieves the most updated configuration files from the original repository
-└───docs
-│   │   ...                 <-- Dinamically generated folder, containing the compiled documentation for this repository. generated via the 'docs' npm script
-│   
-└───src
-│   │   ...                 <-- Source code for this repository
-│   
-└───tests
-│   │───bundling            <-- Tests the result of the produced bundle
-│   │───unit                <-- Unit tests
-│   └───integration         <-- Integration tests
-│   
-└───workdocs                <-- Folder with all pre-compiled documentation
-│   │───assets              <-- Documentation asset folder
-│   │───confluence          <-- folder containing specific documentation to be synced with a confluence page
-│   │───coverage            <-- Auto generated coverage results
-│   │───prompts             <-- Used AI prompts (great for documentation and testing)
-│   │───resources           <-- Folder storing generated content (compiled uml, drawio, test reports, etc)
-│   │   └───html            <-- test results (report ready html)
-│   │   └───junit           <-- test results (junit xml)
-│   │───tutorials           <-- Tutorial folder (will show up on tutorial section in generated documentation)
-│   │───uml                 <-- folder containing puml files to be compiled along with the documentation
-│   │   ...                 <-- Categorized *.md files that are merged to generate the final readme (via md compile)
-│   │   Readme.md           <-- Entry point to the README.md (will import other referenced md files)  
-│  
-└───dist
-│   │   ...                 <-- Dinamically generated folder containing the bundles for distribution
-│
-└───lib
+│   .confluence-token               <-- stores confluence access token
+│   .dockerignore                   <-- Defines files by docker in the build image
+│   .dockertoken                    <-- stores docker registry access token
+│   .gitignore                      <-- Defines files ignored to git
+│   .gitlab-ci.yml                  <-- CI behaviour for gitlab
+│   .npmignore                      <-- Defines files ignored by npm
+│   .nmprc                          <-- Defines the Npm registry for this package
+│   .nmptoken                       <-- Defines access token for the Npm registry for this package
+│   .prettierrc                     <-- style definitions for the project
+│   .snyk                           <-- vulnerability scan (via snyk) config
+│   .token                          <-- token for dependencies in private registries
+│   .eslint.config.js               <-- linting for the project
+│   gulpfile.js                     <-- Gulp build scripts. used for building na other features (eg docs)
+│   jest.config.ts                  <-- Tests Configuration file
+│   jsdocs.json                     <-- jsdoc Documentation generation configuration file
+│   LICENCE.md                      <-- Licence disclamer
+│   mdCompile.json                  <-- md Documentation generation configuration file
+│   package.json        
+│   package-lock.json       
+│   README.md                       <-- Readme File dynamically compiled from 'workdocs' via the 'docs' npm script
+│   tsconfig.json                   <-- Typescript config file. Is overriden in 'gulpfile.js' 
+│       
+└───.github     
+│   │   ...                         <-- github workflows and templates
+│           
+└───.run        
+│   │   ...                         <-- IDE run scripts (WebStorm)
+│           
+│           
+└───bin     
+│   │───tag_release.cjs             <-- Script to help with releases
+│   │───template-setup.cjs          <-- Script that runs on first npm install and configures the repo
+│   └───update-scripts.cjs          <-- Retrieves the most updated configuration files from the original repository
+└───docs        
+│   │   ...                         <-- Dinamically generated folder, containing the compiled documentation for this repository. generated via the 'docs' npm script
+│           
+└───src     
+│   │   ...                         <-- Source code for this repository
+│           
+└───tests       
+│   │───bundling                    <-- Tests the result of the produced bundle
+│   │───unit                        <-- Unit tests
+│   └───integration                 <-- Integration tests
+│           
+└───workdocs                        <-- Folder with all pre-compiled documentation
+│   │───assets                      <-- Documentation asset folder
+│   │───confluence                  <-- folder containing specific documentation to be synced with a confluence page
+│   │───drawings                    <-- Drawio drawings that are converted to the resources folder dynamically
+│   │───prompts                     <-- Used AI prompts (great for documentation and testing)
+│   │───reports                     <-- Folder storing generated content (compiled uml, drawio, test reports, etc)
+│   │   └───coverage                <-- Auto generated coverage results (report ready html)
+│   │   └───data                    <-- folder used as temp while genrating reports wiht attachements
+│   │   └───html                    <-- test results (jest-html-reporters) complete test report with attachements
+│   │   └───junit                   <-- test results (junit xml)
+│   │   └───jest.report.config.ts   <-- jest config for exporting test results
+│   │───resources                   <-- Folder storing generated content (compiled uml, drawio, etc)
+│   │───tutorials                   <-- Tutorial folder (will show up on tutorial section in generated documentation)
+│   │───uml                         <-- folder containing puml files to be compiled along with the documentation
+│   │   ...                         <-- Categorized *.md files that are merged to generate the final readme (via md compile)
+│   │   Readme.md                   <-- Entry point to the README.md (will import other referenced md files)  
+│       
+└───dist        
+│   │   ...                         <-- Dinamically generated folder containing the bundles for distribution
+│       
+└───lib     
     |   ...                 <-- Dinamically generated folder containing the compiled code
 ```
 

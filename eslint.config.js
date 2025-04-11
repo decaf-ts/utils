@@ -8,6 +8,7 @@ export default [
   {
     ignores: [
       "lib",
+      "bin",
       "dist",
       "docs",
       "workdocs",
