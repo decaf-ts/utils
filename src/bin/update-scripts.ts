@@ -153,7 +153,7 @@ class TemplateSync extends Command<CommandOptions<typeof argzz>, void> {
       this.log.info(`Downloading ${file}`);
 
       let data = await HttpClient.downloadFile(`${baseUrl}/${file}`);
-      data = patchPlaceholders(data, this.replacements);
+      data = patchString(data, this.replacements);
       writeFile(path.join(process.cwd(), file), data);
     }
   }
