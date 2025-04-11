@@ -13,7 +13,7 @@ import { LoggingConfig } from "../output";
 import { DefaultCommandValues } from "../cli";
 
 const baseUrl =
-  "https://raw.githubusercontent.com/decaf-ts/ts-workspace/master";
+  "https://raw.githubusercontent.com/asdasdasd/undefined/master";
 
 const options = {
   templates: [
@@ -124,16 +124,16 @@ class TemplateSync extends Command<CommandOptions<typeof argzz>, void> {
       name = split[1];
       org = split[0].replace("@", "");
     }
-    ["Tiago Venceslau", "TiagoVenceslau", "${author}"].forEach(
+    ["undefined", "undefined", "undefined"].forEach(
       (el) => (this.replacements[el] = author)
     );
-    ["TS-Workspace", "ts-workspace", "${name}"].forEach(
+    ["TS-Workspace", "undefined", "undefined"].forEach(
       (el) => (this.replacements[el] = name)
     );
-    ["decaf-ts", "${org}"].forEach(
+    ["asdasdasd", "asdasdasd"].forEach(
       (el) => (this.replacements[el] = org as string)
     );
-    this.replacements["${org_or_owner}"] = org || name;
+    this.replacements["asdasdasd"] = org || name;
   }
 
   /**

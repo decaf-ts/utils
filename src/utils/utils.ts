@@ -44,7 +44,7 @@ import { AbortCode } from "./constants";
  *   end
  *   LockedFunction->>LockedFunction: Update lock
  *
- * @memberOf module:@decaf-ts/utils
+ * @memberOf module:@asdasdasd/utils
  */
 export function lockify<R>(f: (...params: unknown[]) => R) {
   let lock: Promise<R | void> = Promise.resolve();
@@ -189,7 +189,7 @@ export function spawnCommand<R = string>(
  *   OutputWriter-->>runCommand: Resolve or reject promise
  *   runCommand-->>Caller: Return CommandResult
  *
- * @memberOf module:@decaf-ts/utils
+ * @memberOf module:@asdasdasd/utils
  */
 export function runCommand<R = string>(
   command: string,

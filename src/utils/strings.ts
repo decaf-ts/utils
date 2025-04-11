@@ -36,7 +36,7 @@ import {
  * @property {function} rgb - Applies an RGB foreground color.
  * @property {function} bgRgb - Applies an RGB background color.
  *
- * @memberOf module:@decaf-ts/utils
+ * @memberOf module:@asdasdasd/utils
  */
 export type ColorizeOptions = {
   [k in keyof typeof StandardForegroundColors]: StyledString;
@@ -525,7 +525,7 @@ export class StyledString implements ColorizeOptions {
  *
  * @function style
  *
- * @memberOf module:@decaf-ts/utils
+ * @memberOf module:@asdasdasd/utils
  */
 export function style(...t: string[]): StyledString {
   return new StyledString(t.join(" "));

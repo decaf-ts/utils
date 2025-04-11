@@ -15,7 +15,7 @@ import { DefaultCommandValues } from "../cli";
 import { UserInput } from "../input/input";
 
 const baseUrl =
-  "https://raw.githubusercontent.com/decaf-ts/ts-workspace/master";
+  "https://raw.githubusercontent.com/asdasdasd/undefined/master";
 
 const options = {
   org: {
@@ -112,20 +112,26 @@ class TemplateSetupScript extends Command<
 
   patchFiles() {
     const files = [
-      ...fs.readdirSync(path.join(process.cwd(), "src"), {
-        recursive: true,
-        withFileTypes: true,
-      }),
-      ...fs.readdirSync(path.join(process.cwd(), "workdocs"), {
-        recursive: true,
-        withFileTypes: true,
-      }),
-      ".gitlab-ci.yml",
-      "jsdocs.json",
+      ...fs
+        .readdirSync(path.join(process.cwd(), "src"), {
+          recursive: true,
+          withFileTypes: true,
+        })
+        .filter((entry) => entry.isFile())
+        .map((entry) => path.join(entry.parentPath, entry.name)),
+      ...fs
+        .readdirSync(path.join(process.cwd(), "workdocs"), {
+          recursive: true,
+          withFileTypes: true,
+        })
+        .filter((entry) => entry.isFile())
+        .map((entry) => path.join(entry.parentPath, entry.name)),
+      path.join(process.cwd(), ".gitlab-ci.yml"),
+      path.join(process.cwd(), "jsdocs.json"),
     ];
 
     for (const file of files) {
-      patchFile(path.join(process.cwd(), file as string), this.replacements);
+      patchFile(file as string, this.replacements);
     }
   }
 
@@ -156,7 +162,7 @@ class TemplateSetupScript extends Command<
 
     if (!license) license = "MIT";
 
-    const pkgName = org ? `@${org}/${name}` : name;
+    const pkgName = org ? `@asdasdasd/undefined` : name;
 
     await this.fixPackage(
       pkgName as string,
@@ -165,16 +171,16 @@ class TemplateSetupScript extends Command<
     );
 
     this.replacements = {
-      "decaf-ts/ts-workspace": `${org ? `${org}/` : ""}${name}`,
-      "decaf-ts": `${org || name}`,
-      "${org}": `${org || name}`,
-      "${org_or_owner}": `${org || author}`,
-      "${name}": name as string,
-      "ts-workspace": name as string,
-      "TS-workspace": name as string,
-      "${author}": author as string,
-      "Tiago Venceslau": author as string,
-      TiagoVenceslau: author as string,
+      "asdasdasd/undefined": `${org ? `asdasdasd/` : ""}undefined`,
+      "asdasdasd": `${org || name}`,
+      "asdasdasd": `${org || name}`,
+      "asdasdasd": `${org || author}`,
+      "undefined": name as string,
+      "undefined": name as string,
+      "undefined": name as string,
+      "undefined": author as string,
+      "undefined": author as string,
+      undefined: author as string,
     };
 
     await this.createTokenFiles();

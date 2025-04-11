@@ -45,7 +45,7 @@ On the first install you will have a setup script. Follow the guides to properly
 
 The following npm scripts are available for development:
 
-- `update-scripts`: will pull the github actions, templates, and style configs from the [ts-workspace](https://github.com/decaf-ts/ts-workspace) repository, overwriting the existing.
+- `update-scripts`: will pull the github actions, templates, and style configs from the [undefined](https://github.com/asdasdasd/undefined) repository, overwriting the existing.
 - `on-first-run`: will run the initial setup script,
 - `postnstall` - will run only on the first install to trigger the dep update. will self delete;
 - `do-install` - sets a `TOKEN` environment variable to the contents of `.token` and runs npm install (useful when you
@@ -186,7 +186,7 @@ When the `-no-ci` flag is passed then you can:
 ### Repository Structure
 
 ```
-ts-workspace
+undefined
 │
 │   .confluence-token               <-- stores confluence access token
 │   .dockerignore                   <-- Defines files by docker in the build image

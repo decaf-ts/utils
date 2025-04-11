@@ -7,7 +7,7 @@
  * @property {boolean} [multiple] - Whether the option can be specified multiple times.
  * @property {string} [short] - The short (single-character) alias for the option.
  * @property {string | boolean | string[] | boolean[]} [default] - The default value(s) for the option.
- * @memberOf module:@decaf-ts/utils
+ * @memberOf module:@asdasdasd/utils
  */
 export interface ParseArgsOptionConfig {
   type: "string" | "boolean";
@@ -20,7 +20,7 @@ export interface ParseArgsOptionConfig {
  * @description Configuration for all command-line argument options.
  * @summary A mapping of long option names to their configurations.
  * @interface ParseArgsOptionsConfig
- * @memberOf module:@decaf-ts/utils
+ * @memberOf module:@asdasdasd/utils
  */
 export interface ParseArgsOptionsConfig {
   [longOption: string]: ParseArgsOptionConfig;
@@ -30,7 +30,7 @@ export interface ParseArgsOptionsConfig {
  * @description Represents a parsed command-line option token.
  * @summary Can be either an option with a value or an option without a value.
  * @typedef {Object} OptionToken
- * @memberOf module:@decaf-ts/utils
+ * @memberOf module:@asdasdasd/utils
  */
 export type OptionToken =
   | { kind: "option"; index: number; name: string; rawName: string; value: string; inlineValue: boolean }
@@ -40,7 +40,7 @@ export type OptionToken =
  * @description Represents a parsed command-line token.
  * @summary Can be an option, a positional argument, or an option terminator.
  * @typedef {OptionToken | Object} Token
- * @memberOf module:@decaf-ts/utils
+ * @memberOf module:@asdasdasd/utils
  */
 export type Token =
   | OptionToken
@@ -54,6 +54,6 @@ export type Token =
  * @property {Object.<string, string | boolean | (string | boolean)[] | undefined>} values - Parsed option values.
  * @property {string[]} positionals - Positional arguments.
  * @property {Token[]} [tokens] - Parsed tokens (if requested).
- * @memberOf module:@decaf-ts/utils
+ * @memberOf module:@asdasdasd/utils
  */
 export type ParseArgsResult = {values: {[p: string]: string | boolean | (string | boolean)[] | undefined}, positionals: string[], tokens?: Token[]};

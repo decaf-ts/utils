@@ -605,7 +605,7 @@ export class UserInput<R extends string = string> implements PromptObject<R> {
   ): Promise<number> {
     const log = UserInput.logger.for(this.askNumber);
     log.verbose(
-      `Asking number input: ${name}, question: ${question}, min: ${min}, max: ${max}, initial: ${initial}`
+      `Asking number input: undefined, question: ${question}, min: ${min}, max: ${max}, initial: ${initial}`
     );
     const userInput = new UserInput(name)
       .setMessage(question)
@@ -637,7 +637,7 @@ export class UserInput<R extends string = string> implements PromptObject<R> {
   ): Promise<string> {
     const log = UserInput.logger.for(this.askText);
     log.verbose(
-      `Asking text input: ${name}, question: ${question}, mask: ${mask}, initial: ${initial}`
+      `Asking text input: undefined, question: ${question}, mask: ${mask}, initial: ${initial}`
     );
     const userInput = new UserInput(name).setMessage(question);
 
@@ -661,7 +661,7 @@ export class UserInput<R extends string = string> implements PromptObject<R> {
   ): Promise<boolean> {
     const log = UserInput.logger.for(this.askConfirmation);
     log.verbose(
-      `Asking confirmation input: ${name}, question: ${question}, initial: ${initial}`
+      `Asking confirmation input: undefined, question: ${question}, initial: ${initial}`
     );
     const userInput = new UserInput(name)
       .setMessage(question)
@@ -771,7 +771,7 @@ export class UserInput<R extends string = string> implements PromptObject<R> {
   ): Promise<string> {
     const log = UserInput.logger.for(this.insistForText);
     log.verbose(
-      `Insisting for text input: ${name}, question: ${question}, test: ${test.toString()}, mask: ${mask}, initial: ${initial}, defaultConfirmation: ${defaultConfirmation}, limit: ${limit}`
+      `Insisting for text input: undefined, question: ${question}, test: ${test.toString()}, mask: ${mask}, initial: ${initial}, defaultConfirmation: ${defaultConfirmation}, limit: ${limit}`
     );
     const userInput = new UserInput(name).setMessage(question);
 
@@ -810,7 +810,7 @@ export class UserInput<R extends string = string> implements PromptObject<R> {
   ): Promise<number> {
     const log = UserInput.logger.for(this.insistForNumber);
     log.verbose(
-      `Insisting for number input: ${name}, question: ${question}, test: ${test.toString()}, min: ${min}, max: ${max}, initial: ${initial}, defaultConfirmation: ${defaultConfirmation}, limit: ${limit}`
+      `Insisting for number input: undefined, question: ${question}, test: ${test.toString()}, min: ${min}, max: ${max}, initial: ${initial}, defaultConfirmation: ${defaultConfirmation}, limit: ${limit}`
     );
     const userInput = new UserInput(name)
       .setMessage(question)

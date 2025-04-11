@@ -5,7 +5,7 @@ import { PromiseExecutor } from "../utils/types";
  * @description Represents the type of output stream.
  * @summary A union type for standard output and standard error streams.
  * @typedef {("stdout" | "stderr")} OutputType
- * @memberOf module:@decaf-ts/utils
+ * @memberOf module:@asdasdasd/utils
  */
 export type OutputType = "stdout" | "stderr";
 
@@ -26,7 +26,7 @@ export type OutputType = "stdout" | "stderr";
  * @param {...unknown[]} args - Additional arguments passed to the constructor.
  * @return {C} An instance of the output writer.
  *
- * @memberOf module:@decaf-ts/utils
+ * @memberOf module:@asdasdasd/utils
  */
 export type OutputWriterConstructor<
   R = string,

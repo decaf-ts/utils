@@ -9,7 +9,7 @@ export type LoggingContext =
  * @description Interface for a logger with verbosity levels.
  * @summary Defines methods for logging at different verbosity levels.
  * @interface VerbosityLogger
- * @memberOf module:@decaf-ts/utils
+ * @memberOf module:@asdasdasd/utils
  */
 export interface VerbosityLogger {
   /**
@@ -52,7 +52,7 @@ export interface VerbosityLogger {
  * @typedef {Object} LoggingConfig
  * @property {LogLevel} level - The logging level.
  * @property {number} verbose - The verbosity level.
- * @memberOf module:@decaf-ts/utils
+ * @memberOf module:@asdasdasd/utils
  */
 export type LoggingConfig = {
   level: LogLevel;
@@ -72,7 +72,7 @@ export type LoggingConfig = {
  * Colors can be specified as a single number, an RGB array, or left undefined for default.
  *
  * @interface ThemeOption
- * @memberOf module:@decaf-ts/utils
+ * @memberOf module:@asdasdasd/utils
  */
 export interface ThemeOption {
   /**
@@ -106,7 +106,7 @@ export type ThemeOptionByLogLevel = Partial<Record<LogLevel, ThemeOption>>;
  * for different parts of the log output.
  *
  * @interface Theme
- * @memberOf module:@decaf-ts/utils
+ * @memberOf module:@asdasdasd/utils
  */
 export interface Theme {
   /**
@@ -151,7 +151,7 @@ export interface Theme {
  * to apply color styling to text or chain multiple color operations.
  *
  * @interface Color
- * @memberOf module:@decaf-ts/input
+ * @memberOf module:@asdasdasd/input
  */
 export interface Color {
   /**
@@ -174,7 +174,7 @@ export interface Color {
  * and text styles to strings in terminal output.
  *
  * @interface Kleur
- * @memberOf module:@decaf-ts/input
+ * @memberOf module:@asdasdasd/input
  */
 export interface Kleur {
   // Colors
