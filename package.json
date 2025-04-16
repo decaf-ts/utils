@@ -1,5 +1,5 @@
 {
-  "name": "@asdasdasd/utils",
+  "name": "@decaf-ts/utils",
   "version": "0.0.1",
   "description": "module management utils for decaf-ts",
   "type": "module",
@@ -12,7 +12,6 @@
     "do-install": "TOKEN=$(cat .token) npm install",
     "update-scripts": "node ./lib/bin/bin/update-scripts.cjs",
     "on-first-run": "chmod +x ./bin/template_setup.sh && ./bin/template_setup.sh",
-    "postinstall": "npm run on-first-run",
     "flash-forward": "npx npm-check-updates -u && npm run do-install",
     "reset": "rm -rf * && git checkout . && git pull && npm run do-install",
     "build": "rimraf ./lib && rimraf ./dist && gulp dev",
