@@ -15,7 +15,7 @@ import { DefaultCommandValues } from "../cli";
 import { UserInput } from "../input/input";
 
 const baseUrl =
-  "https://raw.githubusercontent.com/asdasdasd/undefined/master";
+  "https://raw.githubusercontent.com/decaf-ts/ts-workspace/master";
 
 const options = {
   org: {
@@ -162,7 +162,7 @@ class TemplateSetupScript extends Command<
 
     if (!license) license = "MIT";
 
-    const pkgName = org ? `@asdasdasd/undefined` : name;
+    const pkgName = org ? `@${org}/${name}` : name;
 
     await this.fixPackage(
       pkgName as string,
@@ -171,16 +171,16 @@ class TemplateSetupScript extends Command<
     );
 
     this.replacements = {
-      "asdasdasd/undefined": `${org ? `asdasdasd/` : ""}undefined`,
-      "asdasdasd": `${org || name}`,
-      "asdasdasd": `${org || name}`,
-      "asdasdasd": `${org || author}`,
-      "undefined": name as string,
-      "undefined": name as string,
-      "undefined": name as string,
-      "undefined": author as string,
-      "undefined": author as string,
-      undefined: author as string,
+      "decaf-ts/ts-workspace": `${org ? `${org}/` : ""}${name}`,
+      "decaf-ts": `${org || name}`,
+      "${org}": `${org || name}`,
+      "${org_or_owner}": `${org || author}`,
+      "${name}": name as string,
+      "ts-workspace": name as string,
+      "TS-workspace": name as string,
+      "${author}": author as string,
+      "Tiago Venceslau": author as string,
+      TiagoVenceslau: author as string,
     };
 
     await this.createTokenFiles();

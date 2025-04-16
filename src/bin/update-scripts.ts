@@ -4,7 +4,6 @@ import { CommandOptions } from "../cli/types";
 import {
   getPackage,
   HttpClient,
-  patchPlaceholders,
   patchString,
   setPackageAttribute,
   writeFile,
@@ -13,7 +12,7 @@ import { LoggingConfig } from "../output";
 import { DefaultCommandValues } from "../cli";
 
 const baseUrl =
-  "https://raw.githubusercontent.com/asdasdasd/undefined/master";
+  "https://raw.githubusercontent.com/decaf-ts/ts-workspace/master";
 
 const options = {
   templates: [
@@ -124,16 +123,16 @@ class TemplateSync extends Command<CommandOptions<typeof argzz>, void> {
       name = split[1];
       org = split[0].replace("@", "");
     }
-    ["undefined", "undefined", "undefined"].forEach(
+    ["Tiago Venceslau", "TiagoVenceslau", "${author}"].forEach(
       (el) => (this.replacements[el] = author)
     );
-    ["TS-Workspace", "undefined", "undefined"].forEach(
+    ["TS-Workspace", "ts-workspace", "${name}"].forEach(
       (el) => (this.replacements[el] = name)
     );
-    ["asdasdasd", "asdasdasd"].forEach(
+    ["decaf-ts", "${org}"].forEach(
       (el) => (this.replacements[el] = org as string)
     );
-    this.replacements["asdasdasd"] = org || name;
+    this.replacements["${org_or_owner}"] = org || name;
   }
 
   /**

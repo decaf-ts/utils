@@ -129,7 +129,7 @@ exports.AbortCode = exports.DefaultLoggingConfig = exports.DefaultTheme = export
  * @description ANSI escape code for resetting text formatting.
  * @summary This constant holds the ANSI escape sequence used to reset all text formatting to default.
  * @const AnsiReset
- * @memberOf module:@decaf-ts/utils
+ * @memberOf module:@asdasdasd/utils
  */
 exports.AnsiReset = "\x1b[0m";
 /**
@@ -144,7 +144,7 @@ exports.AnsiReset = "\x1b[0m";
  * @property {number} magenta - ANSI code for magenta text (35).
  * @property {number} cyan - ANSI code for cyan text (36).
  * @property {number} white - ANSI code for white text (37).
- * @memberOf module:@decaf-ts/utils
+ * @memberOf module:@asdasdasd/utils
  */
 exports.StandardForegroundColors = {
     black: 30,
@@ -168,7 +168,7 @@ exports.StandardForegroundColors = {
  * @property {number} magenta - ANSI code for bright magenta text (95).
  * @property {number} cyan - ANSI code for bright cyan text (96).
  * @property {number} white - ANSI code for bright white text (97).
- * @memberOf module:@decaf-ts/utils
+ * @memberOf module:@asdasdasd/utils
  */
 exports.BrightForegroundColors = {
     brightBlack: 90,
@@ -192,7 +192,7 @@ exports.BrightForegroundColors = {
  * @property {number} bgMagenta - ANSI code for magenta background (45).
  * @property {number} bgCyan - ANSI code for cyan background (46).
  * @property {number} bgWhite - ANSI code for white background (47).
- * @memberOf module:@decaf-ts/utils
+ * @memberOf module:@asdasdasd/utils
  */
 exports.StandardBackgroundColors = {
     bgBlack: 40,
@@ -216,7 +216,7 @@ exports.StandardBackgroundColors = {
  * @property {number} bgBrightMagenta - ANSI code for bright magenta background (105).
  * @property {number} bgBrightCyan - ANSI code for bright cyan background (106).
  * @property {number} bgBrightWhite - ANSI code for bright white background (107).
- * @memberOf module:@decaf-ts/utils
+ * @memberOf module:@asdasdasd/utils
  */
 exports.BrightBackgroundColors = {
     bgBrightBlack: 100,
@@ -249,7 +249,7 @@ exports.BrightBackgroundColors = {
  * @property {number} noInverse - ANSI code to turn off inverse (27).
  * @property {number} noHidden - ANSI code to turn off hidden (28).
  * @property {number} noStrikethrough - ANSI code to turn off strikethrough (29).
- * @memberOf module:@decaf-ts/utils
+ * @memberOf module:@asdasdasd/utils
  */
 exports.styles = {
     reset: 0,
@@ -274,21 +274,21 @@ exports.styles = {
  * @description Default encoding for text operations.
  * @summary The standard UTF-8 encoding used for text processing.
  * @const {string} Encoding
- * @memberOf module:@decaf-ts/utils
+ * @memberOf module:@asdasdasd/utils
  */
 exports.Encoding = "utf-8";
 /**
  * @description Regular expression for semantic versioning.
  * @summary A regex pattern to match and parse semantic version strings.
  * @const {RegExp} SemVersionRegex
- * @memberOf module:@decaf-ts/utils
+ * @memberOf module:@asdasdasd/utils
  */
 exports.SemVersionRegex = /^(\d+)\.(\d+)\.(\d+)(?:-([0-9A-Za-z-]+(?:\.[0-9A-Za-z])))/g;
 /**
  * @description Enum for semantic version components.
  * @summary Defines the three levels of semantic versioning: PATCH, MINOR, and MAJOR.
  * @enum {string}
- * @memberOf module:@decaf-ts/utils
+ * @memberOf module:@asdasdasd/utils
  */
 var SemVersion;
 (function (SemVersion) {
@@ -303,21 +303,21 @@ var SemVersion;
  * @description Flag to indicate non-CI environment.
  * @summary Used to specify that a command should run outside of a Continuous Integration environment.
  * @const {string} NoCIFLag
- * @memberOf module:@decaf-ts/utils
+ * @memberOf module:@asdasdasd/utils
  */
 exports.NoCIFLag = "-no-ci";
 /**
  * @description Key for the setup script in package.json.
  * @summary Identifies the script that runs after package installation.
  * @const {string} SetupScriptKey
- * @memberOf module:@decaf-ts/utils
+ * @memberOf module:@asdasdasd/utils
  */
 exports.SetupScriptKey = "postinstall";
 /**
  * @description Enum for various authentication tokens.
  * @summary Defines the file names for storing different types of authentication tokens.
  * @enum {string}
- * @memberOf module:@decaf-ts/utils
+ * @memberOf module:@asdasdasd/utils
  */
 var Tokens;
 (function (Tokens) {
@@ -334,7 +334,7 @@ var Tokens;
  * @description Enum for log levels.
  * @summary Defines different levels of logging for the application.
  * @enum {string}
- * @memberOf module:@decaf-ts/utils
+ * @memberOf module:@asdasdasd/utils
  */
 var LogLevel;
 (function (LogLevel) {
@@ -358,7 +358,7 @@ var LogLevel;
  * @property {number} verbose - Numeric value for verbose level (4).
  * @property {number} debug - Numeric value for debug level (5).
  * @property {number} silly - Numeric value for silly level (8).
- * @memberOf module:@decaf-ts/utils
+ * @memberOf module:@asdasdasd/utils
  */
 exports.NumericLogLevels = {
     error: 2,
@@ -389,7 +389,7 @@ exports.NumericLogLevels = {
  * @property {Object} logLevel.verbose - Styling for verbose level logs (empty object).
  * @property {Object} logLevel.debug - Styling for debug level logs.
  * @property {number} logLevel.debug.fg - Foreground color code for debug level logs (7).
- * @memberOf module:@decaf-ts/utils
+ * @memberOf module:@asdasdasd/utils
  */
 exports.DefaultTheme = {
     class: {
@@ -430,7 +430,7 @@ exports.DefaultTheme = {
  * @property {string} timestampFormat - Format for timestamps ("HH:mm:ss.SSS").
  * @property {boolean} context - Whether to include context information in log messages (true).
  * @property {Theme} theme - The theme to use for styling log messages (DefaultTheme).
- * @memberOf module:@decaf-ts/utils
+ * @memberOf module:@asdasdasd/utils
  */
 exports.DefaultLoggingConfig = {
     verbose: 0,
@@ -470,7 +470,7 @@ const constants_1 = __webpack_require__(154);
  * @return {string} The text wrapped in ANSI color codes.
  *
  * @function colorizeANSI
- * @memberOf module:@decaf-ts/utils
+ * @memberOf module:@asdasdasd/utils
  */
 function colorizeANSI(text, n, bg = false) {
     if (isNaN(n)) {
@@ -494,7 +494,7 @@ function colorizeANSI(text, n, bg = false) {
  * @return {string} The text wrapped in ANSI color codes.
  *
  * @function colorize256
- * @memberOf module:@decaf-ts/utils
+ * @memberOf module:@asdasdasd/utils
  */
 function colorize256(text, n, bg = false) {
     if (isNaN(n)) {
@@ -520,7 +520,7 @@ function colorize256(text, n, bg = false) {
  * @return {string} The text wrapped in ANSI color codes.
  *
  * @function colorizeRGB
- * @memberOf module:@decaf-ts/utils
+ * @memberOf module:@asdasdasd/utils
  */
 function colorizeRGB(text, r, g, b, bg = false) {
     if (isNaN(r) || isNaN(g) || isNaN(b)) {
@@ -543,7 +543,7 @@ function colorizeRGB(text, r, g, b, bg = false) {
  * @return {string} The text wrapped in ANSI style codes.
  *
  * @function applyStyle
- * @memberOf module:@decaf-ts/utils
+ * @memberOf module:@asdasdasd/utils
  */
 function applyStyle(text, n) {
     const styleCode = typeof n === "number" ? n : constants_1.styles[n];
@@ -559,7 +559,7 @@ function applyStyle(text, n) {
  * @return {string} The input text with all ANSI formatting codes removed.
  *
  * @function clear
- * @memberOf module:@decaf-ts/utils
+ * @memberOf module:@asdasdasd/utils
  */
 function clear(text) {
     // Regular expression to match ANSI escape codes
@@ -577,7 +577,7 @@ function clear(text) {
  * @return {string} The text wrapped in the raw ANSI code and the reset code.
  *
  * @function raw
- * @memberOf module:@decaf-ts/utils
+ * @memberOf module:@asdasdasd/utils
  */
 function raw(text, raw) {
     return `${raw}${text}${constants_1.AnsiReset}`;
@@ -867,15 +867,6 @@ async function normalizeImport(importPromise) {
 /***/ ((module) => {
 
 module.exports = require("prompts");
-
-/***/ }),
-
-/***/ 483:
-/***/ ((__unused_webpack_module, exports) => {
-
-
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-
 
 /***/ }),
 
@@ -1172,12 +1163,14 @@ exports.Command = Command;
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.padEnd = padEnd;
+exports.patchPlaceholders = patchPlaceholders;
 exports.patchString = patchString;
 exports.toCamelCase = toCamelCase;
 exports.toENVFormat = toENVFormat;
 exports.toSnakeCase = toSnakeCase;
 exports.toKebabCase = toKebabCase;
 exports.toPascalCase = toPascalCase;
+exports.escapeRegExp = escapeRegExp;
 /**
  * @description Pads the end of a string with a specified character.
  * @summary Extends the input string to a specified length by adding a padding character to the end.
@@ -1208,7 +1201,7 @@ function padEnd(str, length, char = " ") {
  * @param {Record<string, number | string>} values - An object containing key-value pairs for replacement.
  * @return {string} The interpolated string with placeholders replaced by their corresponding values.
  *
- * @function patchString
+ * @function patchPlaceholders
  *
  * @mermaid
  * sequenceDiagram
@@ -1222,8 +1215,15 @@ function padEnd(str, length, char = " ") {
  *
  * @memberOf module:TextUtils
  */
-function patchString(input, values) {
+function patchPlaceholders(input, values) {
     return input.replace(/\$\{([a-zA-Z0-9_]+)\}/g, (match, variable) => values[variable] || match);
+}
+function patchString(input, values, flags = "g") {
+    Object.entries(values).forEach(([key, val]) => {
+        const regexp = new RegExp(escapeRegExp(key), flags);
+        input = input.replace(regexp, val);
+    });
+    return input;
 }
 /**
  * @description Converts a string to camelCase.
@@ -1238,7 +1238,9 @@ function patchString(input, values) {
  * @memberOf module:TextUtils
  */
 function toCamelCase(text) {
-    return text.replace(/(?:^\w|[A-Z]|\b\w)/g, (word, index) => index === 0 ? word.toLowerCase() : word.toUpperCase()).replace(/\s+/g, '');
+    return text
+        .replace(/(?:^\w|[A-Z]|\b\w)/g, (word, index) => index === 0 ? word.toLowerCase() : word.toUpperCase())
+        .replace(/\s+/g, "");
 }
 /**
  * @description Converts a string to ENVIRONMENT_VARIABLE format.
@@ -1267,8 +1269,9 @@ function toENVFormat(text) {
  * @memberOf module:TextUtils
  */
 function toSnakeCase(text) {
-    return text.replace(/([a-z])([A-Z])/g, '$1_$2')
-        .replace(/[\s-]+/g, '_')
+    return text
+        .replace(/([a-z])([A-Z])/g, "$1_$2")
+        .replace(/[\s-]+/g, "_")
         .toLowerCase();
 }
 /**
@@ -1283,8 +1286,9 @@ function toSnakeCase(text) {
  * @memberOf module:TextUtils
  */
 function toKebabCase(text) {
-    return text.replace(/([a-z])([A-Z])/g, '$1-$2')
-        .replace(/[\s_]+/g, '-')
+    return text
+        .replace(/([a-z])([A-Z])/g, "$1-$2")
+        .replace(/[\s_]+/g, "-")
         .toLowerCase();
 }
 /**
@@ -1300,8 +1304,12 @@ function toKebabCase(text) {
  * @memberOf module:TextUtils
  */
 function toPascalCase(text) {
-    return text.replace(/(?:^\w|[A-Z]|\b\w)/g, (word) => word.toUpperCase())
-        .replace(/\s+/g, '');
+    return text
+        .replace(/(?:^\w|[A-Z]|\b\w)/g, (word) => word.toUpperCase())
+        .replace(/\s+/g, "");
+}
+function escapeRegExp(string) {
+    return string.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"); // $& means the whole matched string
 }
 
 
@@ -1477,7 +1485,7 @@ exports.StyledString = StyledString;
  *
  * @function style
  *
- * @memberOf module:@decaf-ts/utils
+ * @memberOf module:@asdasdasd/utils
  */
 function style(...t) {
     return new StyledString(t.join(" "));
@@ -1622,7 +1630,7 @@ const constants_1 = __webpack_require__(154);
  *   end
  *   LockedFunction->>LockedFunction: Update lock
  *
- * @memberOf module:@decaf-ts/utils
+ * @memberOf module:@asdasdasd/utils
  */
 function lockify(f) {
     let lock = Promise.resolve();
@@ -1741,7 +1749,7 @@ function spawnCommand(output, command, opts, abort, logger) {
  *   OutputWriter-->>runCommand: Resolve or reject promise
  *   runCommand-->>Caller: Return CommandResult
  *
- * @memberOf module:@decaf-ts/utils
+ * @memberOf module:@asdasdasd/utils
  */
 function runCommand(command, opts = {}, outputConstructor = (StandardOutputWriter_1.StandardOutputWriter), ...args) {
     const logger = logging_1.Logging.for(runCommand);
@@ -2206,7 +2214,7 @@ class UserInput {
      */
     static async askNumber(name, question, min, max, initial) {
         const log = UserInput.logger.for(this.askNumber);
-        log.verbose(`Asking number input: ${name}, question: ${question}, min: ${min}, max: ${max}, initial: ${initial}`);
+        log.verbose(`Asking number input: undefined, question: ${question}, min: ${min}, max: ${max}, initial: ${initial}`);
         const userInput = new UserInput(name)
             .setMessage(question)
             .setType("number");
@@ -2229,7 +2237,7 @@ class UserInput {
      */
     static async askText(name, question, mask = undefined, initial) {
         const log = UserInput.logger.for(this.askText);
-        log.verbose(`Asking text input: ${name}, question: ${question}, mask: ${mask}, initial: ${initial}`);
+        log.verbose(`Asking text input: undefined, question: ${question}, mask: ${mask}, initial: ${initial}`);
         const userInput = new UserInput(name).setMessage(question);
         if (mask)
             userInput.setMask(mask);
@@ -2247,7 +2255,7 @@ class UserInput {
      */
     static async askConfirmation(name, question, initial) {
         const log = UserInput.logger.for(this.askConfirmation);
-        log.verbose(`Asking confirmation input: ${name}, question: ${question}, initial: ${initial}`);
+        log.verbose(`Asking confirmation input: undefined, question: ${question}, initial: ${initial}`);
         const userInput = new UserInput(name)
             .setMessage(question)
             .setType("confirm");
@@ -2336,7 +2344,7 @@ class UserInput {
      */
     static async insistForText(name, question, test, mask = undefined, initial, defaultConfirmation = false, limit = -1) {
         const log = UserInput.logger.for(this.insistForText);
-        log.verbose(`Insisting for text input: ${name}, question: ${question}, test: ${test.toString()}, mask: ${mask}, initial: ${initial}, defaultConfirmation: ${defaultConfirmation}, limit: ${limit}`);
+        log.verbose(`Insisting for text input: undefined, question: ${question}, test: ${test.toString()}, mask: ${mask}, initial: ${initial}, defaultConfirmation: ${defaultConfirmation}, limit: ${limit}`);
         const userInput = new UserInput(name).setMessage(question);
         if (mask)
             userInput.setMask(mask);
@@ -2360,7 +2368,7 @@ class UserInput {
      */
     static async insistForNumber(name, question, test, min, max, initial, defaultConfirmation = false, limit = -1) {
         const log = UserInput.logger.for(this.insistForNumber);
-        log.verbose(`Insisting for number input: ${name}, question: ${question}, test: ${test.toString()}, min: ${min}, max: ${max}, initial: ${initial}, defaultConfirmation: ${defaultConfirmation}, limit: ${limit}`);
+        log.verbose(`Insisting for number input: undefined, question: ${question}, test: ${test.toString()}, min: ${min}, max: ${max}, initial: ${initial}, defaultConfirmation: ${defaultConfirmation}, limit: ${limit}`);
         const userInput = new UserInput(name)
             .setMessage(question)
             .setType("number");
@@ -2615,23 +2623,28 @@ class HttpClient {
      */
     static async downloadFile(url) {
         return new Promise((resolve, reject) => {
-            url = encodeURI(url);
-            https_1.default.get(url, res => {
-                if (res.statusCode !== 200) {
-                    this.log.error(`Failed to fetch ${url} (status: ${res.statusCode})`);
-                    return reject(new Error(`Failed to fetch ${url}`));
-                }
-                let data = '';
-                res.on('data', chunk => {
-                    data += chunk;
+            function request(url) {
+                url = encodeURI(url);
+                https_1.default.get(url, (res) => {
+                    if (res.statusCode === 301 || res.statusCode === 307)
+                        return request(res.headers.location);
+                    if (res.statusCode !== 200) {
+                        HttpClient.log.error(`Failed to fetch ${url} (status: ${res.statusCode})`);
+                        return reject(new Error(`Failed to fetch ${url}`));
+                    }
+                    let data = "";
+                    res.on("data", (chunk) => {
+                        data += chunk;
+                    });
+                    res.on("error", (error) => {
+                        reject(error);
+                    });
+                    res.on("end", () => {
+                        resolve(data);
+                    });
                 });
-                res.on('error', error => {
-                    reject(error);
-                });
-                res.on('end', () => {
-                    resolve(data);
-                });
-            });
+            }
+            request(url);
         });
     }
 }
@@ -3262,15 +3275,14 @@ const fs_1 = __importDefault(__webpack_require__(896));
 const constants_1 = __webpack_require__(154);
 const fs_2 = __webpack_require__(340);
 const command_1 = __webpack_require__(529);
-const input_1 = __webpack_require__(946);
 const utils_1 = __webpack_require__(935);
 const path_1 = __importDefault(__webpack_require__(928));
+const input_1 = __webpack_require__(714);
 const baseUrl = "https://raw.githubusercontent.com/decaf-ts/ts-workspace/master";
 const options = {
     org: {
-        type: "text",
+        type: "string",
         short: "o",
-        default: "decaf-ts",
     },
     name: {
         type: "string",
@@ -3283,21 +3295,15 @@ const options = {
         default: undefined,
     },
     license: {
-        type: "multiselect",
+        type: "string",
         message: "Choose a license",
         default: "MIT",
-        choices: [
-            { title: "MIT", value: "MIT" },
-            { title: "LGPL", value: "LGPL" },
-            { title: "Apache", value: "Apache" },
-            { title: "AGPL", value: "AGPL" },
-            { title: "GPL", value: "GPL" },
-        ],
     },
 };
 class TemplateSetupScript extends command_1.Command {
     constructor() {
         super("TemplateSetupScript", options);
+        this.replacements = {};
     }
     async fixPackage(pkgName, author, license) {
         try {
@@ -3346,36 +3352,38 @@ class TemplateSetupScript extends command_1.Command {
     }
     async getLicense(license) {
         this.log.info(`Downloading license ${license}`);
-        const data = await utils_1.HttpClient.downloadFile(`${baseUrl}/workdocs/licenses/${license}.md`);
+        let data = await utils_1.HttpClient.downloadFile(`${baseUrl}/workdocs/licenses/${license}.md`);
+        data = (0, utils_1.patchString)(data, this.replacements);
         (0, fs_2.writeFile)(path_1.default.join(process.cwd(), "LICENSE.md"), data);
     }
-    patchFiles(org, name, author) {
+    patchFiles() {
         const files = [
-            ...fs_1.default.readdirSync(path_1.default.join(process.cwd(), "src"), {
+            ...fs_1.default
+                .readdirSync(path_1.default.join(process.cwd(), "src"), {
                 recursive: true,
                 withFileTypes: true,
-            }),
-            ...fs_1.default.readdirSync(path_1.default.join(process.cwd(), "workdocs"), {
+            })
+                .filter((entry) => entry.isFile())
+                .map((entry) => path_1.default.join(entry.parentPath, entry.name)),
+            ...fs_1.default
+                .readdirSync(path_1.default.join(process.cwd(), "workdocs"), {
                 recursive: true,
                 withFileTypes: true,
-            }),
-            ".gitlab-ci.yml",
-            "jsdocs.json",
+            })
+                .filter((entry) => entry.isFile())
+                .map((entry) => path_1.default.join(entry.parentPath, entry.name)),
+            path_1.default.join(process.cwd(), ".gitlab-ci.yml"),
+            path_1.default.join(process.cwd(), "jsdocs.json"),
         ];
         for (const file of files) {
-            (0, fs_2.patchFile)(path_1.default.join(process.cwd(), file), {
-                "decaf-ts/ts-workspace": `${org ? `${org}/` : ""}${name}`,
-                "decaf-ts": `${org || ""}`,
-                "ts-workspace": name,
-                "Tiago Venceslau": author,
-            });
+            (0, fs_2.patchFile)(file, this.replacements);
         }
     }
     async auditFix() {
         return await (0, utils_1.runCommand)("npm audit fix --force").promise;
     }
     async run(args) {
-        let { org, name, author, license } = args.values;
+        let { org, name, author, license } = args;
         if (!org)
             org = await this.getOrg();
         if (!name)
@@ -3386,10 +3394,22 @@ class TemplateSetupScript extends command_1.Command {
             license = "MIT";
         const pkgName = org ? `@${org}/${name}` : name;
         await this.fixPackage(pkgName, author, license);
+        this.replacements = {
+            "decaf-ts/ts-workspace": `${org ? `${org}/` : ""}${name}`,
+            "decaf-ts": `${org || name}`,
+            "${org}": `${org || name}`,
+            "${org_or_owner}": `${org || author}`,
+            "${name}": name,
+            "ts-workspace": name,
+            "TS-workspace": name,
+            "${author}": author,
+            "Tiago Venceslau": author,
+            TiagoVenceslau: author,
+        };
         await this.createTokenFiles();
         if (license)
             await this.getLicense(license);
-        this.patchFiles(org, name, author);
+        this.patchFiles();
         await (0, fs_2.updateDependencies)();
         await this.auditFix();
         await (0, fs_2.pushToGit)();
@@ -3402,31 +3422,6 @@ new TemplateSetupScript()
     TemplateSetupScript.log.error(`Error preparing template: ${e}`);
     process.exit(1);
 });
-
-
-/***/ }),
-
-/***/ 946:
-/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
-
-
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    var desc = Object.getOwnPropertyDescriptor(m, k);
-    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
-      desc = { enumerable: true, get: function() { return m[k]; } };
-    }
-    Object.defineProperty(o, k2, desc);
-}) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-}));
-var __exportStar = (this && this.__exportStar) || function(m, exports) {
-    for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports, p)) __createBinding(exports, m, p);
-};
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-__exportStar(__webpack_require__(714), exports);
-__exportStar(__webpack_require__(483), exports);
 
 
 /***/ })
