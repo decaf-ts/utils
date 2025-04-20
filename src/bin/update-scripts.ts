@@ -60,19 +60,13 @@ const options = {
     "workdocs/readme-md.json",
   ],
   styles: [".prettierrc", "eslint.config.js"],
-  scripts: [
-    "bin/tag-release.sh",
-    "bin/template_setup.sh",
-    "bin/update-scripts.cjs",
-    "bin/tag-release.cjs",
-    "bin/template-setup.cjs",
-  ],
+  scripts: ["bin/update-scripts.cjs", "bin/tag-release.cjs"],
   typescript: ["tsconfig.json"],
   docker: ["Dockerfile"],
   automation: [
-    "workdocs/confluence/Continuou%20Integration-Deployment/GitHub.md",
-    "workdocs/confluence/Continuou%20Integration-Deployment/Jira.md",
-    "workdocs/confluence/Continuou%20Integration-Deployment/Teams.md",
+    "workdocs/confluence/Continuous Integration-Deployment/GitHub.md",
+    "workdocs/confluence/Continuous Integration-Deployment/Jira.md",
+    "workdocs/confluence/Continuous Integration-Deployment/Teams.md",
   ],
 };
 
@@ -445,6 +439,7 @@ class TemplateSync extends Command<CommandOptions<typeof argzz>, void> {
       await this.initPackage(pkgName, author, license as string);
       await this.createTokenFiles();
       await this.auditFix();
+      this.patchFiles();
     }
 
     if (all) {
