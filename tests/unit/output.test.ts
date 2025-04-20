@@ -34,7 +34,9 @@ describe("Logging", () => {
       const consoleMock = jest.spyOn(console, "log");
       logger.info("This is a test message");
       expect(consoleMock).toBeCalledTimes(1);
-      expect(consoleMock).toHaveBeenCalledWith("info - This is a test message");
+      expect(consoleMock).toHaveBeenCalledWith(
+        "info - testing - This is a test message"
+      );
     });
   });
 
@@ -43,6 +45,7 @@ describe("Logging", () => {
       Logging.setConfig({
         style: true,
         timestamp: true,
+        context: false,
       });
     });
 
