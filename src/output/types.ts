@@ -1,6 +1,8 @@
 import { LogLevel } from "../utils/constants";
 import { styles } from "@tvenceslau/styled-string";
 
+export type StringLike = string | { toString: () => string };
+
 export type LoggingContext =
   | string
   | { new (...args: any[]): any }
@@ -15,34 +17,37 @@ export type LoggingContext =
 export interface VerbosityLogger {
   /**
    * @description Logs a `way too verbose` or a silly message.
-   * @param {string} msg - The message to log.
+   * @param {StringLike} msg - The message to log.
    */
-  silly(msg: string): void;
+  silly(msg: StringLike): void;
   /**
    * @description Logs a verbose message.
-   * @param {string} msg - The message to log.
+   * @param {StringLike} msg - The message to log.
    * @param {number} verbosity - The verbosity level of the message.
    */
-  verbose(msg: string, verbosity?: number): void;
+  verbose(msg: StringLike, verbosity?: number): void;
 
   /**
    * @description Logs an info message.
-   * @param {string} msg - The message to log.
+   * @param {StringLike} msg - The message to log.
    */
-  info(msg: string): void;
+  info(msg: StringLike): void;
 
   /**
    * @description Logs an error message.
-   * @param {string} msg - The message to log.
+   * @param {StringLike | Error} msg - The message to log.
    */
-  error(msg: string | Error): void;
+  error(msg: StringLike | Error): void;
 
   /**
    * @description Logs a debug message.
    * @param {string} msg - The message to log.
    */
-  debug(msg: string): void;
-  for(method?: string | ((...args: any[]) => any)): VerbosityLogger;
+  debug(msg: StringLike): void;
+  for(
+    method?: string | ((...args: any[]) => any),
+    config?: Partial<LoggingConfig>
+  ): VerbosityLogger;
 
   setConfig(config: Partial<LoggingConfig>): void;
 }
@@ -57,6 +62,7 @@ export interface VerbosityLogger {
  */
 export type LoggingConfig = {
   level: LogLevel;
+  logLevel: boolean;
   verbose: number;
   style?: boolean;
   timestamp?: boolean;

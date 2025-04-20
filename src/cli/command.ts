@@ -169,7 +169,15 @@ export abstract class Command<I, R> {
       return this.help(args);
     }
 
-    if (banner) printBanner(this.log);
+    if (banner)
+      printBanner(
+        this.log.for(printBanner, {
+          timestamp: false,
+          style: false,
+          context: false,
+          logLevel: false,
+        })
+      );
 
     let result;
     try {

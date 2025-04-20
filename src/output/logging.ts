@@ -7,6 +7,7 @@ import {
 import {
   LoggingConfig,
   LoggingContext,
+  StringLike,
   Theme,
   ThemeOption,
   ThemeOptionByLogLevel,
@@ -71,7 +72,7 @@ export class MiniLogger implements VerbosityLogger {
    */
   protected createLog(
     level: LogLevel,
-    message: string | Error,
+    message: StringLike | Error,
     stack?: string
   ): string {
     const log: string[] = [];
@@ -113,7 +114,11 @@ export class MiniLogger implements VerbosityLogger {
    * @param msg - The message to be logged.
    * @param stack
    */
-  protected log(level: LogLevel, msg: string | Error, stack?: string): void {
+  protected log(
+    level: LogLevel,
+    msg: StringLike | Error,
+    stack?: string
+  ): void {
     if (
       NumericLogLevels[this.config("level") as LogLevel] <
       NumericLogLevels[level]
@@ -144,7 +149,7 @@ export class MiniLogger implements VerbosityLogger {
    * @param msg - The message to be logged.
    * @param verbosity - The verbosity level of the message (default: 0).
    */
-  silly(msg: string, verbosity: number = 0): void {
+  silly(msg: StringLike, verbosity: number = 0): void {
     if ((this.config("verbose") as number) >= verbosity)
       this.log(LogLevel.verbose, msg);
   }
@@ -156,7 +161,7 @@ export class MiniLogger implements VerbosityLogger {
    * @param msg - The message to be logged.
    * @param verbosity - The verbosity level of the message (default: 0).
    */
-  verbose(msg: string, verbosity: number = 0): void {
+  verbose(msg: StringLike, verbosity: number = 0): void {
     if ((this.config("verbose") as number) >= verbosity)
       this.log(LogLevel.verbose, msg);
   }
@@ -167,7 +172,7 @@ export class MiniLogger implements VerbosityLogger {
    *
    * @param msg - The message to be logged.
    */
-  info(msg: string): void {
+  info(msg: StringLike): void {
     this.log(LogLevel.info, msg);
   }
 
@@ -177,7 +182,7 @@ export class MiniLogger implements VerbosityLogger {
    *
    * @param msg - The message to be logged.
    */
-  debug(msg: string): void {
+  debug(msg: StringLike): void {
     this.log(LogLevel.debug, msg);
   }
 
@@ -187,7 +192,7 @@ export class MiniLogger implements VerbosityLogger {
    *
    * @param msg - The message to be logged.
    */
-  error(msg: string | Error): void {
+  error(msg: StringLike | Error): void {
     this.log(LogLevel.error, msg);
   }
 
@@ -270,7 +275,7 @@ export class Logging {
    * @param msg - The message to be logged.
    * @param verbosity - The verbosity level of the message (default: 0).
    */
-  static verbose(msg: string, verbosity: number = 0): void {
+  static verbose(msg: StringLike, verbosity: number = 0): void {
     return this.get().verbose(msg, verbosity);
   }
 
@@ -280,7 +285,7 @@ export class Logging {
    *
    * @param msg - The message to be logged.
    */
-  static info(msg: string): void {
+  static info(msg: StringLike): void {
     return this.get().info(msg);
   }
 
@@ -290,7 +295,7 @@ export class Logging {
    *
    * @param msg - The message to be logged.
    */
-  static debug(msg: string): void {
+  static debug(msg: StringLike): void {
     return this.get().debug(msg);
   }
 
@@ -300,7 +305,7 @@ export class Logging {
    *
    * @param msg - The message to be logged.
    */
-  static silly(msg: string): void {
+  static silly(msg: StringLike): void {
     return this.get().silly(msg);
   }
 
@@ -310,7 +315,7 @@ export class Logging {
    *
    * @param msg - The message to be logged.
    */
-  static error(msg: string): void {
+  static error(msg: StringLike): void {
     return this.get().error(msg);
   }
 

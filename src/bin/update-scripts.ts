@@ -338,10 +338,10 @@ class TemplateSync extends Command<CommandOptions<typeof argzz>, void> {
           recursive: true,
           withFileTypes: true,
         })
-        .filter((entry) => entry.isFile())
+        .filter((entry) => entry.isFile() && entry.name.endsWith(".md"))
         .map((entry) => path.join(entry.parentPath, entry.name)),
       path.join(process.cwd(), ".gitlab-ci.yml"),
-      path.join(process.cwd(), "jsdocs.json"),
+      path.join(process.cwd(), "workdocs", "jsdocs.json"),
     ];
 
     for (const file of files) {

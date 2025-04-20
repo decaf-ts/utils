@@ -290,6 +290,7 @@ exports.DefaultTheme = {
 exports.DefaultLoggingConfig = {
     verbose: 0,
     level: LogLevel.info,
+    logLevel: true,
     style: false,
     timestamp: true,
     timestampFormat: "HH:mm:ss.SSS",
@@ -885,7 +886,12 @@ class Command {
             return this.help(args);
         }
         if (banner)
-            (0, common_1.printBanner)(this.log);
+            (0, common_1.printBanner)(this.log.for(common_1.printBanner, {
+                timestamp: false,
+                style: false,
+                context: false,
+                logLevel: false,
+            }));
         let result;
         try {
             result = await this.run(env);

@@ -172,6 +172,7 @@ export const DefaultTheme: Theme = {
 export const DefaultLoggingConfig: LoggingConfig = {
   verbose: 0,
   level: LogLevel.info,
+  logLevel: true,
   style: false,
   timestamp: true,
   timestampFormat: "HH:mm:ss.SSS",
