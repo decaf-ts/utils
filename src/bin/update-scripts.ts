@@ -44,10 +44,11 @@ const options = {
     ".idea/runConfigurations/drawings.run.xml",
     ".idea/runConfigurations/flash-forward.run.xml",
     ".idea/runConfigurations/Integration_Tests.run.xml",
+    ".idea/runConfigurations/Bundling_Tests.run.xml",
     ".idea/runConfigurations/lint-fix.run.xml",
     ".idea/runConfigurations/test_circular.run.xml",
     ".idea/runConfigurations/uml.run.xml",
-    ".idea/runConfigurations/Unit_Tests.run.xml",
+    ".idea/runConfigurations/Unit Tests.run.xml",
     ".idea/runConfigurations/update-scripts.run.xml",
   ],
   docs: [
@@ -455,7 +456,7 @@ class TemplateSync extends Command<CommandOptions<typeof argzz>, void> {
       templates = true;
       docker = true;
       typescript = true;
-      automation = true;
+      automation = false;
     }
 
     this.loadValuesFromPackage();
@@ -473,7 +474,9 @@ class TemplateSync extends Command<CommandOptions<typeof argzz>, void> {
         );
     }
 
-    await this.getLicense(license as "MIT");
+    await this.getLicense(
+      license as "MIT" | "GPL" | "Apache" | "LGPL" | "AGPL"
+    );
 
     if (typeof ide === "undefined")
       ide = await UserInput.askConfirmation(
