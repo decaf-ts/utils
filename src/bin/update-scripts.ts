@@ -10,6 +10,7 @@ import {
 } from "../utils";
 import { LoggingConfig } from "../output";
 import { DefaultCommandValues } from "../cli";
+import { UserInput } from "../input";
 
 const baseUrl =
   "https://raw.githubusercontent.com/decaf-ts/ts-workspace/master";
@@ -30,24 +31,27 @@ const options = {
     ".github/workflows/snyk-analysis.yaml",
   ],
   ide: [
-    ".run/All Tests.run.xml",
-    ".run/build.run.xml",
-    ".run/build_prod.run.xml",
-    ".run/coverage.run.xml",
-    ".run/docs.run.xml",
-    ".run/drawings.run.xml",
-    ".run/flash-forward.run.xml",
-    ".run/Integration Tests.run.xml",
-    ".run/lint-fix.run.xml",
-    ".run/test_circular.run.xml",
-    ".run/uml.run.xml",
-    ".run/Unit Tests.run.xml",
-    ".run/update-scripts.run.xml",
+    ".idea/runConfigurations/All Tests.run.xml",
+    ".idea/runConfigurations/build.run.xml",
+    ".idea/runConfigurations/build_prod.run.xml",
+    ".idea/runConfigurations/coverage.run.xml",
+    ".idea/runConfigurations/docs.run.xml",
+    ".idea/runConfigurations/drawings.run.xml",
+    ".idea/runConfigurations/flash-forward.run.xml",
+    ".idea/runConfigurations/Integration Tests.run.xml",
+    ".idea/runConfigurations/lint-fix.run.xml",
+    ".idea/runConfigurations/test_circular.run.xml",
+    ".idea/runConfigurations/uml.run.xml",
+    ".idea/runConfigurations/Unit Tests.run.xml",
+    ".idea/runConfigurations/update-scripts.run.xml",
   ],
   docs: [
     "workdocs/tutorials/Contributing.md",
     "workdocs/tutorials/Documentation.md",
     "workdocs/tutorials/For Developers.md",
+    "workdocs/2-Badges.md",
+    "workdocs/jsdocs.json",
+    "workdocs/readme-md.json",
   ],
   styles: [".prettierrc", "eslint.config.js"],
   scripts: [
@@ -57,41 +61,49 @@ const options = {
     "bin/tag-release.cjs",
     "bin/template-setup.cjs",
   ],
+  typescript: ["tsconfig.json"],
+  docker: ["Dockerfile"],
+  automation: [
+    "workdocs/confluence/Continuou%20Integration-Deployment/GitHub.md",
+    "workdocs/confluence/Continuou%20Integration-Deployment/Jira.md",
+    "workdocs/confluence/Continuou%20Integration-Deployment/Teams.md",
+  ],
 };
 
 const argzz = {
   all: {
     type: "boolean",
-    default: true,
   },
   license: {
     type: "string",
     message: "Pick the license",
-    default: "MIT",
   },
   scripts: {
     type: "boolean",
-    default: false,
   },
   styles: {
     type: "boolean",
-    default: false,
   },
   docs: {
     type: "boolean",
-    default: false,
   },
   ide: {
     type: "boolean",
-    default: false,
   },
   workflows: {
     type: "boolean",
-    default: false,
   },
   templates: {
     type: "boolean",
-    default: false,
+  },
+  typescript: {
+    type: "boolean",
+  },
+  docker: {
+    type: "boolean",
+  },
+  automation: {
+    type: "boolean",
   },
 };
 
@@ -209,6 +221,24 @@ class TemplateSync extends Command<CommandOptions<typeof argzz>, void> {
   getDocs = () => this.downloadOption("docs");
 
   /**
+   * @description Downloads typescript config files.
+   * @returns {Promise<void>}
+   */
+  getTypescript = () => this.downloadOption("typescript");
+
+  /**
+   * @description Downloads automation documentation files.
+   * @returns {Promise<void>}
+   */
+  getAutomation = () => this.downloadOption("automation");
+
+  /**
+   * @description Downloads docker image files.
+   * @returns {Promise<void>}
+   */
+  getDocker = () => this.downloadOption("docker");
+
+  /**
    * @description Runs the template synchronization process.
    * @summary This method orchestrates the downloading of various project components based on the provided arguments.
    * @param {ParseArgsResult} args - The parsed command-line arguments
@@ -254,10 +284,31 @@ class TemplateSync extends Command<CommandOptions<typeof argzz>, void> {
     args: LoggingConfig &
       typeof DefaultCommandValues & { [k in keyof typeof argzz]: unknown }
   ) {
-    const { license } = args;
-    let { all, scripts, styles, docs, ide, workflows, templates } = args;
-
-    if (scripts || styles || docs || ide || workflows || templates) all = false;
+    let { license } = args;
+    let {
+      all,
+      scripts,
+      styles,
+      docs,
+      ide,
+      workflows,
+      templates,
+      docker,
+      typescript,
+      automation,
+    } = args;
+    if (
+      scripts ||
+      styles ||
+      docs ||
+      ide ||
+      workflows ||
+      templates ||
+      docker ||
+      typescript ||
+      automation
+    )
+      all = false;
 
     if (all) {
       scripts = true;
@@ -266,14 +317,96 @@ class TemplateSync extends Command<CommandOptions<typeof argzz>, void> {
       ide = true;
       workflows = true;
       templates = true;
+      docker = true;
+      typescript = true;
+      automation = true;
     }
+
     this.loadValuesFromPackage();
+    if (typeof license === "undefined") {
+      const confirmation = await UserInput.askConfirmation(
+        "license",
+        "Do you want to set a license?",
+        true
+      );
+      if (confirmation) {
+        license = UserInput.askText(
+          "license",
+          "Enter the license name (MIT, GPL, Apache, LGPL, AGPL):"
+        );
+      }
+    }
+
     if (license) await this.getLicense(license as "MIT");
+
+    if (typeof ide === "undefined")
+      ide = await UserInput.askConfirmation(
+        "ide",
+        "Do you want to get ide configs?",
+        true
+      );
+
     if (ide) await this.getIde();
+
+    if (typeof typescript === "undefined")
+      typescript = await UserInput.askConfirmation(
+        "typescript",
+        "Do you want to get typescript configs?",
+        true
+      );
+    if (typescript) await this.getTypescript();
+
+    if (typeof docker === "undefined")
+      docker = await UserInput.askConfirmation(
+        "docker",
+        "Do you want to get docker configs?",
+        true
+      );
+
+    if (docker) await this.getDocker();
+    if (typeof automation === "undefined")
+      automation = await UserInput.askConfirmation(
+        "automation",
+        "Do you want to get automation configs?",
+        true
+      );
+    if (automation) await this.getAutomation();
+
+    if (typeof scripts === "undefined")
+      scripts = await UserInput.askConfirmation(
+        "scripts",
+        "Do you want to get scripts?",
+        true
+      );
+
     if (scripts) await this.getScripts();
+    if (typeof styles === "undefined")
+      styles = await UserInput.askConfirmation(
+        "styles",
+        "Do you want to get styles?",
+        true
+      );
     if (styles) await this.getStyles();
+    if (typeof docs === "undefined")
+      docs = await UserInput.askConfirmation(
+        "docs",
+        "Do you want to get docs?",
+        true
+      );
     if (docs) await this.getDocs();
+    if (typeof workflows === "undefined")
+      workflows = await UserInput.askConfirmation(
+        "workflows",
+        "Do you want to get workflows?",
+        true
+      );
     if (workflows) await this.getWorkflows();
+    if (typeof templates === "undefined")
+      templates = await UserInput.askConfirmation(
+        "templates",
+        "Do you want to get templates?",
+        true
+      );
     if (templates) await this.getTemplates();
   }
 }

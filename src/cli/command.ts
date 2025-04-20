@@ -39,21 +39,18 @@ export abstract class Command<I, R> {
 
   protected constructor(
     protected name: string,
-    protected inputs: CommandOptions<I> = Object.assign(
-      {},
-      DefaultCommandValues,
-      DefaultLoggingConfig
-    ) as unknown as CommandOptions<I>,
+    protected inputs: CommandOptions<I> = {} as unknown as CommandOptions<I>,
     protected requirements: string[] = []
   ) {
     if (!Command.log) {
       Object.defineProperty(Command, "log", {
         writable: false,
-        value: Logging.for(this.name),
+        value: Logging.for(Command.name),
       });
       this.log = Command.log;
     }
     this.log = Command.log.for(this.name);
+    this.inputs = Object.assign({}, DefaultCommandValues, inputs);
   }
 
   /**

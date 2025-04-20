@@ -71,6 +71,7 @@
     "@stylistic/eslint-plugin": "^4.2.0",
     "@types/jest": "^29.5.14",
     "@types/prompts": "^2.4.9",
+    "chartjs-node-canvas": "^5.0.0",
     "clean-publish": "^5.1.0",
     "dpdm": "^3.14.0",
     "eslint": "^9.24.0",
@@ -91,6 +92,7 @@
     "jest-junit": "^16.0.0",
     "jsdoc": "^4.0.4",
     "jsdoc-mermaid": "^1.0.0",
+    "json2md": "^2.0.3",
     "markdown-include": "^0.4.3",
     "merge-stream": "^2.0.0",
     "minimist": "^1.2.8",
@@ -112,5 +114,8 @@
     "gulp-run-command": {
       "cross-spawn": "^7.0.6"
     }
+  },
+  "dependencies": {
+    "@tvenceslau/styled-string": "^1.0.4"
   }
 }

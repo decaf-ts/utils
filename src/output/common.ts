@@ -1,7 +1,7 @@
 import { VerbosityLogger } from "./types";
 import { padEnd } from "../utils/text";
 import slogans from "../assets/slogans.json";
-import { style } from "../utils/strings";
+import { style } from "@tvenceslau/styled-string";
 
 /**
  * @description Array of ANSI color codes for banner styling.

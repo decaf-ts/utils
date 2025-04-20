@@ -124,152 +124,7 @@ exports.Environment = Environment;
 
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.AbortCode = exports.DefaultLoggingConfig = exports.DefaultTheme = exports.NumericLogLevels = exports.LogLevel = exports.Tokens = exports.SetupScriptKey = exports.NoCIFLag = exports.SemVersion = exports.SemVersionRegex = exports.Encoding = exports.styles = exports.BrightBackgroundColors = exports.StandardBackgroundColors = exports.BrightForegroundColors = exports.StandardForegroundColors = exports.AnsiReset = void 0;
-/**
- * @description ANSI escape code for resetting text formatting.
- * @summary This constant holds the ANSI escape sequence used to reset all text formatting to default.
- * @const AnsiReset
- * @memberOf module:@asdasdasd/utils
- */
-exports.AnsiReset = "\x1b[0m";
-/**
- * @description Standard foreground color codes for ANSI text formatting.
- * @summary This object maps color names to their corresponding ANSI color codes for standard foreground colors.
- * @const StandardForegroundColors
- * @property {number} black - ANSI code for black text (30).
- * @property {number} red - ANSI code for red text (31).
- * @property {number} green - ANSI code for green text (32).
- * @property {number} yellow - ANSI code for yellow text (33).
- * @property {number} blue - ANSI code for blue text (34).
- * @property {number} magenta - ANSI code for magenta text (35).
- * @property {number} cyan - ANSI code for cyan text (36).
- * @property {number} white - ANSI code for white text (37).
- * @memberOf module:@asdasdasd/utils
- */
-exports.StandardForegroundColors = {
-    black: 30,
-    red: 31,
-    green: 32,
-    yellow: 33,
-    blue: 34,
-    magenta: 35,
-    cyan: 36,
-    white: 37,
-};
-/**
- * @description Bright foreground color codes for ANSI text formatting.
- * @summary This object maps color names to their corresponding ANSI color codes for bright foreground colors.
- * @const BrightForegroundColors
- * @property {number} black - ANSI code for bright black text (90).
- * @property {number} red - ANSI code for bright red text (91).
- * @property {number} green - ANSI code for bright green text (92).
- * @property {number} yellow - ANSI code for bright yellow text (93).
- * @property {number} blue - ANSI code for bright blue text (94).
- * @property {number} magenta - ANSI code for bright magenta text (95).
- * @property {number} cyan - ANSI code for bright cyan text (96).
- * @property {number} white - ANSI code for bright white text (97).
- * @memberOf module:@asdasdasd/utils
- */
-exports.BrightForegroundColors = {
-    brightBlack: 90,
-    brightRed: 91,
-    brightGreen: 92,
-    brightYellow: 93,
-    brightBlue: 94,
-    brightMagenta: 95,
-    brightCyan: 96,
-    brightWhite: 97,
-};
-/**
- * @description Standard background color codes for ANSI text formatting.
- * @summary This object maps color names to their corresponding ANSI color codes for standard background colors.
- * @const StandardBackgroundColors
- * @property {number} bgBlack - ANSI code for black background (40).
- * @property {number} bgRed - ANSI code for red background (41).
- * @property {number} bgGreen - ANSI code for green background (42).
- * @property {number} bgYellow - ANSI code for yellow background (43).
- * @property {number} bgBlue - ANSI code for blue background (44).
- * @property {number} bgMagenta - ANSI code for magenta background (45).
- * @property {number} bgCyan - ANSI code for cyan background (46).
- * @property {number} bgWhite - ANSI code for white background (47).
- * @memberOf module:@asdasdasd/utils
- */
-exports.StandardBackgroundColors = {
-    bgBlack: 40,
-    bgRed: 41,
-    bgGreen: 42,
-    bgYellow: 43,
-    bgBlue: 44,
-    bgMagenta: 45,
-    bgCyan: 46,
-    bgWhite: 47,
-};
-/**
- * @description Bright background color codes for ANSI text formatting.
- * @summary This object maps color names to their corresponding ANSI color codes for bright background colors.
- * @const BrightBackgroundColors
- * @property {number} bgBrightBlack - ANSI code for bright black background (100).
- * @property {number} bgBrightRed - ANSI code for bright red background (101).
- * @property {number} bgBrightGreen - ANSI code for bright green background (102).
- * @property {number} bgBrightYellow - ANSI code for bright yellow background (103).
- * @property {number} bgBrightBlue - ANSI code for bright blue background (104).
- * @property {number} bgBrightMagenta - ANSI code for bright magenta background (105).
- * @property {number} bgBrightCyan - ANSI code for bright cyan background (106).
- * @property {number} bgBrightWhite - ANSI code for bright white background (107).
- * @memberOf module:@asdasdasd/utils
- */
-exports.BrightBackgroundColors = {
-    bgBrightBlack: 100,
-    bgBrightRed: 101,
-    bgBrightGreen: 102,
-    bgBrightYellow: 103,
-    bgBrightBlue: 104,
-    bgBrightMagenta: 105,
-    bgBrightCyan: 106,
-    bgBrightWhite: 107,
-};
-/**
- * @description Text style codes for ANSI text formatting.
- * @summary This object maps style names to their corresponding ANSI codes for various text styles.
- * @const styles
- * @property {number} reset - ANSI code to reset all styles (0).
- * @property {number} bold - ANSI code for bold text (1).
- * @property {number} dim - ANSI code for dim text (2).
- * @property {number} italic - ANSI code for italic text (3).
- * @property {number} underline - ANSI code for underlined text (4).
- * @property {number} blink - ANSI code for blinking text (5).
- * @property {number} inverse - ANSI code for inverse colors (7).
- * @property {number} hidden - ANSI code for hidden text (8).
- * @property {number} strikethrough - ANSI code for strikethrough text (9).
- * @property {number} doubleUnderline - ANSI code for double underlined text (21).
- * @property {number} normalColor - ANSI code to reset color to normal (22).
- * @property {number} noItalicOrFraktur - ANSI code to turn off italic (23).
- * @property {number} noUnderline - ANSI code to turn off underline (24).
- * @property {number} noBlink - ANSI code to turn off blink (25).
- * @property {number} noInverse - ANSI code to turn off inverse (27).
- * @property {number} noHidden - ANSI code to turn off hidden (28).
- * @property {number} noStrikethrough - ANSI code to turn off strikethrough (29).
- * @memberOf module:@asdasdasd/utils
- */
-exports.styles = {
-    reset: 0,
-    bold: 1,
-    dim: 2,
-    italic: 3,
-    underline: 4,
-    blink: 5,
-    inverse: 7,
-    hidden: 8,
-    strikethrough: 9,
-    doubleUnderline: 21,
-    normalColor: 22,
-    noItalicOrFraktur: 23,
-    noUnderline: 24,
-    noBlink: 25,
-    noInverse: 27,
-    noHidden: 28,
-    noStrikethrough: 29,
-};
+exports.AbortCode = exports.DefaultLoggingConfig = exports.DefaultTheme = exports.NumericLogLevels = exports.LogLevel = exports.Tokens = exports.SetupScriptKey = exports.NoCIFLag = exports.SemVersion = exports.SemVersionRegex = exports.Encoding = void 0;
 /**
  * @description Default encoding for text operations.
  * @summary The standard UTF-8 encoding used for text processing.
@@ -446,146 +301,6 @@ exports.AbortCode = "Aborted";
 
 /***/ }),
 
-/***/ 163:
-/***/ ((__unused_webpack_module, exports, __webpack_require__) => {
-
-
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.colorizeANSI = colorizeANSI;
-exports.colorize256 = colorize256;
-exports.colorizeRGB = colorizeRGB;
-exports.applyStyle = applyStyle;
-exports.clear = clear;
-exports.raw = raw;
-const constants_1 = __webpack_require__(154);
-/**
- * @description Applies a basic ANSI color code to text.
- * @summary This function takes a string, an ANSI color code number, and an optional background flag.
- * It returns the text wrapped in the appropriate ANSI escape codes for either foreground or background coloring.
- * This function is used for basic 16-color ANSI formatting.
- *
- * @param {string} text - The text to be colored.
- * @param {number} n - The ANSI color code number.
- * @param {boolean} [bg=false] - If true, applies the color to the background instead of the foreground.
- * @return {string} The text wrapped in ANSI color codes.
- *
- * @function colorizeANSI
- * @memberOf module:@asdasdasd/utils
- */
-function colorizeANSI(text, n, bg = false) {
-    if (isNaN(n)) {
-        console.warn(`Invalid color number on the ANSI scale: ${n}. ignoring...`);
-        return text;
-    }
-    if (bg && ((n > 30 && n <= 40)
-        || (n > 90 && n <= 100))) {
-        n = n + 10;
-    }
-    return `\x1b[${n}m${text}${constants_1.AnsiReset}`;
-}
-/**
- * @description Applies a 256-color ANSI code to text.
- * @summary This function takes a string and a color number (0-255) and returns the text
- * wrapped in ANSI escape codes for either foreground or background coloring.
- *
- * @param {string} text - The text to be colored.
- * @param {number} n - The color number (0-255).
- * @param {boolean} [bg=false] - If true, applies the color to the background instead of the foreground.
- * @return {string} The text wrapped in ANSI color codes.
- *
- * @function colorize256
- * @memberOf module:@asdasdasd/utils
- */
-function colorize256(text, n, bg = false) {
-    if (isNaN(n)) {
-        console.warn(`Invalid color number on the 256 scale: ${n}. ignoring...`);
-        return text;
-    }
-    if (n < 0 || n > 255) {
-        console.warn(`Invalid color number on the 256 scale: ${n}. ignoring...`);
-        return text;
-    }
-    return `\x1b[${bg ? 48 : 38};5;${n}m${text}${constants_1.AnsiReset}`;
-}
-/**
- * @description Applies an RGB color ANSI code to text.
- * @summary This function takes a string and RGB color values (0-255 for each component)
- * and returns the text wrapped in ANSI escape codes for either foreground or background coloring.
- *
- * @param {string} text - The text to be colored.
- * @param {number} r - The red component of the color (0-255).
- * @param {number} g - The green component of the color (0-255).
- * @param {number} b - The blue component of the color (0-255).
- * @param {boolean} [bg=false] - If true, applies the color to the background instead of the foreground.
- * @return {string} The text wrapped in ANSI color codes.
- *
- * @function colorizeRGB
- * @memberOf module:@asdasdasd/utils
- */
-function colorizeRGB(text, r, g, b, bg = false) {
-    if (isNaN(r) || isNaN(g) || isNaN(b)) {
-        console.warn(`Invalid RGB color values: r=${r}, g=${g}, b=${b}. Ignoring...`);
-        return text;
-    }
-    if ([r, g, b].some(v => v < 0 || v > 255)) {
-        console.warn(`Invalid RGB color values: r=${r}, g=${g}, b=${b}. Ignoring...`);
-        return text;
-    }
-    return `\x1b[${bg ? 48 : 38};2;${r};${g};${b}m${text}${constants_1.AnsiReset}`;
-}
-/**
- * @description Applies an ANSI style code to text.
- * @summary This function takes a string and a style code (either a number or a key from the styles object)
- * and returns the text wrapped in the appropriate ANSI escape codes for that style.
- *
- * @param {string} text - The text to be styled.
- * @param {number | keyof typeof styles} n - The style code or style name.
- * @return {string} The text wrapped in ANSI style codes.
- *
- * @function applyStyle
- * @memberOf module:@asdasdasd/utils
- */
-function applyStyle(text, n) {
-    const styleCode = typeof n === "number" ? n : constants_1.styles[n];
-    return `\x1b[${styleCode}m${text}${constants_1.AnsiReset}`;
-}
-/**
- * @description Removes all ANSI formatting codes from text.
- * @summary This function takes a string that may contain ANSI escape codes for formatting
- * and returns a new string with all such codes removed, leaving only the plain text content.
- * It uses a regular expression to match and remove ANSI escape sequences.
- *
- * @param {string} text - The text potentially containing ANSI formatting codes.
- * @return {string} The input text with all ANSI formatting codes removed.
- *
- * @function clear
- * @memberOf module:@asdasdasd/utils
- */
-function clear(text) {
-    // Regular expression to match ANSI escape codes
-    const ansiRegex = /\x1B\[[0-9;]*[JKmsu]/g;
-    return text.replace(ansiRegex, '');
-}
-/**
- * @description Applies raw ANSI escape codes to text.
- * @summary This function takes a string and a raw ANSI escape code, and returns the text
- * wrapped in the provided raw ANSI code and the reset code. This allows for applying custom
- * or complex ANSI formatting that may not be covered by other utility functions.
- *
- * @param {string} text - The text to be formatted.
- * @param {string} raw - The raw ANSI escape code to be applied.
- * @return {string} The text wrapped in the raw ANSI code and the reset code.
- *
- * @function raw
- * @memberOf module:@asdasdasd/utils
- */
-function raw(text, raw) {
-    return `${raw}${text}${constants_1.AnsiReset}`;
-}
-
-
-/***/ }),
-
 /***/ 317:
 /***/ ((module) => {
 
@@ -609,6 +324,7 @@ exports.setPackageAttribute = setPackageAttribute;
 exports.getPackageVersion = getPackageVersion;
 exports.getDependencies = getDependencies;
 exports.updateDependencies = updateDependencies;
+exports.installIfNotAvailable = installIfNotAvailable;
 exports.pushToGit = pushToGit;
 exports.installDependencies = installDependencies;
 exports.normalizeImport = normalizeImport;
@@ -819,6 +535,25 @@ async function updateDependencies() {
     log.info("updating...");
     await (0, utils_1.runCommand)("npx npm run do-install").promise;
 }
+async function installIfNotAvailable(deps, dependencies) {
+    if (!dependencies) {
+        const d = await getDependencies();
+        dependencies = {
+            prod: d.prod?.map((p) => p.name) || [],
+            dev: d.dev?.map((d) => d.name) || [],
+            peer: d.peer?.map((p) => p.name) || [],
+        };
+    }
+    const { prod, dev, peer } = dependencies;
+    const installed = Array.from(new Set([...(prod || []), ...(dev || []), ...(peer || [])]));
+    deps = typeof deps === "string" ? [deps] : deps;
+    const toInstall = deps.filter((d) => !installed.includes(d));
+    if (toInstall.length)
+        await installDependencies({ dev: toInstall });
+    dependencies.dev = dependencies.dev || [];
+    dependencies.dev.push(...toInstall);
+    return dependencies;
+}
 async function pushToGit() {
     const log = logger.for(pushToGit);
     const gitUser = await (0, utils_1.runCommand)("git config user.name").promise;
@@ -836,7 +571,9 @@ async function pushToGit() {
 }
 async function installDependencies(dependencies) {
     const log = logger.for(installDependencies);
-    const { prod, dev, peer } = dependencies;
+    const prod = dependencies.prod || [];
+    const dev = dependencies.dev || [];
+    const peer = dependencies.peer || [];
     if (prod.length) {
         log.info(`Installing dependencies ${prod.join(", ")}...`);
         await (0, utils_1.runCommand)(`npm install ${prod.join(" ")}`, { cwd: process.cwd() })
@@ -877,8 +614,8 @@ module.exports = require("prompts");
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.StandardOutputWriter = void 0;
 const constants_1 = __webpack_require__(154);
-const strings_1 = __webpack_require__(593);
 const logging_1 = __webpack_require__(834);
+const styled_string_1 = __webpack_require__(508);
 /**
  * @description A standard output writer for handling command execution output.
  * @summary This class implements the OutputWriter interface and provides methods for
@@ -918,7 +655,7 @@ class StandardOutputWriter {
      */
     log(type, data) {
         data = Buffer.isBuffer(data) ? data.toString(constants_1.Encoding) : data;
-        const formatedType = type === "stderr" ? (0, strings_1.style)("ERROR").red : type;
+        const formatedType = type === "stderr" ? (0, styled_string_1.style)("ERROR").red.text : type;
         const log = `${formatedType}: ${data}`;
         this.logger.info(log);
     }
@@ -957,7 +694,7 @@ class StandardOutputWriter {
      * @param logs
      */
     exit(code, logs) {
-        this.log("stdout", `command exited code : ${code === 0 ? (0, strings_1.style)(code.toString()).green.text : (0, strings_1.style)(code === null ? "null" : code.toString()).red.text}`);
+        this.log("stdout", `command exited code : ${code === 0 ? (0, styled_string_1.style)(code.toString()).green.text : (0, styled_string_1.style)(code === null ? "null" : code.toString()).red.text}`);
         if (code === 0) {
             this.resolve(logs.map((l) => l.trim()).join("\n"));
         }
@@ -984,7 +721,7 @@ class StandardOutputWriter {
      * @param reason - The reason for resolving the promise.
      */
     resolve(reason) {
-        this.log("stdout", `${this.cmd} executed successfully: ${(0, strings_1.style)(reason ? "ran to completion" : reason).green}`);
+        this.log("stdout", `${this.cmd} executed successfully: ${(0, styled_string_1.style)(reason ? "ran to completion" : reason).green}`);
         this.lock.resolve(reason);
     }
     /**
@@ -997,12 +734,19 @@ class StandardOutputWriter {
         if (!(reason instanceof Error)) {
             reason = new Error(typeof reason === "number" ? `Exit code ${reason}` : reason);
         }
-        this.log("stderr", `${this.cmd} failed to execute: ${(0, strings_1.style)(reason.message).red}`);
+        this.log("stderr", `${this.cmd} failed to execute: ${(0, styled_string_1.style)(reason.message).red}`);
         this.lock.reject(reason);
     }
 }
 exports.StandardOutputWriter = StandardOutputWriter;
 
+
+/***/ }),
+
+/***/ 508:
+/***/ ((module) => {
+
+module.exports = require("@tvenceslau/styled-string");
 
 /***/ }),
 
@@ -1040,7 +784,7 @@ class Command {
         if (!Command.log) {
             Object.defineProperty(Command, "log", {
                 writable: false,
-                value: logging_1.Logging.for(this.name),
+                value: logging_1.Logging.for(Command.name),
             });
             this.log = Command.log;
         }
@@ -1310,267 +1054,6 @@ function toPascalCase(text) {
 }
 function escapeRegExp(string) {
     return string.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"); // $& means the whole matched string
-}
-
-
-/***/ }),
-
-/***/ 593:
-/***/ ((__unused_webpack_module, exports, __webpack_require__) => {
-
-
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.StyledString = void 0;
-exports.style = style;
-const constants_1 = __webpack_require__(154);
-const colors_1 = __webpack_require__(163);
-/**
- * @description A class that extends string functionality with ANSI color and style options.
- * @summary StyledString provides methods to apply various ANSI color and style options to text strings.
- * It implements the ColorizeOptions interface and proxies native string methods to the underlying text.
- * This class allows for chaining of styling methods and easy application of colors and styles to text.
- *
- * @class
- * @param {string} text - The initial text string to be styled.
- */
-class StyledString {
-    /**
-     *
-     * @description Creates a new StyledString instance.
-     * @summary Initializes a StyledString with the given text and sets up getter methods for various color and style options.
-     * @param {string} text - The initial text string to be styled.
-     */
-    constructor(text) {
-        this.text = text;
-        // Basic colors
-        Object.entries(constants_1.StandardForegroundColors).forEach(([name, code]) => {
-            Object.defineProperty(this, name, {
-                get: () => this.foreground(code),
-            });
-        });
-        Object.entries(constants_1.BrightForegroundColors).forEach(([name, code]) => {
-            Object.defineProperty(this, name, {
-                get: () => this.foreground(code),
-            });
-        });
-        // Background colors
-        Object.entries(constants_1.StandardBackgroundColors).forEach(([name, code]) => {
-            Object.defineProperty(this, name, {
-                get: () => this.background(code),
-            });
-        });
-        Object.entries(constants_1.BrightBackgroundColors).forEach(([name, code]) => {
-            Object.defineProperty(this, name, {
-                get: () => this.background(code),
-            });
-        });
-        // Styles
-        Object.entries(constants_1.styles).forEach(([name, code]) => {
-            Object.defineProperty(this, name, {
-                get: () => this.background(code),
-            });
-        });
-    }
-    /**
-     * @description Clears all styling from the text.
-     * @summary Removes all ANSI color and style codes from the text.
-     * @return {StyledString} The StyledString instance with cleared styling.
-     */
-    clear() {
-        this.text = (0, colors_1.clear)(this.text);
-        return this;
-    }
-    /**
-     * @description Applies raw ANSI codes to the text.
-     * @summary Allows direct application of ANSI escape sequences to the text.
-     * @param {string} rawAnsi - The raw ANSI escape sequence to apply.
-     * @return {StyledString} The StyledString instance with the raw ANSI code applied.
-     */
-    raw(rawAnsi) {
-        this.text = (0, colors_1.raw)(this.text, rawAnsi);
-        return this;
-    }
-    /**
-     * @description Applies a foreground color to the text.
-     * @summary Sets the text color using ANSI color codes.
-     * @param {number} n - The ANSI color code for the foreground color.
-     * @return {StyledString} The StyledString instance with the foreground color applied.
-     */
-    foreground(n) {
-        this.text = (0, colors_1.colorizeANSI)(this.text, n);
-        return this;
-    }
-    /**
-     * @description Applies a background color to the text.
-     * @summary Sets the background color of the text using ANSI color codes.
-     * @param {number} n - The ANSI color code for the background color.
-     * @return {StyledString} The StyledString instance with the background color applied.
-     */
-    background(n) {
-        this.text = (0, colors_1.colorizeANSI)(this.text, n, true);
-        return this;
-    }
-    /**
-     * @description Applies a text style to the string.
-     * @summary Sets text styles such as bold, italic, or underline using ANSI style codes.
-     * @param {number | keyof typeof styles} n - The style code or key from the styles object.
-     * @return {StyledString} The StyledString instance with the style applied.
-     */
-    style(n) {
-        if (typeof n === "string" && !(n in constants_1.styles)) {
-            console.warn(`Invalid style: ${n}`);
-            return this;
-        }
-        this.text = (0, colors_1.applyStyle)(this.text, n);
-        return this;
-    }
-    /**
-     * @description Applies a 256-color foreground color to the text.
-     * @summary Sets the text color using the extended 256-color palette.
-     * @param {number} n - The color number from the 256-color palette.
-     * @return {StyledString} The StyledString instance with the 256-color foreground applied.
-     */
-    color256(n) {
-        this.text = (0, colors_1.colorize256)(this.text, n);
-        return this;
-    }
-    /**
-     * @description Applies a 256-color background color to the text.
-     * @summary Sets the background color using the extended 256-color palette.
-     * @param {number} n - The color number from the 256-color palette.
-     * @return {StyledString} The StyledString instance with the 256-color background applied.
-     */
-    bgColor256(n) {
-        this.text = (0, colors_1.colorize256)(this.text, n, true);
-        return this;
-    }
-    /**
-     * @description Applies an RGB foreground color to the text.
-     * @summary Sets the text color using RGB values.
-     * @param {number} r - The red component (0-255).
-     * @param {number} g - The green component (0-255).
-     * @param {number} b - The blue component (0-255).
-     * @return {StyledString} The StyledString instance with the RGB foreground color applied.
-     */
-    rgb(r, g, b) {
-        this.text = (0, colors_1.colorizeRGB)(this.text, r, g, b);
-        return this;
-    }
-    /**
-     * @description Applies an RGB background color to the text.
-     * @summary Sets the background color using RGB values.
-     * @param {number} r - The red component (0-255).
-     * @param {number} g - The green component (0-255).
-     * @param {number} b - The blue component (0-255).
-     * @return {StyledString} The StyledString instance with the RGB background color applied.
-     */
-    bgRgb(r, g, b) {
-        this.text = (0, colors_1.colorizeRGB)(this.text, r, g, b, true);
-        return this;
-    }
-    toString() {
-        return this.text;
-    }
-}
-exports.StyledString = StyledString;
-/**
- * @description Applies styling to a given text string.
- * @summary This function takes a string and returns a StyledString object, which is an enhanced
- * version of the original string with additional methods for applying various ANSI color and style
- * options. It sets up a mapper object with methods for different styling operations and then
- * defines properties on the text string to make these methods accessible.
- *
- * @param {string[]} t  The input text to be styled.
- * @return {StyledString} A StyledString object with additional styling methods.
- *
- * @function style
- *
- * @memberOf module:@asdasdasd/utils
- */
-function style(...t) {
-    return new StyledString(t.join(" "));
-    // const mapper = {
-    //   clear: () => {
-    //     text = clear(text);
-    //     return text as StyledString;
-    //   },
-    //   raw: (rawAnsi: string) => {
-    //     text = raw(text, rawAnsi);
-    //     return text as StyledString;
-    //   },
-    //   foreground: (n: number) => {
-    //     text = colorizeANSI(text, n);
-    //     return text as StyledString;
-    //   },
-    //   background: (n: number) => {
-    //     text = colorizeANSI(text, n, true);
-    //     return text as StyledString;
-    //   },
-    //   style: (n: number | keyof typeof styles) => {
-    //     text = applyStyle(text, n);
-    //     return text as StyledString;
-    //   },
-    //   // 256 colors
-    //   color256: (n: number) => {
-    //     text =  colorize256(text, n)
-    //     return text as StyledString;
-    //   },
-    //   bgColor256: (n: number) => {
-    //     text =  colorize256(text, n, true)
-    //     return text as StyledString;
-    //   },
-    //   // RGB colors
-    //   rgb: (r: number, g: number, b: number) => {
-    //     text =  colorizeRGB(text, r, g, b)
-    //     return text as StyledString;
-    //   },
-    //   bgRgb: (r: number, g: number, b: number) => {
-    //     text =  colorizeRGB(text, r, g, b, true)
-    //     return text as StyledString;
-    //   }
-    // }
-    //
-    // // mapped methods
-    // Object.entries(mapper).forEach(([name, value]) => {
-    //   Object.defineProperty(text, name, {
-    //     value: value
-    //   });
-    // });
-    //
-    // // Basic colors
-    // Object.entries(StandardForegroundColors).forEach(([name, code]) => {
-    //   Object.defineProperty(text, name, {
-    //     get: () => (text as StyledString).foreground(code)
-    //   });
-    // });
-    //
-    // Object.entries(BrightForegroundColors).forEach(([name, code]) => {
-    //   Object.defineProperty(text, name, {
-    //     get: () => (text as StyledString).foreground(code)
-    //   });
-    // });
-    //
-    // // Background colors
-    // Object.entries(StandardBackgroundColors).forEach(([name, code]) => {
-    //   Object.defineProperty(text, name, {
-    //     get: () => (text as StyledString).background(code)
-    //   });
-    // });
-    //
-    // Object.entries(BrightBackgroundColors).forEach(([name, code]) => {
-    //   Object.defineProperty(text, name, {
-    //     get: () => (text as StyledString).background(code)
-    //   });
-    // });
-    //
-    // // Styles
-    // Object.entries(styles).forEach(([name, code]) => {
-    //   Object.defineProperty(text, name, {
-    //     get: () => (text as StyledString).background(code)
-    //   });
-    // });
-    //
-    // return text as StyledString;
 }
 
 
@@ -2660,7 +2143,7 @@ exports.HttpClient = HttpClient;
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.Logging = exports.MiniLogger = void 0;
 const constants_1 = __webpack_require__(154);
-const strings_1 = __webpack_require__(593);
+const styled_string_1 = __webpack_require__(508);
 /**
  * @description A minimal logger implementation.
  * @summary MiniLogger is a lightweight logging class that implements the VerbosityLogger interface.
@@ -2924,7 +2407,7 @@ class Logging {
         function apply(txt, option, value) {
             try {
                 const t = txt;
-                let c = (0, strings_1.style)(t);
+                let c = (0, styled_string_1.style)(t);
                 function applyColor(val, isBg = false) {
                     let f = isBg ? c.background : c.foreground;
                     if (!Array.isArray(val)) {
@@ -2939,7 +2422,7 @@ class Logging {
                             return c.rgb(val[0], val[1], val[2]);
                         default:
                             logger.error(`Not a valid color option: ${option}`);
-                            return (0, strings_1.style)(t);
+                            return (0, styled_string_1.style)(t);
                     }
                 }
                 function applyStyle(v) {
@@ -3092,7 +2575,7 @@ exports.printBanner = printBanner;
 exports.getSlogan = getSlogan;
 const text_1 = __webpack_require__(547);
 const slogans_json_1 = __importDefault(__webpack_require__(680));
-const strings_1 = __webpack_require__(593);
+const styled_string_1 = __webpack_require__(508);
 /**
  * @description Array of ANSI color codes for banner styling.
  * @summary Defines a set of ANSI color codes used to style the banner text.
@@ -3147,7 +2630,7 @@ function printBanner(logger) {
     const maxLength = banner.reduce((max, line) => Math.max(max, line.length), 0);
     banner.push((0, text_1.padEnd)(` #  ${message}`, maxLength));
     banner.forEach((line, index) => {
-        (logger ? logger.info.bind(logger) : console.log.bind(console))((0, strings_1.style)(line).raw(colors[index]).text);
+        (logger ? logger.info.bind(logger) : console.log.bind(console))((0, styled_string_1.style)(line).raw(colors[index]).text);
     });
 }
 /**
@@ -3250,12 +2733,10 @@ var __exportStar = (this && this.__exportStar) || function(m, exports) {
     for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports, p)) __createBinding(exports, m, p);
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-__exportStar(__webpack_require__(163), exports);
 __exportStar(__webpack_require__(154), exports);
 __exportStar(__webpack_require__(30), exports);
 __exportStar(__webpack_require__(340), exports);
 __exportStar(__webpack_require__(747), exports);
-__exportStar(__webpack_require__(593), exports);
 __exportStar(__webpack_require__(547), exports);
 __exportStar(__webpack_require__(874), exports);
 __exportStar(__webpack_require__(686), exports);

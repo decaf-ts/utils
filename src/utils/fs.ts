@@ -3,6 +3,7 @@ import path from "path";
 import { Logging } from "../output/logging";
 import { patchPlaceholders, patchString } from "./text";
 import { runCommand } from "./utils";
+import { DependencyMap, SimpleDependencyMap } from "./types";
 
 const logger = Logging.for("fs");
 
@@ -196,7 +197,9 @@ export function getPackageVersion(p = process.cwd()): string {
  *   getDependencies-->>Caller: Return processed dependencies
  * @memberOf module:fs-utils
  */
-export async function getDependencies(path: string = process.cwd()) {
+export async function getDependencies(
+  path: string = process.cwd()
+): Promise<DependencyMap> {
   let pkg: any;
 
   try {
@@ -225,6 +228,31 @@ export async function updateDependencies() {
   await runCommand("npx npm run do-install").promise;
 }
 
+export async function installIfNotAvailable(
+  deps: string[] | string,
+  dependencies?: SimpleDependencyMap
+) {
+  if (!dependencies) {
+    const d: DependencyMap = await getDependencies();
+    dependencies = {
+      prod: d.prod?.map((p) => p.name) || [],
+      dev: d.dev?.map((d) => d.name) || [],
+      peer: d.peer?.map((p) => p.name) || [],
+    };
+  }
+  const { prod, dev, peer } = dependencies;
+  const installed = Array.from(
+    new Set([...(prod || []), ...(dev || []), ...(peer || [])])
+  );
+  deps = typeof deps === "string" ? [deps] : deps;
+  const toInstall = deps.filter((d) => !installed.includes(d));
+
+  if (toInstall.length) await installDependencies({ dev: toInstall });
+  dependencies.dev = dependencies.dev || [];
+  dependencies.dev.push(...toInstall);
+  return dependencies;
+}
+
 export async function pushToGit() {
   const log = logger.for(pushToGit);
   const gitUser = await runCommand("git config user.name").promise;
@@ -242,12 +270,14 @@ export async function pushToGit() {
 }
 
 export async function installDependencies(dependencies: {
-  prod: string[];
-  dev: string[];
-  peer: string[];
+  prod?: string[];
+  dev?: string[];
+  peer?: string[];
 }) {
   const log = logger.for(installDependencies);
-  const { prod, dev, peer } = dependencies;
+  const prod = dependencies.prod || [];
+  const dev = dependencies.dev || [];
+  const peer = dependencies.peer || [];
   if (prod.length) {
     log.info(`Installing dependencies ${prod.join(", ")}...`);
     await runCommand(`npm install ${prod.join(" ")}`, { cwd: process.cwd() })

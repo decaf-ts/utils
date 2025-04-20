@@ -71,3 +71,15 @@ export interface CommandResult<R = void> {
 export type EnvironmentFactory<T extends object, E extends Environment<T>> = (
   ...args: unknown[]
 ) => E;
+
+export type DependencyMap = {
+  prod: { name: string; version: string }[];
+  dev: { name: string; version: string }[];
+  peer: { name: string; version: string }[];
+};
+
+export type SimpleDependencyMap = {
+  prod?: string[];
+  dev?: string[];
+  peer?: string[];
+};

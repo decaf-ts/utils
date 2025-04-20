@@ -18,6 +18,7 @@ describe("ObjectAccumulator", () => {
     const result2 = result1.accumulate(obj2);
     const result3 = result2.accumulate(obj3);
 
+    expect(result3.isActive).toBe("John");
     expect(result3.get("name")).toBe("John");
     expect(result3.get("age")).toBe(30);
     expect(result3.get("city")).toBe("New York");

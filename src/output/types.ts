@@ -1,4 +1,5 @@
-import { LogLevel, styles } from "../utils/constants";
+import { LogLevel } from "../utils/constants";
+import { styles } from "@tvenceslau/styled-string";
 
 export type LoggingContext =
   | string

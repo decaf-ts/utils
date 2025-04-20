@@ -2,9 +2,9 @@ import { Encoding } from "../utils/constants";
 import { OutputWriter } from "./OutputWriter";
 import { PromiseExecutor } from "../utils/types";
 import { OutputType } from "./types";
-import { style } from "../utils/strings";
 import { Logging } from "../output/logging";
 import { VerbosityLogger } from "../output/types";
+import { style } from "@tvenceslau/styled-string";
 
 /**
  * @description A standard output writer for handling command execution output.
@@ -49,7 +49,7 @@ export class StandardOutputWriter<R = string> implements OutputWriter {
    */
   protected log(type: OutputType, data: string | Buffer) {
     data = Buffer.isBuffer(data) ? data.toString(Encoding) : data;
-    const formatedType = type === "stderr" ? style("ERROR").red : type;
+    const formatedType = type === "stderr" ? style("ERROR").red.text : type;
     const log = `${formatedType}: ${data}`;
     this.logger.info(log);
   }

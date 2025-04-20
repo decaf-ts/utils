@@ -12,7 +12,11 @@ import {
   ThemeOptionByLogLevel,
   VerbosityLogger,
 } from "./types";
-import { ColorizeOptions, style, StyledString } from "../utils/strings";
+import {
+  ColorizeOptions,
+  style,
+  StyledString,
+} from "@tvenceslau/styled-string";
 
 /**
  * @description A minimal logger implementation.

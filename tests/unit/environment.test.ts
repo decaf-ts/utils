@@ -161,4 +161,40 @@ describe("Environment", () => {
     expect(Environment.keys()).toContain("LEVEL1");
     expect(Environment.keys()).toContain("ANOTHER_PROP");
   });
+
+  it("should directly test the expand method", () => {
+    // Create a new instance
+    const env = Environment["instance"]();
+
+    // Test object to expand
+    const testObj = { expandKey: "expandValue" };
+
+    // Call the expand method directly
+    env["expand"](testObj);
+
+    // Verify that the property was added with a getter
+    expect(env).toHaveProperty("expandKey");
+    expect(env["expandKey"]).toBe("expandValue");
+
+    // Test the setter
+    env["expandKey"] = "newValue";
+    expect(env["expandKey"]).toBe("newValue");
+
+    // Test environment variable override
+    const mockIsBrowser = isBrowser as jest.MockedFunction<typeof isBrowser>;
+    mockIsBrowser.mockReturnValue(false);
+
+    const originalEnv = process.env;
+    process.env = { ...originalEnv, EXPAND_KEY: "envValue" };
+
+    // Create a new property that will be overridden by the environment
+    const envOverrideObj = { expandEnvKey: "defaultValue" };
+    env["expand"](envOverrideObj);
+
+    // The value should be overridden by the environment variable
+    expect(env["expandEnvKey"]).toBe("envValue");
+
+    // Clean up
+    process.env = originalEnv;
+  });
 });
