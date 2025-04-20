@@ -161,7 +161,12 @@ class TemplateSetupScript extends Command<
         (val) => !!val && val.toString().length > 3
       );
 
-    if (!license) license = "MIT";
+    if (!license)
+      license = await UserInput.insistForText(
+        "license",
+        "Enter the desired License (MIT|GPL|Apache|LGPL|AGPL):",
+        (val) => !!val && !!val.match(/^(MIT|GPL|Apache|LGPL|AGPL)$/g)
+      );
 
     const pkgName = org ? `@${org}/${name}` : name;
 
@@ -185,7 +190,7 @@ class TemplateSetupScript extends Command<
     };
 
     await this.createTokenFiles();
-    if (license) await this.getLicense(license as string);
+    await this.getLicense(license as string);
     this.patchFiles();
     await updateDependencies();
     await this.auditFix();

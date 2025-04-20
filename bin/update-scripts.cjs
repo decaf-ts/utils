@@ -129,21 +129,21 @@ exports.AbortCode = exports.DefaultLoggingConfig = exports.DefaultTheme = export
  * @description Default encoding for text operations.
  * @summary The standard UTF-8 encoding used for text processing.
  * @const {string} Encoding
- * @memberOf module:@asdasdasd/utils
+ * @memberOf @decaf-ts/utils
  */
 exports.Encoding = "utf-8";
 /**
  * @description Regular expression for semantic versioning.
  * @summary A regex pattern to match and parse semantic version strings.
  * @const {RegExp} SemVersionRegex
- * @memberOf module:@asdasdasd/utils
+ * @memberOf @decaf-ts/utils
  */
 exports.SemVersionRegex = /^(\d+)\.(\d+)\.(\d+)(?:-([0-9A-Za-z-]+(?:\.[0-9A-Za-z])))/g;
 /**
  * @description Enum for semantic version components.
  * @summary Defines the three levels of semantic versioning: PATCH, MINOR, and MAJOR.
  * @enum {string}
- * @memberOf module:@asdasdasd/utils
+ * @memberOf @decaf-ts/utils
  */
 var SemVersion;
 (function (SemVersion) {
@@ -158,21 +158,21 @@ var SemVersion;
  * @description Flag to indicate non-CI environment.
  * @summary Used to specify that a command should run outside of a Continuous Integration environment.
  * @const {string} NoCIFLag
- * @memberOf module:@asdasdasd/utils
+ * @memberOf @decaf-ts/utils
  */
 exports.NoCIFLag = "-no-ci";
 /**
  * @description Key for the setup script in package.json.
  * @summary Identifies the script that runs after package installation.
  * @const {string} SetupScriptKey
- * @memberOf module:@asdasdasd/utils
+ * @memberOf @decaf-ts/utils
  */
 exports.SetupScriptKey = "postinstall";
 /**
  * @description Enum for various authentication tokens.
  * @summary Defines the file names for storing different types of authentication tokens.
  * @enum {string}
- * @memberOf module:@asdasdasd/utils
+ * @memberOf @decaf-ts/utils
  */
 var Tokens;
 (function (Tokens) {
@@ -189,7 +189,7 @@ var Tokens;
  * @description Enum for log levels.
  * @summary Defines different levels of logging for the application.
  * @enum {string}
- * @memberOf module:@asdasdasd/utils
+ * @memberOf @decaf-ts/utils
  */
 var LogLevel;
 (function (LogLevel) {
@@ -213,7 +213,7 @@ var LogLevel;
  * @property {number} verbose - Numeric value for verbose level (4).
  * @property {number} debug - Numeric value for debug level (5).
  * @property {number} silly - Numeric value for silly level (8).
- * @memberOf module:@asdasdasd/utils
+ * @memberOf @decaf-ts/utils
  */
 exports.NumericLogLevels = {
     error: 2,
@@ -244,7 +244,7 @@ exports.NumericLogLevels = {
  * @property {Object} logLevel.verbose - Styling for verbose level logs (empty object).
  * @property {Object} logLevel.debug - Styling for debug level logs.
  * @property {number} logLevel.debug.fg - Foreground color code for debug level logs (7).
- * @memberOf module:@asdasdasd/utils
+ * @memberOf @decaf-ts/utils
  */
 exports.DefaultTheme = {
     class: {
@@ -285,7 +285,7 @@ exports.DefaultTheme = {
  * @property {string} timestampFormat - Format for timestamps ("HH:mm:ss.SSS").
  * @property {boolean} context - Whether to include context information in log messages (true).
  * @property {Theme} theme - The theme to use for styling log messages (DefaultTheme).
- * @memberOf module:@asdasdasd/utils
+ * @memberOf @decaf-ts/utils
  */
 exports.DefaultLoggingConfig = {
     verbose: 0,
@@ -392,7 +392,7 @@ function patchFile(path, values) {
  *
  * @function readFile
  *
- * @memberOf module:fs-utils
+ * @memberOf module:utils
  */
 function readFile(path) {
     const log = logger.for(readFile);
@@ -415,7 +415,7 @@ function readFile(path) {
  *
  * @function writeFile
  *
- * @memberOf module:fs-utils
+ * @memberOf module:utils
  */
 function writeFile(path, data) {
     const log = logger.for(writeFile);
@@ -456,7 +456,7 @@ function writeFile(path, data) {
  *   else no property specified
  *     getPackage-->>Caller: Return entire package object
  *   end
- * @memberOf module:fs-utils
+ * @memberOf module:utils
  */
 function getPackage(p = process.cwd(), property) {
     let pkg;
@@ -1123,7 +1123,7 @@ const constants_1 = __webpack_require__(154);
  *   end
  *   LockedFunction->>LockedFunction: Update lock
  *
- * @memberOf module:@asdasdasd/utils
+ * @memberOf @decaf-ts/utils
  */
 function lockify(f) {
     let lock = Promise.resolve();
@@ -1195,7 +1195,7 @@ function spawnCommand(output, command, opts, abort, logger) {
                 continue;
             spawns[i - 1].stdout.pipe(spawns[i].stdin);
         }
-        return spawns[0];
+        return spawns[cmds.length - 1];
     }
     return spawnInner(command, abort);
 }
@@ -1242,7 +1242,7 @@ function spawnCommand(output, command, opts, abort, logger) {
  *   OutputWriter-->>runCommand: Resolve or reject promise
  *   runCommand-->>Caller: Return CommandResult
  *
- * @memberOf module:@asdasdasd/utils
+ * @memberOf @decaf-ts/utils
  */
 function runCommand(command, opts = {}, outputConstructor = (StandardOutputWriter_1.StandardOutputWriter), ...args) {
     const logger = logging_1.Logging.for(runCommand);
@@ -2207,8 +2207,8 @@ class MiniLogger {
         log.push(lvl);
         const msg = Logging.theme(typeof message === "string" ? message : message.message, "message", level);
         log.push(msg);
-        if (stack) {
-            stack = Logging.theme(level, "stack", level);
+        if (stack || message instanceof Error) {
+            stack = Logging.theme((stack || message.stack), "stack", level);
             log.push(`\nStack trace:\n${stack}`);
         }
         return log.join(" - ");
@@ -2411,7 +2411,7 @@ class Logging {
         return this._factory(reason, this._config, id);
     }
     static theme(text, type, loggerLevel, template = constants_1.DefaultTheme) {
-        if (!this._config.timestamp)
+        if (!this._config.style)
             return text;
         const logger = Logging.get().for(this.theme);
         function apply(txt, option, value) {
@@ -2528,21 +2528,21 @@ exports.DefaultCommandOptions = {
     verbose: {
         type: "number",
         short: "V",
-        default: 0
+        default: 0,
     },
     version: {
         type: "boolean",
         short: "v",
-        default: undefined
+        default: undefined,
     },
     help: {
         type: "boolean",
         short: "h",
-        default: false
+        default: false,
     },
     logLevel: {
         type: "string",
-        default: "info"
+        default: "info",
     },
     logStyle: {
         type: "boolean",
@@ -2554,8 +2554,8 @@ exports.DefaultCommandOptions = {
     },
     banner: {
         type: "boolean",
-        default: false,
-    }
+        default: true,
+    },
 };
 /**
  * @description Default command values derived from DefaultCommandOptions.
@@ -2564,9 +2564,9 @@ exports.DefaultCommandOptions = {
  * @typedef {Object} DefaultCommandValues
  * @property {unknown} [key: string] - The default value for each option in DefaultCommandOptions.
  */
-exports.DefaultCommandValues = Object.keys(exports.DefaultCommandOptions)
-    .reduce((acc, key) => {
-    acc[key] = exports.DefaultCommandOptions[key].default;
+exports.DefaultCommandValues = Object.keys(exports.DefaultCommandOptions).reduce((acc, key) => {
+    acc[key] =
+        exports.DefaultCommandOptions[key].default;
     return acc;
 }, {});
 
@@ -2766,6 +2766,7 @@ const path_1 = __importDefault(__webpack_require__(928));
 const command_1 = __webpack_require__(529);
 const utils_1 = __webpack_require__(935);
 const input_1 = __webpack_require__(946);
+const fs_1 = __importDefault(__webpack_require__(896));
 const baseUrl = "https://raw.githubusercontent.com/decaf-ts/ts-workspace/master";
 const options = {
     templates: [
@@ -2822,6 +2823,25 @@ const options = {
     ],
 };
 const argzz = {
+    // init attributes
+    boot: {
+        type: "boolean",
+    },
+    org: {
+        type: "string",
+        short: "o",
+    },
+    name: {
+        type: "string",
+        short: "n",
+        default: undefined,
+    },
+    author: {
+        type: "string",
+        short: "a",
+        default: undefined,
+    },
+    // update attributes
     all: {
         type: "boolean",
     },
@@ -2930,7 +2950,7 @@ class TemplateSync extends command_1.Command {
         }
         ["Tiago Venceslau", "TiagoVenceslau", "${author}"].forEach((el) => (this.replacements[el] = author));
         ["TS-Workspace", "ts-workspace", "${name}"].forEach((el) => (this.replacements[el] = name));
-        ["decaf-ts", "${org}"].forEach((el) => (this.replacements[el] = org));
+        ["decaf-ts", "${org}"].forEach((el) => (this.replacements[el] = org || '""'));
         this.replacements["${org_or_owner}"] = org || name;
     }
     /**
@@ -2965,6 +2985,79 @@ class TemplateSync extends command_1.Command {
         data = (0, utils_1.patchString)(data, this.replacements);
         (0, utils_1.writeFile)(path_1.default.join(process.cwd(), "LICENSE.md"), data);
         (0, utils_1.setPackageAttribute)("license", license);
+    }
+    async initPackage(pkgName, author, license) {
+        try {
+            const pkg = (0, utils_1.getPackage)();
+            delete pkg[utils_1.SetupScriptKey];
+            pkg.name = pkgName;
+            pkg.version = "0.0.1";
+            pkg.author = author;
+            pkg.license = license;
+            fs_1.default.writeFileSync("package.json", JSON.stringify(pkg, null, 2));
+        }
+        catch (e) {
+            throw new Error(`Error fixing package.json: ${e}`);
+        }
+    }
+    async createTokenFiles() {
+        const log = this.log.for(this.createTokenFiles);
+        const gitToken = await input_1.UserInput.insistForText("token", "please input your github token", (res) => {
+            return !!res.match(/^ghp_[0-9a-zA-Z]{36}$/g);
+        });
+        Object.values(utils_1.Tokens).forEach((token) => {
+            try {
+                let status;
+                try {
+                    status = fs_1.default.existsSync(token);
+                    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+                }
+                catch (e) {
+                    log.info(`Token file ${token} not found. Creating a new one...`);
+                    fs_1.default.writeFileSync(token, token === ".token" ? gitToken : "");
+                    return;
+                }
+                if (!status) {
+                    fs_1.default.writeFileSync(token, token === ".token" ? gitToken : "");
+                }
+            }
+            catch (e) {
+                throw new Error(`Error creating token file ${token}: ${e}`);
+            }
+        });
+    }
+    async getOrg() {
+        const org = await input_1.UserInput.askText("Organization", "Enter the organization name (will be used to scope your npm project. leave blank to create a unscoped project):");
+        const confirmation = await input_1.UserInput.askConfirmation("Confirm organization", "Is this organization correct?", true);
+        if (!confirmation)
+            return this.getOrg();
+        return org;
+    }
+    async auditFix() {
+        return await (0, utils_1.runCommand)("npm audit fix --force").promise;
+    }
+    patchFiles() {
+        const files = [
+            ...fs_1.default
+                .readdirSync(path_1.default.join(process.cwd(), "src"), {
+                recursive: true,
+                withFileTypes: true,
+            })
+                .filter((entry) => entry.isFile())
+                .map((entry) => path_1.default.join(entry.parentPath, entry.name)),
+            ...fs_1.default
+                .readdirSync(path_1.default.join(process.cwd(), "workdocs"), {
+                recursive: true,
+                withFileTypes: true,
+            })
+                .filter((entry) => entry.isFile())
+                .map((entry) => path_1.default.join(entry.parentPath, entry.name)),
+            path_1.default.join(process.cwd(), ".gitlab-ci.yml"),
+            path_1.default.join(process.cwd(), "jsdocs.json"),
+        ];
+        for (const file of files) {
+            (0, utils_1.patchFile)(file, this.replacements);
+        }
     }
     /**
      * @description Runs the template synchronization process.
@@ -3010,6 +3103,7 @@ class TemplateSync extends command_1.Command {
      */
     async run(args) {
         let { license } = args;
+        const { boot } = args;
         let { all, scripts, styles, docs, ide, workflows, templates, docker, typescript, automation, } = args;
         if (scripts ||
             styles ||
@@ -3021,6 +3115,15 @@ class TemplateSync extends command_1.Command {
             typescript ||
             automation)
             all = false;
+        if (boot) {
+            const org = await this.getOrg();
+            const name = await input_1.UserInput.insistForText("Project name", "Enter the project name:", (res) => res.length > 1);
+            const author = await input_1.UserInput.insistForText("Author", "Enter the author name:", (res) => res.length > 1);
+            const pkgName = org ? `@${org}/${name}` : name;
+            await this.initPackage(pkgName, author, license);
+            await this.createTokenFiles();
+            await this.auditFix();
+        }
         if (all) {
             scripts = true;
             styles = true;
@@ -3035,12 +3138,10 @@ class TemplateSync extends command_1.Command {
         this.loadValuesFromPackage();
         if (typeof license === "undefined") {
             const confirmation = await input_1.UserInput.askConfirmation("license", "Do you want to set a license?", true);
-            if (confirmation) {
-                license = input_1.UserInput.askText("license", "Enter the license name (MIT, GPL, Apache, LGPL, AGPL):");
-            }
+            if (confirmation)
+                license = await input_1.UserInput.insistForText("license", "Enter the desired License (MIT|GPL|Apache|LGPL|AGPL):", (val) => !!val && !!val.match(/^(MIT|GPL|Apache|LGPL|AGPL)$/g));
         }
-        if (license)
-            await this.getLicense(license);
+        await this.getLicense(license);
         if (typeof ide === "undefined")
             ide = await input_1.UserInput.askConfirmation("ide", "Do you want to get ide configs?", true);
         if (ide)

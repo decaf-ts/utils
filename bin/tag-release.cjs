@@ -129,21 +129,21 @@ exports.AbortCode = exports.DefaultLoggingConfig = exports.DefaultTheme = export
  * @description Default encoding for text operations.
  * @summary The standard UTF-8 encoding used for text processing.
  * @const {string} Encoding
- * @memberOf module:@asdasdasd/utils
+ * @memberOf @decaf-ts/utils
  */
 exports.Encoding = "utf-8";
 /**
  * @description Regular expression for semantic versioning.
  * @summary A regex pattern to match and parse semantic version strings.
  * @const {RegExp} SemVersionRegex
- * @memberOf module:@asdasdasd/utils
+ * @memberOf @decaf-ts/utils
  */
 exports.SemVersionRegex = /^(\d+)\.(\d+)\.(\d+)(?:-([0-9A-Za-z-]+(?:\.[0-9A-Za-z])))/g;
 /**
  * @description Enum for semantic version components.
  * @summary Defines the three levels of semantic versioning: PATCH, MINOR, and MAJOR.
  * @enum {string}
- * @memberOf module:@asdasdasd/utils
+ * @memberOf @decaf-ts/utils
  */
 var SemVersion;
 (function (SemVersion) {
@@ -158,21 +158,21 @@ var SemVersion;
  * @description Flag to indicate non-CI environment.
  * @summary Used to specify that a command should run outside of a Continuous Integration environment.
  * @const {string} NoCIFLag
- * @memberOf module:@asdasdasd/utils
+ * @memberOf @decaf-ts/utils
  */
 exports.NoCIFLag = "-no-ci";
 /**
  * @description Key for the setup script in package.json.
  * @summary Identifies the script that runs after package installation.
  * @const {string} SetupScriptKey
- * @memberOf module:@asdasdasd/utils
+ * @memberOf @decaf-ts/utils
  */
 exports.SetupScriptKey = "postinstall";
 /**
  * @description Enum for various authentication tokens.
  * @summary Defines the file names for storing different types of authentication tokens.
  * @enum {string}
- * @memberOf module:@asdasdasd/utils
+ * @memberOf @decaf-ts/utils
  */
 var Tokens;
 (function (Tokens) {
@@ -189,7 +189,7 @@ var Tokens;
  * @description Enum for log levels.
  * @summary Defines different levels of logging for the application.
  * @enum {string}
- * @memberOf module:@asdasdasd/utils
+ * @memberOf @decaf-ts/utils
  */
 var LogLevel;
 (function (LogLevel) {
@@ -213,7 +213,7 @@ var LogLevel;
  * @property {number} verbose - Numeric value for verbose level (4).
  * @property {number} debug - Numeric value for debug level (5).
  * @property {number} silly - Numeric value for silly level (8).
- * @memberOf module:@asdasdasd/utils
+ * @memberOf @decaf-ts/utils
  */
 exports.NumericLogLevels = {
     error: 2,
@@ -244,7 +244,7 @@ exports.NumericLogLevels = {
  * @property {Object} logLevel.verbose - Styling for verbose level logs (empty object).
  * @property {Object} logLevel.debug - Styling for debug level logs.
  * @property {number} logLevel.debug.fg - Foreground color code for debug level logs (7).
- * @memberOf module:@asdasdasd/utils
+ * @memberOf @decaf-ts/utils
  */
 exports.DefaultTheme = {
     class: {
@@ -285,7 +285,7 @@ exports.DefaultTheme = {
  * @property {string} timestampFormat - Format for timestamps ("HH:mm:ss.SSS").
  * @property {boolean} context - Whether to include context information in log messages (true).
  * @property {Theme} theme - The theme to use for styling log messages (DefaultTheme).
- * @memberOf module:@asdasdasd/utils
+ * @memberOf @decaf-ts/utils
  */
 exports.DefaultLoggingConfig = {
     verbose: 0,
@@ -392,7 +392,7 @@ function patchFile(path, values) {
  *
  * @function readFile
  *
- * @memberOf module:fs-utils
+ * @memberOf module:utils
  */
 function readFile(path) {
     const log = logger.for(readFile);
@@ -415,7 +415,7 @@ function readFile(path) {
  *
  * @function writeFile
  *
- * @memberOf module:fs-utils
+ * @memberOf module:utils
  */
 function writeFile(path, data) {
     const log = logger.for(writeFile);
@@ -456,7 +456,7 @@ function writeFile(path, data) {
  *   else no property specified
  *     getPackage-->>Caller: Return entire package object
  *   end
- * @memberOf module:fs-utils
+ * @memberOf module:utils
  */
 function getPackage(p = process.cwd(), property) {
     let pkg;
@@ -1114,7 +1114,7 @@ const constants_1 = __webpack_require__(154);
  *   end
  *   LockedFunction->>LockedFunction: Update lock
  *
- * @memberOf module:@asdasdasd/utils
+ * @memberOf @decaf-ts/utils
  */
 function lockify(f) {
     let lock = Promise.resolve();
@@ -1186,7 +1186,7 @@ function spawnCommand(output, command, opts, abort, logger) {
                 continue;
             spawns[i - 1].stdout.pipe(spawns[i].stdin);
         }
-        return spawns[0];
+        return spawns[cmds.length - 1];
     }
     return spawnInner(command, abort);
 }
@@ -1233,7 +1233,7 @@ function spawnCommand(output, command, opts, abort, logger) {
  *   OutputWriter-->>runCommand: Resolve or reject promise
  *   runCommand-->>Caller: Return CommandResult
  *
- * @memberOf module:@asdasdasd/utils
+ * @memberOf @decaf-ts/utils
  */
 function runCommand(command, opts = {}, outputConstructor = (StandardOutputWriter_1.StandardOutputWriter), ...args) {
     const logger = logging_1.Logging.for(runCommand);
@@ -2109,8 +2109,8 @@ class MiniLogger {
         log.push(lvl);
         const msg = Logging.theme(typeof message === "string" ? message : message.message, "message", level);
         log.push(msg);
-        if (stack) {
-            stack = Logging.theme(level, "stack", level);
+        if (stack || message instanceof Error) {
+            stack = Logging.theme((stack || message.stack), "stack", level);
             log.push(`\nStack trace:\n${stack}`);
         }
         return log.join(" - ");
@@ -2313,7 +2313,7 @@ class Logging {
         return this._factory(reason, this._config, id);
     }
     static theme(text, type, loggerLevel, template = constants_1.DefaultTheme) {
-        if (!this._config.timestamp)
+        if (!this._config.style)
             return text;
         const logger = Logging.get().for(this.theme);
         function apply(txt, option, value) {
@@ -2430,21 +2430,21 @@ exports.DefaultCommandOptions = {
     verbose: {
         type: "number",
         short: "V",
-        default: 0
+        default: 0,
     },
     version: {
         type: "boolean",
         short: "v",
-        default: undefined
+        default: undefined,
     },
     help: {
         type: "boolean",
         short: "h",
-        default: false
+        default: false,
     },
     logLevel: {
         type: "string",
-        default: "info"
+        default: "info",
     },
     logStyle: {
         type: "boolean",
@@ -2456,8 +2456,8 @@ exports.DefaultCommandOptions = {
     },
     banner: {
         type: "boolean",
-        default: false,
-    }
+        default: true,
+    },
 };
 /**
  * @description Default command values derived from DefaultCommandOptions.
@@ -2466,9 +2466,9 @@ exports.DefaultCommandOptions = {
  * @typedef {Object} DefaultCommandValues
  * @property {unknown} [key: string] - The default value for each option in DefaultCommandOptions.
  */
-exports.DefaultCommandValues = Object.keys(exports.DefaultCommandOptions)
-    .reduce((acc, key) => {
-    acc[key] = exports.DefaultCommandOptions[key].default;
+exports.DefaultCommandValues = Object.keys(exports.DefaultCommandOptions).reduce((acc, key) => {
+    acc[key] =
+        exports.DefaultCommandOptions[key].default;
     return acc;
 }, {});
 

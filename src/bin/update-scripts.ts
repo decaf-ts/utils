@@ -79,7 +79,6 @@ const argzz = {
   // init attributes
   boot: {
     type: "boolean",
-    default: true,
   },
   org: {
     type: "string",
@@ -279,6 +278,13 @@ class TemplateSync extends Command<CommandOptions<typeof argzz>, void> {
 
   async createTokenFiles() {
     const log = this.log.for(this.createTokenFiles);
+    const gitToken = await UserInput.insistForText(
+      "token",
+      "please input your github token",
+      (res: string) => {
+        return !!res.match(/^ghp_[0-9a-zA-Z]{36}$/g);
+      }
+    );
     Object.values(Tokens).forEach((token) => {
       try {
         let status;
@@ -287,11 +293,11 @@ class TemplateSync extends Command<CommandOptions<typeof argzz>, void> {
           // eslint-disable-next-line @typescript-eslint/no-unused-vars
         } catch (e: unknown) {
           log.info(`Token file ${token} not found. Creating a new one...`);
-          fs.writeFileSync(token, "");
+          fs.writeFileSync(token, token === ".token" ? gitToken : "");
           return;
         }
         if (!status) {
-          fs.writeFileSync(token, "");
+          fs.writeFileSync(token, token === ".token" ? gitToken : "");
         }
       } catch (e: unknown) {
         throw new Error(`Error creating token file ${token}: ${e}`);
@@ -325,20 +331,17 @@ class TemplateSync extends Command<CommandOptions<typeof argzz>, void> {
           recursive: true,
           withFileTypes: true,
         })
-        .filter((entry) => entry.isFile() && entry.name.endsWith(".ts"))
+        .filter((entry) => entry.isFile())
         .map((entry) => path.join(entry.parentPath, entry.name)),
       ...fs
         .readdirSync(path.join(process.cwd(), "workdocs"), {
           recursive: true,
           withFileTypes: true,
         })
-        .filter(
-          (entry) =>
-            entry.isFile() &&
-            (entry.name.endsWith(".md") || entry.name.endsWith(".json"))
-        )
+        .filter((entry) => entry.isFile())
         .map((entry) => path.join(entry.parentPath, entry.name)),
       path.join(process.cwd(), ".gitlab-ci.yml"),
+      path.join(process.cwd(), "jsdocs.json"),
     ];
 
     for (const file of files) {
@@ -393,6 +396,7 @@ class TemplateSync extends Command<CommandOptions<typeof argzz>, void> {
       typeof DefaultCommandValues & { [k in keyof typeof argzz]: unknown }
   ) {
     let { license } = args;
+    const { boot } = args;
     let {
       all,
       scripts,
@@ -418,6 +422,25 @@ class TemplateSync extends Command<CommandOptions<typeof argzz>, void> {
     )
       all = false;
 
+    if (boot) {
+      const org = await this.getOrg();
+      const name = await UserInput.insistForText(
+        "Project name",
+        "Enter the project name:",
+        (res: string) => res.length > 1
+      );
+      const author = await UserInput.insistForText(
+        "Author",
+        "Enter the author name:",
+        (res: string) => res.length > 1
+      );
+      const pkgName = org ? `@${org}/${name}` : name;
+
+      await this.initPackage(pkgName, author, license as string);
+      await this.createTokenFiles();
+      await this.auditFix();
+    }
+
     if (all) {
       scripts = true;
       styles = true;
@@ -437,15 +460,15 @@ class TemplateSync extends Command<CommandOptions<typeof argzz>, void> {
         "Do you want to set a license?",
         true
       );
-      if (confirmation) {
-        license = UserInput.askText(
+      if (confirmation)
+        license = await UserInput.insistForText(
           "license",
-          "Enter the license name (MIT, GPL, Apache, LGPL, AGPL):"
+          "Enter the desired License (MIT|GPL|Apache|LGPL|AGPL):",
+          (val) => !!val && !!val.match(/^(MIT|GPL|Apache|LGPL|AGPL)$/g)
         );
-      }
     }
 
-    if (license) await this.getLicense(license as "MIT");
+    await this.getLicense(license as "MIT");
 
     if (typeof ide === "undefined")
       ide = await UserInput.askConfirmation(
