@@ -520,6 +520,7 @@ async function getDependencies(path = process.cwd()) {
     catch (e) {
         throw new Error(`Failed to retrieve dependencies: ${e}`);
     }
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const mapper = (entry, index) => ({
         name: entry[0],
         version: entry[1].version,
@@ -832,6 +833,7 @@ class Command {
      * @param {ParseArgsResult} args - The parsed command-line arguments.
      * @returns {void}
      */
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     help(args) {
         return this.log.info(`This is help. I'm no use because I should have been overridden.`);
     }
