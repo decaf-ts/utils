@@ -32,21 +32,21 @@ export const DefaultCommandOptions = {
   verbose: {
     type: "number",
     short: "V",
-    default: 0
+    default: 0,
   },
   version: {
     type: "boolean",
     short: "v",
-    default: undefined
+    default: undefined,
   },
   help: {
     type: "boolean",
     short: "h",
-    default: false
+    default: false,
   },
   logLevel: {
     type: "string",
-    default: "info"
+    default: "info",
   },
   logStyle: {
     type: "boolean",
@@ -58,8 +58,8 @@ export const DefaultCommandOptions = {
   },
   banner: {
     type: "boolean",
-    default: false,
-  }
+    default: true,
+  },
 };
 
 /**
@@ -69,8 +69,13 @@ export const DefaultCommandOptions = {
  * @typedef {Object} DefaultCommandValues
  * @property {unknown} [key: string] - The default value for each option in DefaultCommandOptions.
  */
-export const DefaultCommandValues: {[k in keyof typeof DefaultCommandOptions]: unknown} = Object.keys(DefaultCommandOptions)
-  .reduce((acc: Record<keyof typeof DefaultCommandOptions, unknown>, key: string) => {
-    acc[key as keyof typeof DefaultCommandOptions] = DefaultCommandOptions[key as keyof typeof DefaultCommandOptions].default;
+export const DefaultCommandValues: {
+  [k in keyof typeof DefaultCommandOptions]: unknown;
+} = Object.keys(DefaultCommandOptions).reduce(
+  (acc: Record<keyof typeof DefaultCommandOptions, unknown>, key: string) => {
+    acc[key as keyof typeof DefaultCommandOptions] =
+      DefaultCommandOptions[key as keyof typeof DefaultCommandOptions].default;
     return acc;
-}, {} as Record<keyof typeof DefaultCommandValues, unknown>)
+  },
+  {} as Record<keyof typeof DefaultCommandValues, unknown>
+);

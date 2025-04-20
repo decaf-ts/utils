@@ -4,13 +4,18 @@ import { CommandOptions } from "../cli/types";
 import {
   getPackage,
   HttpClient,
+  patchFile,
   patchString,
+  runCommand,
   setPackageAttribute,
+  SetupScriptKey,
+  Tokens,
   writeFile,
 } from "../utils";
 import { LoggingConfig } from "../output";
 import { DefaultCommandValues } from "../cli";
 import { UserInput } from "../input";
+import fs from "fs";
 
 const baseUrl =
   "https://raw.githubusercontent.com/decaf-ts/ts-workspace/master";
@@ -71,6 +76,26 @@ const options = {
 };
 
 const argzz = {
+  // init attributes
+  boot: {
+    type: "boolean",
+    default: true,
+  },
+  org: {
+    type: "string",
+    short: "o",
+  },
+  name: {
+    type: "string",
+    short: "n",
+    default: undefined,
+  },
+  author: {
+    type: "string",
+    short: "a",
+    default: undefined,
+  },
+  // update attributes
   all: {
     type: "boolean",
   },
@@ -142,7 +167,7 @@ class TemplateSync extends Command<CommandOptions<typeof argzz>, void> {
       (el) => (this.replacements[el] = name)
     );
     ["decaf-ts", "${org}"].forEach(
-      (el) => (this.replacements[el] = org as string)
+      (el) => (this.replacements[el] = (org as string) || '""')
     );
     this.replacements["${org_or_owner}"] = org || name;
   }
@@ -237,6 +262,89 @@ class TemplateSync extends Command<CommandOptions<typeof argzz>, void> {
    * @returns {Promise<void>}
    */
   getDocker = () => this.downloadOption("docker");
+
+  async initPackage(pkgName: string, author: string, license: string) {
+    try {
+      const pkg = getPackage() as Record<string, unknown>;
+      delete pkg[SetupScriptKey];
+      pkg.name = pkgName;
+      pkg.version = "0.0.1";
+      pkg.author = author;
+      pkg.license = license;
+      fs.writeFileSync("package.json", JSON.stringify(pkg, null, 2));
+    } catch (e: unknown) {
+      throw new Error(`Error fixing package.json: ${e}`);
+    }
+  }
+
+  async createTokenFiles() {
+    const log = this.log.for(this.createTokenFiles);
+    Object.values(Tokens).forEach((token) => {
+      try {
+        let status;
+        try {
+          status = fs.existsSync(token);
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        } catch (e: unknown) {
+          log.info(`Token file ${token} not found. Creating a new one...`);
+          fs.writeFileSync(token, "");
+          return;
+        }
+        if (!status) {
+          fs.writeFileSync(token, "");
+        }
+      } catch (e: unknown) {
+        throw new Error(`Error creating token file ${token}: ${e}`);
+      }
+    });
+  }
+
+  async getOrg(): Promise<string> {
+    const org = await UserInput.askText(
+      "Organization",
+      "Enter the organization name (will be used to scope your npm project. leave blank to create a unscoped project):"
+    );
+    const confirmation = await UserInput.askConfirmation(
+      "Confirm organization",
+      "Is this organization correct?",
+      true
+    );
+    if (!confirmation) return this.getOrg();
+
+    return org;
+  }
+
+  async auditFix() {
+    return await runCommand("npm audit fix --force").promise;
+  }
+
+  patchFiles() {
+    const files = [
+      ...fs
+        .readdirSync(path.join(process.cwd(), "src"), {
+          recursive: true,
+          withFileTypes: true,
+        })
+        .filter((entry) => entry.isFile() && entry.name.endsWith(".ts"))
+        .map((entry) => path.join(entry.parentPath, entry.name)),
+      ...fs
+        .readdirSync(path.join(process.cwd(), "workdocs"), {
+          recursive: true,
+          withFileTypes: true,
+        })
+        .filter(
+          (entry) =>
+            entry.isFile() &&
+            (entry.name.endsWith(".md") || entry.name.endsWith(".json"))
+        )
+        .map((entry) => path.join(entry.parentPath, entry.name)),
+      path.join(process.cwd(), ".gitlab-ci.yml"),
+    ];
+
+    for (const file of files) {
+      patchFile(file as string, this.replacements);
+    }
+  }
 
   /**
    * @description Runs the template synchronization process.

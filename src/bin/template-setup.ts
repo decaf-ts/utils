@@ -1,6 +1,7 @@
 import fs from "fs";
 import { Encoding, SetupScriptKey, Tokens } from "../utils/constants";
 import {
+  getPackage,
   patchFile,
   pushToGit,
   updateDependencies,
@@ -51,7 +52,7 @@ class TemplateSetupScript extends Command<
 
   async fixPackage(pkgName: string, author: string, license: string) {
     try {
-      const pkg = JSON.parse(fs.readFileSync("package.json", Encoding));
+      const pkg = getPackage() as Record<string, unknown>;
       delete pkg[SetupScriptKey];
       pkg.name = pkgName;
       pkg.version = "0.0.1";
