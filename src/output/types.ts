@@ -62,8 +62,9 @@ export interface VerbosityLogger {
  */
 export type LoggingConfig = {
   level: LogLevel;
-  logLevel: boolean;
+  logLevel?: boolean;
   verbose: number;
+  separator: string;
   style?: boolean;
   timestamp?: boolean;
   timestampFormat?: string;

@@ -2,8 +2,8 @@
 
 Version 3, 29 June 2007
 
-Copyright (C) 2025 asdasdasd
-<https:/github.com/asdasdasd>
+Copyright (C) 2025 Tiago Venceslau
+<https://github.com/Tiago Venceslau>
 
 Everyone is permitted to copy and distribute verbatim copies of this
 license document, but changing it is not allowed.

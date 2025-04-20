@@ -61,7 +61,8 @@
     "typescript",
     "ts"
   ],
-  "license": "MIT",
+  "author": "Tiago Venceslau",
+  "license": "LGPL",
   "bugs": {
     "url": "https://github.com/decaf-ts/ts-workspace/issues"
   },

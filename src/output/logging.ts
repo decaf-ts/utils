@@ -76,33 +76,49 @@ export class MiniLogger implements VerbosityLogger {
     stack?: string
   ): string {
     const log: string[] = [];
+    const style = this.config("style");
     if (this.config("timestamp")) {
-      const timestamp = Logging.theme(
-        new Date().toISOString(),
-        "timestamp",
-        level
-      );
+      const date = new Date().toISOString();
+      const timestamp = style ? Logging.theme(date, "timestamp", level) : date;
       log.push(timestamp);
     }
 
-    const lvl: string = Logging.theme(level, "logLevel", level);
-    log.push(lvl);
-    const msg: string = Logging.theme(
-      typeof message === "string" ? message : (message as Error).message,
-      "message",
-      level
-    );
+    if (this.config("logLevel")) {
+      const lvl: string = style
+        ? Logging.theme(level, "logLevel", level)
+        : level;
+      log.push(lvl);
+    }
+
+    if (this.config("context")) {
+      const context: string = style
+        ? Logging.theme(this.context, "class", level)
+        : this.context;
+      log.push(context);
+    }
+
+    const msg: string = style
+      ? Logging.theme(
+          typeof message === "string" ? message : (message as Error).message,
+          "message",
+          level
+        )
+      : typeof message === "string"
+        ? message
+        : (message as Error).message;
     log.push(msg);
     if (stack || message instanceof Error) {
-      stack = Logging.theme(
-        (stack || (message as Error).stack) as string,
-        "stack",
-        level
-      );
+      stack = style
+        ? Logging.theme(
+            (stack || (message as Error).stack) as string,
+            "stack",
+            level
+          )
+        : stack;
       log.push(`\nStack trace:\n${stack}`);
     }
 
-    return log.join(" - ");
+    return log.join(this.config("separator") as string);
   }
 
   /**
