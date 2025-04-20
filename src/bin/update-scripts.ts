@@ -212,7 +212,12 @@ class TemplateSync extends Command<CommandOptions<typeof argzz>, void> {
    * @description Downloads IDE configuration files.
    * @returns {Promise<void>}
    */
-  getIde = () => this.downloadOption("ide");
+  async getIde() {
+    fs.mkdirSync(path.join(process.cwd(), ".idea", "runConfigurations"), {
+      recursive: true,
+    });
+    await this.downloadOption("ide");
+  }
 
   /**
    * @description Downloads script files.

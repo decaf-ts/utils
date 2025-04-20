@@ -292,6 +292,7 @@ exports.DefaultLoggingConfig = {
     level: LogLevel.info,
     logLevel: true,
     style: false,
+    separator: " - ",
     timestamp: true,
     timestampFormat: "HH:mm:ss.SSS",
     context: true,
@@ -799,7 +800,7 @@ class Command {
             this.log = Command.log;
         }
         this.log = Command.log.for(this.name);
-        this.inputs = Object.assign({}, constants_2.DefaultCommandValues, inputs);
+        this.inputs = Object.assign({}, constants_2.DefaultCommandOptions, inputs);
     }
     /**
      * @protected
@@ -2205,19 +2206,37 @@ class MiniLogger {
      */
     createLog(level, message, stack) {
         const log = [];
+        const style = this.config("style");
         if (this.config("timestamp")) {
-            const timestamp = Logging.theme(new Date().toISOString(), "timestamp", level);
+            const date = new Date().toISOString();
+            const timestamp = style ? Logging.theme(date, "timestamp", level) : date;
             log.push(timestamp);
         }
-        const lvl = Logging.theme(level, "logLevel", level);
-        log.push(lvl);
-        const msg = Logging.theme(typeof message === "string" ? message : message.message, "message", level);
+        if (this.config("logLevel")) {
+            const lvl = style
+                ? Logging.theme(level, "logLevel", level)
+                : level;
+            log.push(lvl);
+        }
+        if (this.config("context")) {
+            const context = style
+                ? Logging.theme(this.context, "class", level)
+                : this.context;
+            log.push(context);
+        }
+        const msg = style
+            ? Logging.theme(typeof message === "string" ? message : message.message, "message", level)
+            : typeof message === "string"
+                ? message
+                : message.message;
         log.push(msg);
         if (stack || message instanceof Error) {
-            stack = Logging.theme((stack || message.stack), "stack", level);
+            stack = style
+                ? Logging.theme((stack || message.stack), "stack", level)
+                : stack;
             log.push(`\nStack trace:\n${stack}`);
         }
-        return log.join(" - ");
+        return log.join(this.config("separator"));
     }
     /**
      * @description Logs a message with the specified log level.
@@ -2532,9 +2551,9 @@ exports.DefaultCommandValues = exports.DefaultCommandOptions = void 0;
  */
 exports.DefaultCommandOptions = {
     verbose: {
-        type: "number",
+        type: "boolean",
         short: "V",
-        default: 0,
+        default: undefined,
     },
     version: {
         type: "boolean",
@@ -2589,7 +2608,6 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.printBanner = printBanner;
 exports.getSlogan = getSlogan;
-const text_1 = __webpack_require__(547);
 const slogans_json_1 = __importDefault(__webpack_require__(680));
 const styled_string_1 = __webpack_require__(508);
 /**
@@ -2633,20 +2651,18 @@ const colors = [
  */
 function printBanner(logger) {
     const message = getSlogan();
-    const banner = `
-#                 ░▒▓███████▓▒░  ░▒▓████████▓▒░  ░▒▓██████▓▒░   ░▒▓██████▓▒░  ░▒▓████████▓▒░       ░▒▓████████▓▒░  ░▒▓███████▓▒░ 
+    const banner = `#                 ░▒▓███████▓▒░  ░▒▓████████▓▒░  ░▒▓██████▓▒░   ░▒▓██████▓▒░  ░▒▓████████▓▒░       ░▒▓████████▓▒░  ░▒▓███████▓▒░ 
 #      ( (        ░▒▓█▓▒░░▒▓█▓▒░ ░▒▓█▓▒░        ░▒▓█▓▒░░▒▓█▓▒░ ░▒▓█▓▒░░▒▓█▓▒░ ░▒▓█▓▒░                 ░▒▓█▓▒░     ░▒▓█▓▒░        
 #       ) )       ░▒▓█▓▒░░▒▓█▓▒░ ░▒▓█▓▒░        ░▒▓█▓▒░        ░▒▓█▓▒░░▒▓█▓▒░ ░▒▓█▓▒░                 ░▒▓█▓▒░     ░▒▓█▓▒░        
 #    [=======]    ░▒▓█▓▒░░▒▓█▓▒░ ░▒▓██████▓▒░   ░▒▓█▓▒░        ░▒▓████████▓▒░ ░▒▓██████▓▒░            ░▒▓█▓▒░      ░▒▓██████▓▒░  
 #     \`-----´     ░▒▓█▓▒░░▒▓█▓▒░ ░▒▓█▓▒░        ░▒▓█▓▒░        ░▒▓█▓▒░░▒▓█▓▒░ ░▒▓█▓▒░                 ░▒▓█▓▒░            ░▒▓█▓▒░ 
 #                 ░▒▓█▓▒░░▒▓█▓▒░ ░▒▓█▓▒░        ░▒▓█▓▒░░▒▓█▓▒░ ░▒▓█▓▒░░▒▓█▓▒░ ░▒▓█▓▒░                 ░▒▓█▓▒░            ░▒▓█▓▒░ 
 #                 ░▒▓███████▓▒░  ░▒▓████████▓▒░  ░▒▓██████▓▒░  ░▒▓█▓▒░░▒▓█▓▒░ ░▒▓█▓▒░                 ░▒▓█▓▒░     ░▒▓███████▓▒░  
-#                                                                                                                 
-`.split("\n");
+#`.split("\n");
     const maxLength = banner.reduce((max, line) => Math.max(max, line.length), 0);
-    banner.push((0, text_1.padEnd)(` #  ${message}`, maxLength));
+    banner.push(`#  ${message.padStart(maxLength - 3)}`);
     banner.forEach((line, index) => {
-        (logger ? logger.info.bind(logger) : console.log.bind(console))((0, styled_string_1.style)(line).raw(colors[index]).text);
+        (logger ? logger.info.bind(logger) : console.log.bind(console))((0, styled_string_1.style)(line || "").raw(colors[index]).text);
     });
 }
 /**
@@ -2898,11 +2914,6 @@ class TemplateSync extends command_1.Command {
         super("TemplateSync", argzz);
         this.replacements = {};
         /**
-         * @description Downloads IDE configuration files.
-         * @returns {Promise<void>}
-         */
-        this.getIde = () => this.downloadOption("ide");
-        /**
          * @description Downloads script files.
          * @returns {Promise<void>}
          */
@@ -2992,6 +3003,16 @@ class TemplateSync extends command_1.Command {
         (0, utils_1.writeFile)(path_1.default.join(process.cwd(), "LICENSE.md"), data);
         (0, utils_1.setPackageAttribute)("license", license);
     }
+    /**
+     * @description Downloads IDE configuration files.
+     * @returns {Promise<void>}
+     */
+    async getIde() {
+        fs_1.default.mkdirSync(path_1.default.join(process.cwd(), ".idea", "runConfigurations"), {
+            recursive: true,
+        });
+        await this.downloadOption("ide");
+    }
     async initPackage(pkgName, author, license) {
         try {
             const pkg = (0, utils_1.getPackage)();
@@ -3056,10 +3077,10 @@ class TemplateSync extends command_1.Command {
                 recursive: true,
                 withFileTypes: true,
             })
-                .filter((entry) => entry.isFile())
+                .filter((entry) => entry.isFile() && entry.name.endsWith(".md"))
                 .map((entry) => path_1.default.join(entry.parentPath, entry.name)),
             path_1.default.join(process.cwd(), ".gitlab-ci.yml"),
-            path_1.default.join(process.cwd(), "jsdocs.json"),
+            path_1.default.join(process.cwd(), "workdocs", "jsdocs.json"),
         ];
         for (const file of files) {
             (0, utils_1.patchFile)(file, this.replacements);
