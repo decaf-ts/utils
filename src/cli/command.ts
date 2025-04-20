@@ -94,6 +94,7 @@ export abstract class Command<I, R> {
    * @param {ParseArgsResult} args - The parsed command-line arguments.
    * @returns {void}
    */
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   protected help(args: ParseArgsResult): void {
     return this.log.info(
       `This is help. I'm no use because I should have been overridden.`

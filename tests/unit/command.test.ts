@@ -6,7 +6,6 @@ import { Environment } from "../../src/utils/environment";
 import { DefaultLoggingConfig } from "../../src/utils/constants";
 import * as fsUtils from "../../src/utils/fs";
 import { ParseArgsResult } from "../../src/input/types";
-import * as outputCommon from "../../src/output/common";
 
 // Mock dependencies
 jest.mock("../../src/output/logging");
@@ -33,6 +32,7 @@ class TestCommand extends Command<{ testOption?: string }, string> {
   }
 
   // Implement the abstract run method
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   protected async run<R>(answers: any): Promise<R | string | void> {
     return "Test command executed successfully";
   }

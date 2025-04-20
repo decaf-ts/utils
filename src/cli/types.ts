@@ -1,6 +1,5 @@
-import { LoggingConfig, VerbosityLogger } from "../output/types";
-import { ParseArgsOptionConfig, ParseArgsResult } from "../input/types";
-import { Command } from "./command";
+import { LoggingConfig } from "../output/types";
+import { ParseArgsOptionConfig } from "../input/types";
 
 /**
  * @description Interface for input options.

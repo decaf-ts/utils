@@ -208,6 +208,7 @@ export async function getDependencies(
     throw new Error(`Failed to retrieve dependencies: ${e}`);
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const mapper = (entry: [string, unknown], index: number) => ({
     name: entry[0],
     version: (entry[1] as any).version,
