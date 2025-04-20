@@ -4,7 +4,7 @@ import { CommandOptions } from "./types";
 import { Logging } from "../output/logging";
 import { DefaultLoggingConfig, LogLevel } from "../utils/constants";
 import { UserInput } from "../input/input";
-import { DefaultCommandValues } from "./constants";
+import { DefaultCommandOptions, DefaultCommandValues } from "./constants";
 import { getDependencies, getPackageVersion } from "../utils/fs";
 import { printBanner } from "../output/common";
 import { Environment } from "../utils/environment";
@@ -50,7 +50,7 @@ export abstract class Command<I, R> {
       this.log = Command.log;
     }
     this.log = Command.log.for(this.name);
-    this.inputs = Object.assign({}, DefaultCommandValues, inputs);
+    this.inputs = Object.assign({}, DefaultCommandOptions, inputs);
   }
 
   /**

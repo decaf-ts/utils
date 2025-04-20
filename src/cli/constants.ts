@@ -30,9 +30,8 @@
  */
 export const DefaultCommandOptions = {
   verbose: {
-    type: "number",
+    type: "boolean",
     short: "V",
-    default: 0,
   },
   version: {
     type: "boolean",
@@ -74,7 +73,7 @@ export const DefaultCommandValues: {
 } = Object.keys(DefaultCommandOptions).reduce(
   (acc: Record<keyof typeof DefaultCommandOptions, unknown>, key: string) => {
     acc[key as keyof typeof DefaultCommandOptions] =
-      DefaultCommandOptions[key as keyof typeof DefaultCommandOptions].default;
+      DefaultCommandOptions[key as keyof typeof DefaultCommandOptions];
     return acc;
   },
   {} as Record<keyof typeof DefaultCommandValues, unknown>
