@@ -1,6 +1,6 @@
 {
   "name": "@decaf-ts/utils",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "module management utils for decaf-ts",
   "type": "module",
   "exports": {
