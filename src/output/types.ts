@@ -10,7 +10,7 @@ export type LoggingContext =
  * @description Interface for a logger with verbosity levels.
  * @summary Defines methods for logging at different verbosity levels.
  * @interface VerbosityLogger
- * @memberOf module:@asdasdasd/utils
+ * @memberOf @decaf-ts/utils
  */
 export interface VerbosityLogger {
   /**
@@ -42,7 +42,7 @@ export interface VerbosityLogger {
    * @param {string} msg - The message to log.
    */
   debug(msg: string): void;
-  for(method?: string | Function): VerbosityLogger;
+  for(method?: string | ((...args: any[]) => any)): VerbosityLogger;
 
   setConfig(config: Partial<LoggingConfig>): void;
 }
@@ -53,7 +53,7 @@ export interface VerbosityLogger {
  * @typedef {Object} LoggingConfig
  * @property {LogLevel} level - The logging level.
  * @property {number} verbose - The verbosity level.
- * @memberOf module:@asdasdasd/utils
+ * @memberOf @decaf-ts/utils
  */
 export type LoggingConfig = {
   level: LogLevel;
@@ -73,7 +73,7 @@ export type LoggingConfig = {
  * Colors can be specified as a single number, an RGB array, or left undefined for default.
  *
  * @interface ThemeOption
- * @memberOf module:@asdasdasd/utils
+ * @memberOf @decaf-ts/utils
  */
 export interface ThemeOption {
   /**
@@ -107,7 +107,7 @@ export type ThemeOptionByLogLevel = Partial<Record<LogLevel, ThemeOption>>;
  * for different parts of the log output.
  *
  * @interface Theme
- * @memberOf module:@asdasdasd/utils
+ * @memberOf @decaf-ts/utils
  */
 export interface Theme {
   /**

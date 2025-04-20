@@ -6,7 +6,7 @@
  * This interface allows for consistent output handling across different parts of the application.
  *
  * @interface OutputWriter
- * @memberOf module:@asdasdasd/utils
+ * @memberOf @decaf-ts/utils
  */
 export interface OutputWriter {
   /**

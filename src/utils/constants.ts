@@ -4,7 +4,7 @@ import { LoggingConfig, Theme } from "../output/types";
  * @description Default encoding for text operations.
  * @summary The standard UTF-8 encoding used for text processing.
  * @const {string} Encoding
- * @memberOf module:@asdasdasd/utils
+ * @memberOf @decaf-ts/utils
  */
 export const Encoding = "utf-8";
 
@@ -12,7 +12,7 @@ export const Encoding = "utf-8";
  * @description Regular expression for semantic versioning.
  * @summary A regex pattern to match and parse semantic version strings.
  * @const {RegExp} SemVersionRegex
- * @memberOf module:@asdasdasd/utils
+ * @memberOf @decaf-ts/utils
  */
 export const SemVersionRegex =
   /^(\d+)\.(\d+)\.(\d+)(?:-([0-9A-Za-z-]+(?:\.[0-9A-Za-z])))/g;
@@ -21,7 +21,7 @@ export const SemVersionRegex =
  * @description Enum for semantic version components.
  * @summary Defines the three levels of semantic versioning: PATCH, MINOR, and MAJOR.
  * @enum {string}
- * @memberOf module:@asdasdasd/utils
+ * @memberOf @decaf-ts/utils
  */
 export enum SemVersion {
   /** Patch version for backwards-compatible bug fixes. */
@@ -36,7 +36,7 @@ export enum SemVersion {
  * @description Flag to indicate non-CI environment.
  * @summary Used to specify that a command should run outside of a Continuous Integration environment.
  * @const {string} NoCIFLag
- * @memberOf module:@asdasdasd/utils
+ * @memberOf @decaf-ts/utils
  */
 export const NoCIFLag = "-no-ci";
 
@@ -44,7 +44,7 @@ export const NoCIFLag = "-no-ci";
  * @description Key for the setup script in package.json.
  * @summary Identifies the script that runs after package installation.
  * @const {string} SetupScriptKey
- * @memberOf module:@asdasdasd/utils
+ * @memberOf @decaf-ts/utils
  */
 export const SetupScriptKey = "postinstall";
 
@@ -52,7 +52,7 @@ export const SetupScriptKey = "postinstall";
  * @description Enum for various authentication tokens.
  * @summary Defines the file names for storing different types of authentication tokens.
  * @enum {string}
- * @memberOf module:@asdasdasd/utils
+ * @memberOf @decaf-ts/utils
  */
 export enum Tokens {
   /** Git authentication token file name. */
@@ -69,7 +69,7 @@ export enum Tokens {
  * @description Enum for log levels.
  * @summary Defines different levels of logging for the application.
  * @enum {string}
- * @memberOf module:@asdasdasd/utils
+ * @memberOf @decaf-ts/utils
  */
 export enum LogLevel {
   /** Error events that are likely to cause problems. */
@@ -93,7 +93,7 @@ export enum LogLevel {
  * @property {number} verbose - Numeric value for verbose level (4).
  * @property {number} debug - Numeric value for debug level (5).
  * @property {number} silly - Numeric value for silly level (8).
- * @memberOf module:@asdasdasd/utils
+ * @memberOf @decaf-ts/utils
  */
 export const NumericLogLevels = {
   error: 2,
@@ -125,7 +125,7 @@ export const NumericLogLevels = {
  * @property {Object} logLevel.verbose - Styling for verbose level logs (empty object).
  * @property {Object} logLevel.debug - Styling for debug level logs.
  * @property {number} logLevel.debug.fg - Foreground color code for debug level logs (7).
- * @memberOf module:@asdasdasd/utils
+ * @memberOf @decaf-ts/utils
  */
 export const DefaultTheme: Theme = {
   class: {
@@ -167,7 +167,7 @@ export const DefaultTheme: Theme = {
  * @property {string} timestampFormat - Format for timestamps ("HH:mm:ss.SSS").
  * @property {boolean} context - Whether to include context information in log messages (true).
  * @property {Theme} theme - The theme to use for styling log messages (DefaultTheme).
- * @memberOf module:@asdasdasd/utils
+ * @memberOf @decaf-ts/utils
  */
 export const DefaultLoggingConfig: LoggingConfig = {
   verbose: 0,

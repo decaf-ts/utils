@@ -1,7 +1,7 @@
 import fs from "fs";
 import path from "path";
 import { Logging } from "../output/logging";
-import { patchPlaceholders, patchString } from "./text";
+import { patchString } from "./text";
 import { runCommand } from "./utils";
 import { DependencyMap, SimpleDependencyMap } from "./types";
 
@@ -69,7 +69,7 @@ export function patchFile(
  *
  * @function readFile
  *
- * @memberOf module:fs-utils
+ * @memberOf module:utils
  */
 export function readFile(path: string): string {
   const log = logger.for(readFile);
@@ -92,7 +92,7 @@ export function readFile(path: string): string {
  *
  * @function writeFile
  *
- * @memberOf module:fs-utils
+ * @memberOf module:utils
  */
 export function writeFile(path: string, data: string | Buffer): void {
   const log = logger.for(writeFile);
@@ -133,7 +133,7 @@ export function writeFile(path: string, data: string | Buffer): void {
  *   else no property specified
  *     getPackage-->>Caller: Return entire package object
  *   end
- * @memberOf module:fs-utils
+ * @memberOf module:utils
  */
 export function getPackage(
   p: string = process.cwd(),

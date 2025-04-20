@@ -44,7 +44,7 @@ import { AbortCode } from "./constants";
  *   end
  *   LockedFunction->>LockedFunction: Update lock
  *
- * @memberOf module:@asdasdasd/utils
+ * @memberOf @decaf-ts/utils
  */
 export function lockify<R>(f: (...params: unknown[]) => R) {
   let lock: Promise<R | void> = Promise.resolve();
@@ -140,7 +140,7 @@ export function spawnCommand<R = string>(
       if (i === 0) continue;
       spawns[i - 1].stdout.pipe(spawns[i].stdin);
     }
-    return spawns[0];
+    return spawns[cmds.length - 1];
   }
 
   return spawnInner(command, abort);
@@ -189,7 +189,7 @@ export function spawnCommand<R = string>(
  *   OutputWriter-->>runCommand: Resolve or reject promise
  *   runCommand-->>Caller: Return CommandResult
  *
- * @memberOf module:@asdasdasd/utils
+ * @memberOf @decaf-ts/utils
  */
 export function runCommand<R = string>(
   command: string,

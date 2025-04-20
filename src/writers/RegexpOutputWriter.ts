@@ -38,8 +38,12 @@ export class RegexpOutputWriter extends StandardOutputWriter<string> {
     flags = "g"
   ) {
     super(cmd, lock);
-    this.regexp =
-      typeof regexp === "string" ? new RegExp(regexp, flags) : regexp;
+    try {
+      this.regexp =
+        typeof regexp === "string" ? new RegExp(regexp, flags) : regexp;
+    } catch (e: unknown) {
+      throw new Error(`Invalid regular expression: ${e}`);
+    }
   }
 
   /**

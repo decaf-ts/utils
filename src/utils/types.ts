@@ -9,7 +9,7 @@ import { Environment } from "./environment";
  * @typedef {Object} PromiseExecutor
  * @property {function(value: R | PromiseLike<R>): void} resolve - Function to resolve the promise.
  * @property {function(error: E): void} reject - Function to reject the promise.
- * @memberOf module:@asdasdasd/utils
+ * @memberOf @decaf-ts/utils
  */
 export interface PromiseExecutor<R, E = Error> {
   resolve: (value: R | PromiseLike<R>) => void;
@@ -26,7 +26,7 @@ export interface PromiseExecutor<R, E = Error> {
  * @template R - The type of the resolved value, defaulting to void.
  * @interface CommandResult
  * @extends Promise<R>
- * @memberOf module:@asdasdasd/utils
+ * @memberOf @decaf-ts/utils
  */
 export interface CommandResult<R = void> {
   promise: Promise<R>;

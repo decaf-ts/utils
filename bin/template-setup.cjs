@@ -777,7 +777,7 @@ const environment_1 = __webpack_require__(30);
  * @param {string[]} [requirements] - The list of required dependencies for the command.
  */
 class Command {
-    constructor(name, inputs = Object.assign({}, constants_2.DefaultCommandValues, constants_1.DefaultLoggingConfig), requirements = []) {
+    constructor(name, inputs = {}, requirements = []) {
         this.name = name;
         this.inputs = inputs;
         this.requirements = requirements;
@@ -789,6 +789,7 @@ class Command {
             this.log = Command.log;
         }
         this.log = Command.log.for(this.name);
+        this.inputs = Object.assign({}, constants_2.DefaultCommandValues, inputs);
     }
     /**
      * @protected

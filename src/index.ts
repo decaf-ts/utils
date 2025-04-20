@@ -36,6 +36,6 @@ export * from "./writers";
  * with the placeholder "##VERSION##" being substituted with the current version.
  *
  * @const VERSION
- * @memberOf module:@asdasdasd/utils
+ * @memberOf module:@decaf-ts/utils
  */
 export const VERSION = "##VERSION##";

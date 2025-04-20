@@ -14,11 +14,12 @@ describe("ObjectAccumulator", () => {
     const obj2 = { city: "New York", country: "USA" };
     const obj3 = { isActive: true, score: 95.5 };
 
-    const result1 = accumulator.accumulate(obj1);
-    const result2 = result1.accumulate(obj2);
-    const result3 = result2.accumulate(obj3);
+    const result3 = accumulator
+      .accumulate(obj1)
+      .accumulate(obj2)
+      .accumulate(obj3);
 
-    expect(result3.isActive).toBe("John");
+    expect(result3.isActive).toBe(true);
     expect(result3.get("name")).toBe("John");
     expect(result3.get("age")).toBe(30);
     expect(result3.get("city")).toBe("New York");

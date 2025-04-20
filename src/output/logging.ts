@@ -92,8 +92,12 @@ export class MiniLogger implements VerbosityLogger {
       level
     );
     log.push(msg);
-    if (stack) {
-      stack = Logging.theme(level, "stack", level);
+    if (stack || message instanceof Error) {
+      stack = Logging.theme(
+        (stack || (message as Error).stack) as string,
+        "stack",
+        level
+      );
       log.push(`\nStack trace:\n${stack}`);
     }
 
@@ -341,7 +345,7 @@ export class Logging {
     loggerLevel: LogLevel,
     template: Theme = DefaultTheme
   ) {
-    if (!this._config.timestamp) return text;
+    if (!this._config.style) return text;
     const logger = Logging.get().for(this.theme);
 
     function apply(

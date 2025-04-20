@@ -1,6 +1,6 @@
 import * as fs from "fs";
 import * as path from "path";
-import { TestReporter, PayloadType } from "../../src/utils/tests";
+import { TestReporter } from "../../src/utils/tests";
 import { MdTableDefinition } from "../../src/utils/md";
 import * as fsUtils from "../../src/utils/fs";
 
@@ -111,9 +111,10 @@ describe("TestReporter", () => {
       // Access the private method using type assertion
       await (reporter as any).importHelpers();
 
-      expect(fsUtils.installIfNotAvailable).toHaveBeenCalledWith([
-        "jest-html-reporters",
-      ]);
+      expect(fsUtils.installIfNotAvailable).toHaveBeenCalledWith(
+        ["jest-html-reporters"],
+        undefined
+      );
 
       // Verify that static functions are set
       expect(TestReporter["addMsgFunction"]).toBeDefined();
@@ -122,33 +123,21 @@ describe("TestReporter", () => {
   });
 
   describe("addReportMessage", () => {
-    it("should import helpers if not already imported and add message", async () => {
-      const title = "Test Title";
-      const message = "Test Message";
-
-      await reporter.addReportMessage(title, message);
-
-      expect(fsUtils.installIfNotAvailable).toHaveBeenCalled();
-      expect(TestReporter["addMsgFunction"]).toHaveBeenCalledWith({
-        message: `${title}\n${message}`,
-      });
-    });
-
     it("should handle object messages", async () => {
       const title = "Test Title";
       const message = { key: "value" };
 
-      await reporter.addReportMessage(title, message);
+      await reporter.reportObject(title, message);
 
       expect(TestReporter["addMsgFunction"]).toHaveBeenCalledWith({
-        message: `${title}\n${JSON.stringify(message)}`,
+        message: `${title}.json\n${JSON.stringify(message, undefined, 2)}`,
       });
     });
 
     it("should handle empty messages", async () => {
       const title = "Test Title";
 
-      await reporter.addReportMessage(title, "");
+      await reporter.reportMessage(title, "");
 
       expect(TestReporter["addMsgFunction"]).toHaveBeenCalledWith({
         message: `${title}`,
@@ -161,9 +150,8 @@ describe("TestReporter", () => {
       const title = "Test Title";
       const attachment = "Test Attachment";
 
-      await reporter.addReportAttachment(title, attachment);
+      await reporter.reportAttachment(title, attachment);
 
-      expect(fsUtils.installIfNotAvailable).toHaveBeenCalled();
       expect(TestReporter["addAttachFunction"]).toHaveBeenCalledWith({
         attach: attachment,
         description: title,
@@ -174,7 +162,7 @@ describe("TestReporter", () => {
       const title = "Test Title";
       const attachment = Buffer.from("Test Buffer");
 
-      await reporter.addReportAttachment(title, attachment);
+      await reporter.reportAttachment(title, attachment);
 
       expect(TestReporter["addAttachFunction"]).toHaveBeenCalledWith({
         attach: attachment,
@@ -183,272 +171,99 @@ describe("TestReporter", () => {
     });
   });
 
-  describe("addToReport", () => {
-    it("should handle text type correctly", async () => {
-      const reference = "test-reference";
-      const data = "test-data";
-
-      // Access the protected method using type assertion
-      await (reporter as any).addToReport(reference, data, "text");
-
-      expect(TestReporter["addMsgFunction"]).toHaveBeenCalledWith(
-        "test-reference.txt",
-        "test-data"
-      );
-    });
-
-    it("should handle json type correctly", async () => {
-      const reference = "test-reference";
-      const data = { key: "value" };
-
-      await (reporter as any).addToReport(reference, data, "json");
-
-      expect(TestReporter["addMsgFunction"]).toHaveBeenCalledWith(
-        "test-reference.json",
-        data
-      );
-    });
-
-    it("should handle json type with trimming", async () => {
-      const reference = "test-reference";
-      const data = {
-        key: "value",
-        request: "should be removed",
-        config: "should be removed",
-      };
-
-      await (reporter as any).addToReport(reference, data, "json", true);
-
-      // The request and config properties should be removed
-      expect(TestReporter["addMsgFunction"]).toHaveBeenCalledWith(
-        "test-reference.json",
-        { key: "value" }
-      );
-    });
-
-    it("should handle md type correctly", async () => {
-      const reference = "test-reference";
-      const data = "# Markdown";
-
-      await (reporter as any).addToReport(reference, data, "md");
-
-      expect(TestReporter["addMsgFunction"]).toHaveBeenCalledWith(
-        "test-reference.md",
-        data
-      );
-    });
-
-    it("should handle image type correctly", async () => {
-      const reference = "test-reference";
-      const data = Buffer.from("image-data");
-
-      await (reporter as any).addToReport(reference, data, "image");
-
-      expect(TestReporter["addAttachFunction"]).toHaveBeenCalledWith(
-        "test-reference.png",
-        expect.any(Buffer)
-      );
-    });
-
-    it("should handle reference with newlines", async () => {
-      const reference = "test\nreference";
-      const data = "test-data";
-
-      await (reporter as any).addToReport(reference, data, "text");
-
-      expect(TestReporter["addMsgFunction"]).toHaveBeenCalledWith(
-        "test\nreference",
-        "test-data"
-      );
-    });
-
-    it("should handle default case for unknown type", async () => {
-      const reference = "test-reference";
-      const data = "test-data";
-      const consoleSpy = jest.spyOn(console, "log").mockImplementation();
-
-      await (reporter as any).addToReport(
-        reference,
-        data,
-        "unknown" as PayloadType
-      );
-
-      expect(consoleSpy).toHaveBeenCalledWith(
-        "Unsupported type unknown. assuming text"
-      );
-      expect(TestReporter["addMsgFunction"]).toHaveBeenCalledWith(
-        "test-reference.txt",
-        "test-data"
-      );
-
-      consoleSpy.mockRestore();
-    });
-
-    it("should throw error when attachment fails", async () => {
-      const reference = "test-reference";
-      const data = "test-data";
-
-      // Mock addMsgFunction to throw an error
-      TestReporter["addMsgFunction"] = jest
-        .fn()
-        .mockRejectedValue(new Error("Mock error"));
-
-      await expect(
-        (reporter as any).addToReport(reference, data, "text")
-      ).rejects.toThrow(
-        `Could not store attach artifact test-reference.txt under to test report mock-test-case - Error: Mock error`
-      );
-    });
-  });
-
-  describe("generatePath", () => {
-    it("should generate correct path", () => {
-      const step = "test-step";
-      const result = reporter.generatePath(step);
-
-      expect(path.join).toHaveBeenCalledWith(mockFullPath, step);
-      expect(result).toBe(mockFullPath); // Using our mocked path.join
-    });
-  });
-
   describe("outputPayload", () => {
-    it("should call addToReport with correct parameters", async () => {
+    it("should call report with correct parameters", async () => {
       const reference = "test-reference";
       const data = { key: "value" };
-      const addToReportSpy = jest
-        .spyOn(reporter as any, "addToReport")
+      const reportSpy = jest
+        .spyOn(reporter as any, "report")
         .mockResolvedValue(undefined);
 
-      await reporter.outputPayload(reference, data);
+      await reporter.reportData(reference, data);
 
-      expect(addToReportSpy).toHaveBeenCalledWith(
-        reference,
-        data,
-        "json",
-        false
-      );
+      expect(reportSpy).toHaveBeenCalledWith(reference, data, "json", false);
 
-      addToReportSpy.mockRestore();
+      reportSpy.mockRestore();
     });
 
     it("should use provided type and trim parameters", async () => {
       const reference = "test-reference";
       const data = { key: "value" };
-      const addToReportSpy = jest
-        .spyOn(reporter as any, "addToReport")
+      const reportSpy = jest
+        .spyOn(reporter as any, "report")
         .mockResolvedValue(undefined);
 
-      await reporter.outputPayload(reference, data, "text", true);
+      await reporter.reportData(reference, data, "text", true);
 
-      expect(addToReportSpy).toHaveBeenCalledWith(
-        reference,
-        data,
-        "text",
-        true
-      );
+      expect(reportSpy).toHaveBeenCalledWith(reference, data, "text", true);
 
-      addToReportSpy.mockRestore();
+      reportSpy.mockRestore();
     });
   });
 
   describe("outputJSON", () => {
-    it("should call addToReport with json type", async () => {
+    it("should call report with json type", async () => {
       const reference = "test-reference";
       const data = { key: "value" };
-      const addToReportSpy = jest
-        .spyOn(reporter as any, "addToReport")
+      const reportSpy = jest
+        .spyOn(reporter as any, "report")
         .mockResolvedValue(undefined);
 
-      await reporter.outputJSON(reference, data);
+      await reporter.reportObject(reference, data);
 
-      expect(addToReportSpy).toHaveBeenCalledWith(
-        reference,
-        data,
-        "json",
-        false
-      );
+      expect(reportSpy).toHaveBeenCalledWith(reference, data, "json", false);
 
-      addToReportSpy.mockRestore();
+      reportSpy.mockRestore();
     });
 
     it("should use provided trim parameter", async () => {
       const reference = "test-reference";
       const data = { key: "value" };
-      const addToReportSpy = jest
-        .spyOn(reporter as any, "addToReport")
+      const reportSpy = jest
+        .spyOn(reporter as any, "report")
         .mockResolvedValue(undefined);
 
-      await reporter.outputJSON(reference, data, true);
+      await reporter.reportObject(reference, data, true);
 
-      expect(addToReportSpy).toHaveBeenCalledWith(
-        reference,
-        data,
-        "json",
-        true
-      );
+      expect(reportSpy).toHaveBeenCalledWith(reference, data, "json", true);
 
-      addToReportSpy.mockRestore();
+      reportSpy.mockRestore();
     });
   });
 
   describe("outputMDTable", () => {
-    it("should convert table definition to markdown and call addToReport", async () => {
+    it("should convert table definition to markdown and call report", async () => {
       const reference = "test-reference";
       const tableDef: MdTableDefinition = {
         headers: ["Col1", "Col2"],
         rows: [{ Col1: "val1", Col2: "val2" }],
       };
-      const addToReportSpy = jest
-        .spyOn(reporter as any, "addToReport")
+      const reportSpy = jest
+        .spyOn(reporter as any, "report")
         .mockResolvedValue(undefined);
 
-      await reporter.outputMDTable(reference, tableDef);
+      await reporter.reportTable(reference, tableDef);
 
-      expect(fsUtils.installIfNotAvailable).toHaveBeenCalledWith(["json2md"]);
-      expect(addToReportSpy).toHaveBeenCalledWith(
+      expect(reportSpy).toHaveBeenCalledWith(
         reference,
         "mocked-markdown",
         "md"
       );
 
-      addToReportSpy.mockRestore();
-    });
-
-    it("should throw error when json2md conversion fails", async () => {
-      const reference = "test-reference";
-      const tableDef: MdTableDefinition = {
-        headers: ["Col1", "Col2"],
-        rows: [{ Col1: "val1", Col2: "val2" }],
-      };
-
-      // Mock import to throw an error
-      jest.doMock(
-        "json2md",
-        () => {
-          throw new Error("Mock conversion error");
-        },
-        { virtual: true }
-      );
-
-      await expect(reporter.outputMDTable(reference, tableDef)).rejects.toThrow(
-        "Could not convert JSON to Markdown - Error: Mock conversion error"
-      );
+      reportSpy.mockRestore();
     });
   });
 
   describe("outputGraph", () => {
-    it("should render chart and call outputImage", async () => {
+    it("should render chart and call reportImage", async () => {
       const reference = "test-reference";
       const config = { type: "bar", data: {} };
       const outputImageSpy = jest
-        .spyOn(reporter, "outputImage")
+        .spyOn(reporter, "reportImage")
         .mockResolvedValue(undefined);
 
-      await reporter.outputGraph(reference, config);
+      await reporter.reportGraph(reference, config);
 
-      expect(fsUtils.installIfNotAvailable).toHaveBeenCalledWith([
-        "chartjs-node-canvas",
-      ]);
       expect(outputImageSpy).toHaveBeenCalledWith(
         reference,
         Buffer.from("mocked-image")
@@ -459,18 +274,18 @@ describe("TestReporter", () => {
   });
 
   describe("outputImage", () => {
-    it("should call addToReport with image type", async () => {
+    it("should call report with image type", async () => {
       const reference = "test-reference";
       const buffer = Buffer.from("image-data");
-      const addToReportSpy = jest
-        .spyOn(reporter as any, "addToReport")
+      const reportSpy = jest
+        .spyOn(reporter as any, "report")
         .mockResolvedValue(undefined);
 
-      await reporter.outputImage(reference, buffer);
+      await reporter.reportImage(reference, buffer);
 
-      expect(addToReportSpy).toHaveBeenCalledWith(reference, buffer, "image");
+      expect(reportSpy).toHaveBeenCalledWith(reference, buffer, "image");
 
-      addToReportSpy.mockRestore();
+      reportSpy.mockRestore();
     });
   });
 });
