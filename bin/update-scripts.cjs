@@ -1733,13 +1733,6 @@ class TemplateSync extends command_1.Command {
     }
 }
 exports.TemplateSync = TemplateSync;
-new TemplateSync()
-    .execute()
-    .then(() => TemplateSync.log.info("Template updated successfully. Please confirm all changes before commiting"))
-    .catch((e) => {
-    TemplateSync.log.error(`Error preparing template: ${e}`);
-    process.exit(1);
-});
 
 
 /***/ }),
