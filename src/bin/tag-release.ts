@@ -1,3 +1,4 @@
+#!/usr/bin/node
 import { ReleaseScript } from "../cli/commands";
 
 new ReleaseScript()

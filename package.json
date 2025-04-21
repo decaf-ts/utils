@@ -8,6 +8,10 @@
     "import": "./lib/esm/index.js"
   },
   "types": "dist/types/index.d.ts",
+  "bin": {
+    "tag-release": "lib/bin/tag-release.cjs",
+    "update-scripts": "lib/bin/update-scripts.cjs"
+  },
   "scripts": {
     "do-install": "TOKEN=$(cat .token) npm install",
     "update-scripts": "node ./bin/update-scripts.cjs",

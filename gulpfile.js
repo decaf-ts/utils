@@ -88,6 +88,9 @@ function getWebpackConfig(isESM, isDev, isLib, nameOverride = name) {
   if (isLib) {
     webPackConfig.externals = [nodeExternals()];
     webPackConfig.externalsPresets = { node: true };
+    webPackConfig.optimization = {
+      minimize: false,
+    };
   }
 
   if (isESM) webPackConfig.experiments = { outputModule: true };
