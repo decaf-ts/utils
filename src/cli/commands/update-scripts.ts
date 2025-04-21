@@ -476,7 +476,7 @@ export class TemplateSync extends Command<CommandOptions<typeof argzz>, void> {
     }
 
     if (all) {
-      scripts = true;
+      scripts = false;
       styles = true;
       docs = true;
       ide = true;
@@ -511,10 +511,10 @@ export class TemplateSync extends Command<CommandOptions<typeof argzz>, void> {
           (val) => !!val && !!val.match(/^(MIT|GPL|Apache|LGPL|AGPL)$/g)
         );
     }
-
-    await this.getLicense(
-      license as "MIT" | "GPL" | "Apache" | "LGPL" | "AGPL"
-    );
+    if (typeof license !== "undefined")
+      await this.getLicense(
+        license as "MIT" | "GPL" | "Apache" | "LGPL" | "AGPL"
+      );
 
     if (typeof ide === "undefined")
       ide = await UserInput.askConfirmation(
