@@ -9,7 +9,6 @@
 !/workdocs/resources/html/.gitlock
 /workdocs/uml/*
 !/workdocs/uml/*.puml
-/.idea
 /.token
 /.npmtoken
 /.dockertoken

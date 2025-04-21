@@ -52,7 +52,7 @@ function getWebpackConfig(isESM, isDev, isLib, nameOverride = name) {
             },
           ],
           include: [path.join(process.cwd(), "./src")],
-          exclude: /node_modules/,
+          exclude: /node_modules\/(?!styled-string-builder).*$/,
         },
       ],
     },
@@ -75,7 +75,7 @@ function getWebpackConfig(isESM, isDev, isLib, nameOverride = name) {
   };
 
   if (isLib) {
-    webPackConfig.externals = [nodeExternals()];
+    webPackConfig.externals = ["fs", "path", "util", "stream", "https"];
     webPackConfig.externalsPresets = { node: true };
     webPackConfig.optimization = {
       minimize: false,
