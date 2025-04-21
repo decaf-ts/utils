@@ -1078,6 +1078,474 @@ function escapeRegExp(string) {
 
 /***/ }),
 
+/***/ 654:
+/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
+
+
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.TemplateSync = void 0;
+const path_1 = __importDefault(__webpack_require__(928));
+const command_1 = __webpack_require__(529);
+const utils_1 = __webpack_require__(935);
+const input_1 = __webpack_require__(946);
+const fs_1 = __importDefault(__webpack_require__(896));
+const baseUrl = "https://raw.githubusercontent.com/decaf-ts/ts-workspace/master";
+const options = {
+    templates: [
+        ".github/ISSUE_TEMPLATE/bug_report.md",
+        ".github/ISSUE_TEMPLATE/feature_request.md",
+        ".github/FUNDING.yml",
+    ],
+    workflows: [
+        ".github/workflows/codeql-analysis.yml",
+        ".github/workflows/jest-coverage.yaml",
+        ".github/workflows/nodejs-build-prod.yaml",
+        ".github/workflows/pages.yaml",
+        ".github/workflows/publish-on-release.yaml",
+        ".github/workflows/release-on-tag.yaml",
+        ".github/workflows/snyk-analysis.yaml",
+    ],
+    ide: [
+        ".idea/runConfigurations/All Tests.run.xml",
+        ".idea/runConfigurations/build.run.xml",
+        ".idea/runConfigurations/build_prod.run.xml",
+        ".idea/runConfigurations/coverage.run.xml",
+        ".idea/runConfigurations/docs.run.xml",
+        ".idea/runConfigurations/drawings.run.xml",
+        ".idea/runConfigurations/flash-forward.run.xml",
+        ".idea/runConfigurations/Integration_Tests.run.xml",
+        ".idea/runConfigurations/Bundling_Tests.run.xml",
+        ".idea/runConfigurations/lint-fix.run.xml",
+        ".idea/runConfigurations/test_circular.run.xml",
+        ".idea/runConfigurations/uml.run.xml",
+        ".idea/runConfigurations/Unit Tests.run.xml",
+        ".idea/runConfigurations/update-scripts.run.xml",
+    ],
+    docs: [
+        "workdocs/tutorials/Contributing.md",
+        "workdocs/tutorials/Documentation.md",
+        "workdocs/tutorials/For Developers.md",
+        "workdocs/2-Badges.md",
+        "workdocs/jsdocs.json",
+        "workdocs/readme-md.json",
+    ],
+    styles: [".prettierrc", "eslint.config.js"],
+    scripts: ["bin/update-scripts.cjs", "bin/tag-release.cjs"],
+    typescript: ["tsconfig.json"],
+    docker: ["Dockerfile"],
+    automation: [
+        "workdocs/confluence/Continuous Integration-Deployment/GitHub.md",
+        "workdocs/confluence/Continuous Integration-Deployment/Jira.md",
+        "workdocs/confluence/Continuous Integration-Deployment/Teams.md",
+    ],
+};
+const argzz = {
+    // init attributes
+    boot: {
+        type: "boolean",
+    },
+    org: {
+        type: "string",
+        short: "o",
+    },
+    name: {
+        type: "string",
+        short: "n",
+        default: undefined,
+    },
+    author: {
+        type: "string",
+        short: "a",
+        default: undefined,
+    },
+    // update attributes
+    all: {
+        type: "boolean",
+    },
+    license: {
+        type: "string",
+        message: "Pick the license",
+    },
+    scripts: {
+        type: "boolean",
+    },
+    styles: {
+        type: "boolean",
+    },
+    docs: {
+        type: "boolean",
+    },
+    ide: {
+        type: "boolean",
+    },
+    workflows: {
+        type: "boolean",
+    },
+    templates: {
+        type: "boolean",
+    },
+    typescript: {
+        type: "boolean",
+    },
+    docker: {
+        type: "boolean",
+    },
+    pkg: {
+        type: "boolean",
+    },
+    automation: {
+        type: "boolean",
+    },
+};
+/**
+ * @class TemplateSync
+ * @extends {Command<CommandOptions<typeof args>, void>}
+ * @category scripts
+ * @description A command-line tool for synchronizing project templates and configurations.
+ * @summary This class provides functionality to download and update various project files and configurations from a remote repository.
+ * It supports updating licenses, IDE configurations, scripts, styles, documentation, workflows, and templates.
+ *
+ * @param {CommandOptions<typeof args>} args - The command options for TemplateSync
+ */
+class TemplateSync extends command_1.Command {
+    constructor() {
+        super("TemplateSync", argzz);
+        this.replacements = {};
+        /**
+         * @description Downloads script files.
+         * @returns {Promise<void>}
+         */
+        this.getScripts = () => this.downloadOption("scripts");
+        /**
+         * @description Downloads style configuration files.
+         * @returns {Promise<void>}
+         */
+        this.getStyles = () => this.downloadOption("styles");
+        /**
+         * @description Downloads template files.
+         * @returns {Promise<void>}
+         */
+        this.getTemplates = () => this.downloadOption("templates");
+        /**
+         * @description Downloads workflow configuration files.
+         * @returns {Promise<void>}
+         */
+        this.getWorkflows = () => this.downloadOption("workflows");
+        /**
+         * @description Downloads documentation files.
+         * @returns {Promise<void>}
+         */
+        this.getDocs = () => this.downloadOption("docs");
+        /**
+         * @description Downloads typescript config files.
+         * @returns {Promise<void>}
+         */
+        this.getTypescript = () => this.downloadOption("typescript");
+        /**
+         * @description Downloads automation documentation files.
+         * @returns {Promise<void>}
+         */
+        this.getAutomation = () => this.downloadOption("automation");
+        /**
+         * @description Downloads docker image files.
+         * @returns {Promise<void>}
+         */
+        this.getDocker = () => this.downloadOption("docker");
+    }
+    loadValuesFromPackage() {
+        const p = process.cwd();
+        const author = (0, utils_1.getPackage)(p, "author");
+        const scopedName = (0, utils_1.getPackage)(p, "name");
+        let name = scopedName;
+        let org;
+        if (name.startsWith("@")) {
+            const split = name.split("/");
+            name = split[1];
+            org = split[0].replace("@", "");
+        }
+        ["Tiago Venceslau", "TiagoVenceslau", "${author}"].forEach((el) => (this.replacements[el] = author));
+        ["TS-Workspace", "ts-workspace", "${name}"].forEach((el) => (this.replacements[el] = name));
+        ["decaf-ts", "${org}"].forEach((el) => (this.replacements[el] = org || '""'));
+        this.replacements["${org_or_owner}"] = org || name;
+    }
+    /**
+     * @description Downloads files for a specific option category.
+     * @summary This method downloads all files associated with a given option key from the remote repository.
+     * @param {keyof typeof options} key - The key representing the option category to download
+     * @returns {Promise<void>}
+     * @throws {Error} If the specified option key is not found
+     */
+    async downloadOption(key) {
+        if (!(key in options)) {
+            throw new Error(`Option "${key}" not found in options`);
+        }
+        const files = options[key];
+        for (const file of files) {
+            this.log.info(`Downloading ${file}`);
+            let data = await utils_1.HttpClient.downloadFile(`${baseUrl}/${file}`);
+            data = (0, utils_1.patchString)(data, this.replacements);
+            (0, utils_1.writeFile)(path_1.default.join(process.cwd(), file), data);
+        }
+    }
+    /**
+     * @description Downloads and sets up the specified license.
+     * @summary This method downloads the chosen license file, saves it to the project, and updates the package.json license field.
+     * @param {"MIT" | "GPL" | "Apache" | "LGPL" | "AGPL"} license - The license to download and set up
+     * @returns {Promise<void>}
+     */
+    async getLicense(license) {
+        this.log.info(`Downloading ${license} license`);
+        const url = `${baseUrl}/workdocs/licenses/${license}.md`;
+        let data = await utils_1.HttpClient.downloadFile(url);
+        data = (0, utils_1.patchString)(data, this.replacements);
+        (0, utils_1.writeFile)(path_1.default.join(process.cwd(), "LICENSE.md"), data);
+        (0, utils_1.setPackageAttribute)("license", license);
+    }
+    /**
+     * @description Downloads IDE configuration files.
+     * @returns {Promise<void>}
+     */
+    async getIde() {
+        fs_1.default.mkdirSync(path_1.default.join(process.cwd(), ".idea", "runConfigurations"), {
+            recursive: true,
+        });
+        await this.downloadOption("ide");
+    }
+    async initPackage(pkgName, author, license) {
+        try {
+            const pkg = (0, utils_1.getPackage)();
+            delete pkg[utils_1.SetupScriptKey];
+            pkg.name = pkgName;
+            pkg.version = "0.0.1";
+            pkg.author = author;
+            pkg.license = license;
+            fs_1.default.writeFileSync("package.json", JSON.stringify(pkg, null, 2));
+        }
+        catch (e) {
+            throw new Error(`Error fixing package.json: ${e}`);
+        }
+    }
+    async updatePackageScrips() {
+        try {
+            const originalPkg = JSON.parse(await utils_1.HttpClient.downloadFile(`${baseUrl}/package.json`));
+            const { scripts } = originalPkg;
+            const pkg = (0, utils_1.getPackage)();
+            Object.keys(pkg.scripts).forEach((key) => {
+                if (key in scripts) {
+                    const replaced = (0, utils_1.patchString)(scripts[key], this.replacements);
+                    if (replaced !== scripts[key]) {
+                        pkg.scripts[key] = replaced;
+                    }
+                }
+            });
+            fs_1.default.writeFileSync("package.json", JSON.stringify(pkg, null, 2));
+        }
+        catch (e) {
+            throw new Error(`Error fixing package.json scripts: ${e}`);
+        }
+    }
+    async createTokenFiles() {
+        const log = this.log.for(this.createTokenFiles);
+        const gitToken = await input_1.UserInput.insistForText("token", "please input your github token", (res) => {
+            return !!res.match(/^ghp_[0-9a-zA-Z]{36}$/g);
+        });
+        Object.values(utils_1.Tokens).forEach((token) => {
+            try {
+                let status;
+                try {
+                    status = fs_1.default.existsSync(token);
+                    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+                }
+                catch (e) {
+                    log.info(`Token file ${token} not found. Creating a new one...`);
+                    fs_1.default.writeFileSync(token, token === ".token" ? gitToken : "");
+                    return;
+                }
+                if (!status) {
+                    fs_1.default.writeFileSync(token, token === ".token" ? gitToken : "");
+                }
+            }
+            catch (e) {
+                throw new Error(`Error creating token file ${token}: ${e}`);
+            }
+        });
+    }
+    async getOrg() {
+        const org = await input_1.UserInput.askText("Organization", "Enter the organization name (will be used to scope your npm project. leave blank to create a unscoped project):");
+        const confirmation = await input_1.UserInput.askConfirmation("Confirm organization", "Is this organization correct?", true);
+        if (!confirmation)
+            return this.getOrg();
+        return org;
+    }
+    async auditFix() {
+        return await (0, utils_1.runCommand)("npm audit fix --force").promise;
+    }
+    patchFiles() {
+        const files = [
+            ...fs_1.default
+                .readdirSync(path_1.default.join(process.cwd(), "src"), {
+                recursive: true,
+                withFileTypes: true,
+            })
+                .filter((entry) => entry.isFile())
+                .map((entry) => path_1.default.join(entry.parentPath, entry.name)),
+            ...fs_1.default
+                .readdirSync(path_1.default.join(process.cwd(), "workdocs"), {
+                recursive: true,
+                withFileTypes: true,
+            })
+                .filter((entry) => entry.isFile() && entry.name.endsWith(".md"))
+                .map((entry) => path_1.default.join(entry.parentPath, entry.name)),
+            path_1.default.join(process.cwd(), ".gitlab-ci.yml"),
+            path_1.default.join(process.cwd(), "workdocs", "jsdocs.json"),
+        ];
+        for (const file of files) {
+            (0, utils_1.patchFile)(file, this.replacements);
+        }
+    }
+    /**
+     * @description Runs the template synchronization process.
+     * @summary This method orchestrates the downloading of various project components based on the provided arguments.
+     * @param {ParseArgsResult} args - The parsed command-line arguments
+     * @returns {Promise<void>}
+     *
+     * @mermaid
+     * sequenceDiagram
+     *   participant T as TemplateSync
+     *   participant L as getLicense
+     *   participant I as getIde
+     *   participant S as getScripts
+     *   participant St as getStyles
+     *   participant D as getDocs
+     *   participant W as getWorkflows
+     *   participant Te as getTemplates
+     *   T->>T: Parse arguments
+     *   alt all flag is true
+     *     T->>T: Set all component flags to true
+     *   end
+     *   alt license is specified
+     *     T->>L: getLicense(license)
+     *   end
+     *   alt ide flag is true
+     *     T->>I: getIde()
+     *   end
+     *   alt scripts flag is true
+     *     T->>S: getScripts()
+     *   end
+     *   alt styles flag is true
+     *     T->>St: getStyles()
+     *   end
+     *   alt docs flag is true
+     *     T->>D: getDocs()
+     *   end
+     *   alt workflows flag is true
+     *     T->>W: getWorkflows()
+     *   end
+     *   alt templates flag is true
+     *     T->>Te: getTemplates()
+     *   end
+     */
+    async run(args) {
+        let { license } = args;
+        const { boot } = args;
+        let { all, scripts, styles, docs, ide, workflows, templates, docker, typescript, automation, pkg, } = args;
+        if (scripts ||
+            styles ||
+            docs ||
+            ide ||
+            workflows ||
+            templates ||
+            docker ||
+            typescript ||
+            automation ||
+            pkg)
+            all = false;
+        if (boot) {
+            const org = await this.getOrg();
+            const name = await input_1.UserInput.insistForText("Project name", "Enter the project name:", (res) => res.length > 1);
+            const author = await input_1.UserInput.insistForText("Author", "Enter the author name:", (res) => res.length > 1);
+            const pkgName = org ? `@${org}/${name}` : name;
+            await this.initPackage(pkgName, author, license);
+            await this.createTokenFiles();
+            await this.auditFix();
+            this.patchFiles();
+        }
+        if (all) {
+            scripts = true;
+            styles = true;
+            docs = true;
+            ide = true;
+            workflows = true;
+            templates = true;
+            docker = true;
+            typescript = true;
+            pkg = true;
+            automation = false;
+        }
+        this.loadValuesFromPackage();
+        if (!all && typeof license === "undefined") {
+            const confirmation = await input_1.UserInput.askConfirmation("license", "Do you want to set a license?", true);
+            if (confirmation)
+                license = await input_1.UserInput.insistForText("license", "Enter the desired License (MIT|GPL|Apache|LGPL|AGPL):", (val) => !!val && !!val.match(/^(MIT|GPL|Apache|LGPL|AGPL)$/g));
+        }
+        await this.getLicense(license);
+        if (typeof ide === "undefined")
+            ide = await input_1.UserInput.askConfirmation("ide", "Do you want to get ide configs?", true);
+        if (ide)
+            await this.getIde();
+        if (typeof typescript === "undefined")
+            typescript = await input_1.UserInput.askConfirmation("typescript", "Do you want to get typescript configs?", true);
+        if (typescript)
+            await this.getTypescript();
+        if (typeof docker === "undefined")
+            docker = await input_1.UserInput.askConfirmation("docker", "Do you want to get docker configs?", true);
+        if (docker)
+            await this.getDocker();
+        if (typeof automation === "undefined")
+            automation = await input_1.UserInput.askConfirmation("automation", "Do you want to get automation configs?", true);
+        if (automation)
+            await this.getAutomation();
+        if (typeof scripts === "undefined")
+            scripts = await input_1.UserInput.askConfirmation("scripts", "Do you want to get scripts?", true);
+        if (scripts)
+            await this.getScripts();
+        if (typeof styles === "undefined")
+            styles = await input_1.UserInput.askConfirmation("styles", "Do you want to get styles?", true);
+        if (styles)
+            await this.getStyles();
+        if (typeof docs === "undefined")
+            docs = await input_1.UserInput.askConfirmation("docs", "Do you want to get docs?", true);
+        if (docs)
+            await this.getDocs();
+        if (typeof workflows === "undefined")
+            workflows = await input_1.UserInput.askConfirmation("workflows", "Do you want to get workflows?", true);
+        if (workflows)
+            await this.getWorkflows();
+        if (typeof templates === "undefined")
+            templates = await input_1.UserInput.askConfirmation("templates", "Do you want to get templates?", true);
+        if (templates)
+            await this.getTemplates();
+        if (typeof pkg === "undefined")
+            pkg = await input_1.UserInput.askConfirmation("pkg", "Do you update your package.json scripts?", true);
+        if (pkg)
+            await this.updatePackageScrips();
+    }
+}
+exports.TemplateSync = TemplateSync;
+new TemplateSync()
+    .execute()
+    .then(() => TemplateSync.log.info("Template updated successfully. Please confirm all changes before commiting"))
+    .catch((e) => {
+    TemplateSync.log.error(`Error preparing template: ${e}`);
+    process.exit(1);
+});
+
+
+/***/ }),
+
 /***/ 680:
 /***/ ((module) => {
 
@@ -2155,6 +2623,31 @@ exports.HttpClient = HttpClient;
 
 /***/ }),
 
+/***/ 804:
+/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
+
+
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __exportStar = (this && this.__exportStar) || function(m, exports) {
+    for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports, p)) __createBinding(exports, m, p);
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+__exportStar(__webpack_require__(924), exports);
+__exportStar(__webpack_require__(654), exports);
+
+
+/***/ }),
+
 /***/ 834:
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
@@ -2741,6 +3234,179 @@ module.exports = require("fs");
 
 /***/ }),
 
+/***/ 924:
+/***/ ((__unused_webpack_module, exports, __webpack_require__) => {
+
+
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.ReleaseScript = void 0;
+const utils_1 = __webpack_require__(686);
+const constants_1 = __webpack_require__(154);
+const input_1 = __webpack_require__(714);
+const command_1 = __webpack_require__(529);
+const options = {
+    ci: {
+        type: "boolean",
+        default: true,
+    },
+    message: {
+        type: "string",
+        short: "m",
+    },
+    tag: {
+        type: "string",
+        short: "t",
+        default: undefined,
+    },
+};
+/**
+ * @class ReleaseScript
+ * @extends {Command<typeof options, void>}
+ * @cavegory scripts
+ * @description A command-line script for managing releases and version updates.
+ * @summary This script automates the process of creating and pushing new releases. It handles version updates,
+ * commit messages, and optionally publishes to NPM. The script supports semantic versioning and can work in both CI and non-CI environments.
+ *
+ * @param {Object} options - Configuration options for the script
+ * @param {boolean} options.ci - Whether the script is running in a CI environment (default: true)
+ * @param {string} options.message - The release message (short: 'm')
+ * @param {string} options.tag - The version tag to use (short: 't', default: undefined)
+ */
+class ReleaseScript extends command_1.Command {
+    constructor() {
+        super("ReleaseScript", options);
+    }
+    /**
+     * @description Prepares the version for the release.
+     * @summary This method validates the provided tag or prompts the user for a new one if not provided or invalid.
+     * It also displays the latest git tags for reference.
+     * @param {string} tag - The version tag to prepare
+     * @returns {Promise<string>} The prepared version tag
+     *
+     * @mermaid
+     * sequenceDiagram
+     *   participant R as ReleaseScript
+     *   participant T as TestVersion
+     *   participant U as UserInput
+     *   participant G as Git
+     *   R->>T: testVersion(tag)
+     *   alt tag is valid
+     *     T-->>R: return tag
+     *   else tag is invalid or not provided
+     *     R->>G: List latest git tags
+     *     R->>U: Prompt for new tag
+     *     U-->>R: return new tag
+     *   end
+     */
+    async prepareVersion(tag) {
+        const log = this.log.for(this.prepareVersion);
+        tag = this.testVersion(tag || "");
+        if (!tag) {
+            log.verbose("No release message provided. Prompting for one:");
+            log.info(`Listing latest git tags:`);
+            await (0, utils_1.runCommand)("git tag --sort=-taggerdate | head -n 5").promise;
+            return await input_1.UserInput.insistForText("tag", "Enter the new tag number (accepts v*.*.*[-...])", (val) => !!val.toString().match(/^v[0-9]+\.[0-9]+.[0-9]+(-[0-9a-zA-Z-]+)?$/));
+        }
+        return tag;
+    }
+    /**
+     * @description Tests if the provided version is valid.
+     * @summary This method checks if the version is a valid semantic version or a predefined update type (PATCH, MINOR, MAJOR).
+     * @param {string} version - The version to test
+     * @returns {string | undefined} The validated version or undefined if invalid
+     */
+    testVersion(version) {
+        const log = this.log.for(this.testVersion);
+        version = version.trim().toLowerCase();
+        switch (version) {
+            case constants_1.SemVersion.PATCH:
+            case constants_1.SemVersion.MINOR:
+            case constants_1.SemVersion.MAJOR:
+                log.verbose(`Using provided SemVer update: ${version}`, 1);
+                return version;
+            default:
+                log.verbose(`Testing provided version for SemVer compatibility: ${version}`, 1);
+                if (!new RegExp(constants_1.SemVersionRegex).test(version)) {
+                    log.debug(`Invalid version number: ${version}`);
+                    return undefined;
+                }
+                log.verbose(`version approved: ${version}`, 1);
+                return version;
+        }
+    }
+    /**
+     * @description Prepares the release message.
+     * @summary This method either returns the provided message or prompts the user for a new one if not provided.
+     * @param {string} [message] - The release message
+     * @returns {Promise<string>} The prepared release message
+     */
+    async prepareMessage(message) {
+        const log = this.log.for(this.prepareMessage);
+        if (!message) {
+            log.verbose("No release message provided. Prompting for one");
+            return await input_1.UserInput.insistForText("message", "What should be the release message/ticket?", (val) => !!val && val.toString().length > 5);
+        }
+        return message;
+    }
+    /**
+     * @description Runs the release script.
+     * @summary This method orchestrates the entire release process, including version preparation, message creation,
+     * git operations, and npm publishing (if not in CI environment).
+     * @param {ParseArgsResult} args - The parsed command-line arguments
+     * @returns {Promise<void>}
+     *
+     * @mermaid
+     * sequenceDiagram
+     *   participant R as ReleaseScript
+     *   participant V as PrepareVersion
+     *   participant M as PrepareMessage
+     *   participant N as NPM
+     *   participant G as Git
+     *   participant U as UserInput
+     *   R->>V: prepareVersion(tag)
+     *   R->>M: prepareMessage(message)
+     *   R->>N: Run prepare-release script
+     *   R->>G: Check git status
+     *   alt changes exist
+     *     R->>U: Ask for confirmation
+     *     U-->>R: Confirm
+     *     R->>G: Add and commit changes
+     *   end
+     *   R->>N: Update npm version
+     *   R->>G: Push changes and tags
+     *   alt not CI environment
+     *     R->>N: Publish to npm
+     *   end
+     */
+    async run(args) {
+        let result;
+        const { ci } = args;
+        let { tag, message } = args;
+        tag = await this.prepareVersion(tag);
+        message = await this.prepareMessage(message);
+        result = await (0, utils_1.runCommand)(`npm run prepare-release -- ${tag} ${message}`, {
+            cwd: process.cwd(),
+        }).promise;
+        result = await (0, utils_1.runCommand)("git status --porcelain").promise;
+        await result;
+        if (result.logs.length &&
+            (await input_1.UserInput.askConfirmation("git-changes", "Do you want to push the changes to the remote repository?", true))) {
+            await (0, utils_1.runCommand)("git add .").promise;
+            await (0, utils_1.runCommand)(`git commit -m "${tag} - ${message} - after release preparation${ci ? "" : constants_1.NoCIFLag}"`).promise;
+        }
+        await (0, utils_1.runCommand)(`npm version "${tag}" -m "${message}${ci ? "" : constants_1.NoCIFLag}"`).promise;
+        await (0, utils_1.runCommand)("git push --follow-tags").promise;
+        if (!ci) {
+            await (0, utils_1.runCommand)("NPM_TOKEN=$(cat .npmtoken) npm publish --access public")
+                .promise;
+        }
+    }
+}
+exports.ReleaseScript = ReleaseScript;
+
+
+/***/ }),
+
 /***/ 928:
 /***/ ((module) => {
 
@@ -2774,444 +3440,6 @@ __exportStar(__webpack_require__(747), exports);
 __exportStar(__webpack_require__(547), exports);
 __exportStar(__webpack_require__(874), exports);
 __exportStar(__webpack_require__(686), exports);
-
-
-/***/ }),
-
-/***/ 939:
-/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
-
-
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-const path_1 = __importDefault(__webpack_require__(928));
-const command_1 = __webpack_require__(529);
-const utils_1 = __webpack_require__(935);
-const input_1 = __webpack_require__(946);
-const fs_1 = __importDefault(__webpack_require__(896));
-const baseUrl = "https://raw.githubusercontent.com/decaf-ts/ts-workspace/master";
-const options = {
-    templates: [
-        ".github/ISSUE_TEMPLATE/bug_report.md",
-        ".github/ISSUE_TEMPLATE/feature_request.md",
-        ".github/FUNDING.yml",
-    ],
-    workflows: [
-        ".github/workflows/codeql-analysis.yml",
-        ".github/workflows/jest-coverage.yaml",
-        ".github/workflows/nodejs-build-prod.yaml",
-        ".github/workflows/pages.yaml",
-        ".github/workflows/publish-on-release.yaml",
-        ".github/workflows/release-on-tag.yaml",
-        ".github/workflows/snyk-analysis.yaml",
-    ],
-    ide: [
-        ".idea/runConfigurations/All Tests.run.xml",
-        ".idea/runConfigurations/build.run.xml",
-        ".idea/runConfigurations/build_prod.run.xml",
-        ".idea/runConfigurations/coverage.run.xml",
-        ".idea/runConfigurations/docs.run.xml",
-        ".idea/runConfigurations/drawings.run.xml",
-        ".idea/runConfigurations/flash-forward.run.xml",
-        ".idea/runConfigurations/Integration_Tests.run.xml",
-        ".idea/runConfigurations/Bundling_Tests.run.xml",
-        ".idea/runConfigurations/lint-fix.run.xml",
-        ".idea/runConfigurations/test_circular.run.xml",
-        ".idea/runConfigurations/uml.run.xml",
-        ".idea/runConfigurations/Unit Tests.run.xml",
-        ".idea/runConfigurations/update-scripts.run.xml",
-    ],
-    docs: [
-        "workdocs/tutorials/Contributing.md",
-        "workdocs/tutorials/Documentation.md",
-        "workdocs/tutorials/For Developers.md",
-        "workdocs/2-Badges.md",
-        "workdocs/jsdocs.json",
-        "workdocs/readme-md.json",
-    ],
-    styles: [".prettierrc", "eslint.config.js"],
-    scripts: ["bin/update-scripts.cjs", "bin/tag-release.cjs"],
-    typescript: ["tsconfig.json"],
-    docker: ["Dockerfile"],
-    automation: [
-        "workdocs/confluence/Continuous Integration-Deployment/GitHub.md",
-        "workdocs/confluence/Continuous Integration-Deployment/Jira.md",
-        "workdocs/confluence/Continuous Integration-Deployment/Teams.md",
-    ],
-};
-const argzz = {
-    // init attributes
-    boot: {
-        type: "boolean",
-    },
-    org: {
-        type: "string",
-        short: "o",
-    },
-    name: {
-        type: "string",
-        short: "n",
-        default: undefined,
-    },
-    author: {
-        type: "string",
-        short: "a",
-        default: undefined,
-    },
-    // update attributes
-    all: {
-        type: "boolean",
-    },
-    license: {
-        type: "string",
-        message: "Pick the license",
-    },
-    scripts: {
-        type: "boolean",
-    },
-    styles: {
-        type: "boolean",
-    },
-    docs: {
-        type: "boolean",
-    },
-    ide: {
-        type: "boolean",
-    },
-    workflows: {
-        type: "boolean",
-    },
-    templates: {
-        type: "boolean",
-    },
-    typescript: {
-        type: "boolean",
-    },
-    docker: {
-        type: "boolean",
-    },
-    automation: {
-        type: "boolean",
-    },
-};
-/**
- * @class TemplateSync
- * @extends {Command<CommandOptions<typeof args>, void>}
- * @category scripts
- * @description A command-line tool for synchronizing project templates and configurations.
- * @summary This class provides functionality to download and update various project files and configurations from a remote repository.
- * It supports updating licenses, IDE configurations, scripts, styles, documentation, workflows, and templates.
- *
- * @param {CommandOptions<typeof args>} args - The command options for TemplateSync
- */
-class TemplateSync extends command_1.Command {
-    constructor() {
-        super("TemplateSync", argzz);
-        this.replacements = {};
-        /**
-         * @description Downloads script files.
-         * @returns {Promise<void>}
-         */
-        this.getScripts = () => this.downloadOption("scripts");
-        /**
-         * @description Downloads style configuration files.
-         * @returns {Promise<void>}
-         */
-        this.getStyles = () => this.downloadOption("styles");
-        /**
-         * @description Downloads template files.
-         * @returns {Promise<void>}
-         */
-        this.getTemplates = () => this.downloadOption("templates");
-        /**
-         * @description Downloads workflow configuration files.
-         * @returns {Promise<void>}
-         */
-        this.getWorkflows = () => this.downloadOption("workflows");
-        /**
-         * @description Downloads documentation files.
-         * @returns {Promise<void>}
-         */
-        this.getDocs = () => this.downloadOption("docs");
-        /**
-         * @description Downloads typescript config files.
-         * @returns {Promise<void>}
-         */
-        this.getTypescript = () => this.downloadOption("typescript");
-        /**
-         * @description Downloads automation documentation files.
-         * @returns {Promise<void>}
-         */
-        this.getAutomation = () => this.downloadOption("automation");
-        /**
-         * @description Downloads docker image files.
-         * @returns {Promise<void>}
-         */
-        this.getDocker = () => this.downloadOption("docker");
-    }
-    loadValuesFromPackage() {
-        const p = process.cwd();
-        const author = (0, utils_1.getPackage)(p, "author");
-        const scopedName = (0, utils_1.getPackage)(p, "name");
-        let name = scopedName;
-        let org;
-        if (name.startsWith("@")) {
-            const split = name.split("/");
-            name = split[1];
-            org = split[0].replace("@", "");
-        }
-        ["Tiago Venceslau", "TiagoVenceslau", "${author}"].forEach((el) => (this.replacements[el] = author));
-        ["TS-Workspace", "ts-workspace", "${name}"].forEach((el) => (this.replacements[el] = name));
-        ["decaf-ts", "${org}"].forEach((el) => (this.replacements[el] = org || '""'));
-        this.replacements["${org_or_owner}"] = org || name;
-    }
-    /**
-     * @description Downloads files for a specific option category.
-     * @summary This method downloads all files associated with a given option key from the remote repository.
-     * @param {keyof typeof options} key - The key representing the option category to download
-     * @returns {Promise<void>}
-     * @throws {Error} If the specified option key is not found
-     */
-    async downloadOption(key) {
-        if (!(key in options)) {
-            throw new Error(`Option "${key}" not found in options`);
-        }
-        const files = options[key];
-        for (const file of files) {
-            this.log.info(`Downloading ${file}`);
-            let data = await utils_1.HttpClient.downloadFile(`${baseUrl}/${file}`);
-            data = (0, utils_1.patchString)(data, this.replacements);
-            (0, utils_1.writeFile)(path_1.default.join(process.cwd(), file), data);
-        }
-    }
-    /**
-     * @description Downloads and sets up the specified license.
-     * @summary This method downloads the chosen license file, saves it to the project, and updates the package.json license field.
-     * @param {"MIT" | "GPL" | "Apache" | "LGPL" | "AGPL"} license - The license to download and set up
-     * @returns {Promise<void>}
-     */
-    async getLicense(license) {
-        this.log.info(`Downloading ${license} license`);
-        const url = `${baseUrl}/workdocs/licenses/${license}.md`;
-        let data = await utils_1.HttpClient.downloadFile(url);
-        data = (0, utils_1.patchString)(data, this.replacements);
-        (0, utils_1.writeFile)(path_1.default.join(process.cwd(), "LICENSE.md"), data);
-        (0, utils_1.setPackageAttribute)("license", license);
-    }
-    /**
-     * @description Downloads IDE configuration files.
-     * @returns {Promise<void>}
-     */
-    async getIde() {
-        fs_1.default.mkdirSync(path_1.default.join(process.cwd(), ".idea", "runConfigurations"), {
-            recursive: true,
-        });
-        await this.downloadOption("ide");
-    }
-    async initPackage(pkgName, author, license) {
-        try {
-            const pkg = (0, utils_1.getPackage)();
-            delete pkg[utils_1.SetupScriptKey];
-            pkg.name = pkgName;
-            pkg.version = "0.0.1";
-            pkg.author = author;
-            pkg.license = license;
-            fs_1.default.writeFileSync("package.json", JSON.stringify(pkg, null, 2));
-        }
-        catch (e) {
-            throw new Error(`Error fixing package.json: ${e}`);
-        }
-    }
-    async createTokenFiles() {
-        const log = this.log.for(this.createTokenFiles);
-        const gitToken = await input_1.UserInput.insistForText("token", "please input your github token", (res) => {
-            return !!res.match(/^ghp_[0-9a-zA-Z]{36}$/g);
-        });
-        Object.values(utils_1.Tokens).forEach((token) => {
-            try {
-                let status;
-                try {
-                    status = fs_1.default.existsSync(token);
-                    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-                }
-                catch (e) {
-                    log.info(`Token file ${token} not found. Creating a new one...`);
-                    fs_1.default.writeFileSync(token, token === ".token" ? gitToken : "");
-                    return;
-                }
-                if (!status) {
-                    fs_1.default.writeFileSync(token, token === ".token" ? gitToken : "");
-                }
-            }
-            catch (e) {
-                throw new Error(`Error creating token file ${token}: ${e}`);
-            }
-        });
-    }
-    async getOrg() {
-        const org = await input_1.UserInput.askText("Organization", "Enter the organization name (will be used to scope your npm project. leave blank to create a unscoped project):");
-        const confirmation = await input_1.UserInput.askConfirmation("Confirm organization", "Is this organization correct?", true);
-        if (!confirmation)
-            return this.getOrg();
-        return org;
-    }
-    async auditFix() {
-        return await (0, utils_1.runCommand)("npm audit fix --force").promise;
-    }
-    patchFiles() {
-        const files = [
-            ...fs_1.default
-                .readdirSync(path_1.default.join(process.cwd(), "src"), {
-                recursive: true,
-                withFileTypes: true,
-            })
-                .filter((entry) => entry.isFile())
-                .map((entry) => path_1.default.join(entry.parentPath, entry.name)),
-            ...fs_1.default
-                .readdirSync(path_1.default.join(process.cwd(), "workdocs"), {
-                recursive: true,
-                withFileTypes: true,
-            })
-                .filter((entry) => entry.isFile() && entry.name.endsWith(".md"))
-                .map((entry) => path_1.default.join(entry.parentPath, entry.name)),
-            path_1.default.join(process.cwd(), ".gitlab-ci.yml"),
-            path_1.default.join(process.cwd(), "workdocs", "jsdocs.json"),
-        ];
-        for (const file of files) {
-            (0, utils_1.patchFile)(file, this.replacements);
-        }
-    }
-    /**
-     * @description Runs the template synchronization process.
-     * @summary This method orchestrates the downloading of various project components based on the provided arguments.
-     * @param {ParseArgsResult} args - The parsed command-line arguments
-     * @returns {Promise<void>}
-     *
-     * @mermaid
-     * sequenceDiagram
-     *   participant T as TemplateSync
-     *   participant L as getLicense
-     *   participant I as getIde
-     *   participant S as getScripts
-     *   participant St as getStyles
-     *   participant D as getDocs
-     *   participant W as getWorkflows
-     *   participant Te as getTemplates
-     *   T->>T: Parse arguments
-     *   alt all flag is true
-     *     T->>T: Set all component flags to true
-     *   end
-     *   alt license is specified
-     *     T->>L: getLicense(license)
-     *   end
-     *   alt ide flag is true
-     *     T->>I: getIde()
-     *   end
-     *   alt scripts flag is true
-     *     T->>S: getScripts()
-     *   end
-     *   alt styles flag is true
-     *     T->>St: getStyles()
-     *   end
-     *   alt docs flag is true
-     *     T->>D: getDocs()
-     *   end
-     *   alt workflows flag is true
-     *     T->>W: getWorkflows()
-     *   end
-     *   alt templates flag is true
-     *     T->>Te: getTemplates()
-     *   end
-     */
-    async run(args) {
-        let { license } = args;
-        const { boot } = args;
-        let { all, scripts, styles, docs, ide, workflows, templates, docker, typescript, automation, } = args;
-        if (scripts ||
-            styles ||
-            docs ||
-            ide ||
-            workflows ||
-            templates ||
-            docker ||
-            typescript ||
-            automation)
-            all = false;
-        if (boot) {
-            const org = await this.getOrg();
-            const name = await input_1.UserInput.insistForText("Project name", "Enter the project name:", (res) => res.length > 1);
-            const author = await input_1.UserInput.insistForText("Author", "Enter the author name:", (res) => res.length > 1);
-            const pkgName = org ? `@${org}/${name}` : name;
-            await this.initPackage(pkgName, author, license);
-            await this.createTokenFiles();
-            await this.auditFix();
-            this.patchFiles();
-        }
-        if (all) {
-            scripts = true;
-            styles = true;
-            docs = true;
-            ide = true;
-            workflows = true;
-            templates = true;
-            docker = true;
-            typescript = true;
-            automation = false;
-        }
-        this.loadValuesFromPackage();
-        if (typeof license === "undefined") {
-            const confirmation = await input_1.UserInput.askConfirmation("license", "Do you want to set a license?", true);
-            if (confirmation)
-                license = await input_1.UserInput.insistForText("license", "Enter the desired License (MIT|GPL|Apache|LGPL|AGPL):", (val) => !!val && !!val.match(/^(MIT|GPL|Apache|LGPL|AGPL)$/g));
-        }
-        await this.getLicense(license);
-        if (typeof ide === "undefined")
-            ide = await input_1.UserInput.askConfirmation("ide", "Do you want to get ide configs?", true);
-        if (ide)
-            await this.getIde();
-        if (typeof typescript === "undefined")
-            typescript = await input_1.UserInput.askConfirmation("typescript", "Do you want to get typescript configs?", true);
-        if (typescript)
-            await this.getTypescript();
-        if (typeof docker === "undefined")
-            docker = await input_1.UserInput.askConfirmation("docker", "Do you want to get docker configs?", true);
-        if (docker)
-            await this.getDocker();
-        if (typeof automation === "undefined")
-            automation = await input_1.UserInput.askConfirmation("automation", "Do you want to get automation configs?", true);
-        if (automation)
-            await this.getAutomation();
-        if (typeof scripts === "undefined")
-            scripts = await input_1.UserInput.askConfirmation("scripts", "Do you want to get scripts?", true);
-        if (scripts)
-            await this.getScripts();
-        if (typeof styles === "undefined")
-            styles = await input_1.UserInput.askConfirmation("styles", "Do you want to get styles?", true);
-        if (styles)
-            await this.getStyles();
-        if (typeof docs === "undefined")
-            docs = await input_1.UserInput.askConfirmation("docs", "Do you want to get docs?", true);
-        if (docs)
-            await this.getDocs();
-        if (typeof workflows === "undefined")
-            workflows = await input_1.UserInput.askConfirmation("workflows", "Do you want to get workflows?", true);
-        if (workflows)
-            await this.getWorkflows();
-        if (typeof templates === "undefined")
-            templates = await input_1.UserInput.askConfirmation("templates", "Do you want to get templates?", true);
-        if (templates)
-            await this.getTemplates();
-    }
-}
-new TemplateSync()
-    .execute()
-    .then(() => TemplateSync.log.info("Template updated successfully"))
-    .catch((e) => {
-    TemplateSync.log.error(`Error preparing template: ${e}`);
-    process.exit(1);
-});
 
 
 /***/ }),
@@ -3268,12 +3496,23 @@ __exportStar(__webpack_require__(483), exports);
 /******/ 	}
 /******/ 	
 /************************************************************************/
-/******/ 	
-/******/ 	// startup
-/******/ 	// Load entry module and return exports
-/******/ 	// This entry module is referenced by other modules so it can't be inlined
-/******/ 	var __webpack_exports__ = __webpack_require__(939);
-/******/ 	
+var __webpack_exports__ = {};
+// This entry needs to be wrapped in an IIFE because it uses a non-standard name for the exports (exports).
+(() => {
+var exports = __webpack_exports__;
+
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+const operations_1 = __webpack_require__(804);
+new operations_1.TemplateSync()
+    .execute()
+    .then(() => operations_1.TemplateSync.log.info("Template updated successfully. Please confirm all changes before commiting"))
+    .catch((e) => {
+    operations_1.TemplateSync.log.error(`Error preparing template: ${e}`);
+    process.exit(1);
+});
+
+})();
+
 /******/ 	return __webpack_exports__;
 /******/ })()
 ;
