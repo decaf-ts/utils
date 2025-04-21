@@ -224,8 +224,7 @@ export class TemplateSync extends Command<CommandOptions<typeof argzz>, void> {
    */
   async getScripts() {
     await this.downloadOption("scripts");
-    this.log.info("restarting script after update");
-    await runCommand("npm run update-scripts -- --all").promise;
+    this.log.info("please re-run the command");
     process.exit(0);
   }
 
