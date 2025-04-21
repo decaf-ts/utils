@@ -1413,11 +1413,6 @@ class TemplateSync extends command_1.Command {
         super("TemplateSync", argzz);
         this.replacements = {};
         /**
-         * @description Downloads script files.
-         * @returns {Promise<void>}
-         */
-        this.getScripts = () => this.downloadOption("scripts");
-        /**
          * @description Downloads style configuration files.
          * @returns {Promise<void>}
          */
@@ -1511,6 +1506,16 @@ class TemplateSync extends command_1.Command {
             recursive: true,
         });
         await this.downloadOption("ide");
+    }
+    /**
+     * @description Update npm scripts
+     * @returns {Promise<void>}
+     */
+    async getScripts() {
+        await this.downloadOption("scripts");
+        this.log.info("restarting script after update");
+        await (0, utils_1.runCommand)("npm run update-scripts -- --all").promise;
+        process.exit(0);
     }
     async initPackage(pkgName, author, license) {
         try {
@@ -1683,6 +1688,10 @@ class TemplateSync extends command_1.Command {
             pkg = true;
             automation = false;
         }
+        if (typeof scripts === "undefined")
+            scripts = await input_1.UserInput.askConfirmation("scripts", "Do you want to get scripts?", true);
+        if (scripts)
+            await this.getScripts();
         this.loadValuesFromPackage();
         if (!all && typeof license === "undefined") {
             const confirmation = await input_1.UserInput.askConfirmation("license", "Do you want to set a license?", true);
@@ -1706,10 +1715,6 @@ class TemplateSync extends command_1.Command {
             automation = await input_1.UserInput.askConfirmation("automation", "Do you want to get automation configs?", true);
         if (automation)
             await this.getAutomation();
-        if (typeof scripts === "undefined")
-            scripts = await input_1.UserInput.askConfirmation("scripts", "Do you want to get scripts?", true);
-        if (scripts)
-            await this.getScripts();
         if (typeof styles === "undefined")
             styles = await input_1.UserInput.askConfirmation("styles", "Do you want to get styles?", true);
         if (styles)

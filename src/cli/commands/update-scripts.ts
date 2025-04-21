@@ -218,10 +218,15 @@ export class TemplateSync extends Command<CommandOptions<typeof argzz>, void> {
   }
 
   /**
-   * @description Downloads script files.
+   * @description Update npm scripts
    * @returns {Promise<void>}
    */
-  getScripts = () => this.downloadOption("scripts");
+  async getScripts() {
+    await this.downloadOption("scripts");
+    this.log.info("restarting script after update");
+    await runCommand("npm run update-scripts -- --all").promise;
+    process.exit(0);
+  }
 
   /**
    * @description Downloads style configuration files.
@@ -483,6 +488,15 @@ export class TemplateSync extends Command<CommandOptions<typeof argzz>, void> {
       automation = false;
     }
 
+    if (typeof scripts === "undefined")
+      scripts = await UserInput.askConfirmation(
+        "scripts",
+        "Do you want to get scripts?",
+        true
+      );
+
+    if (scripts) await this.getScripts();
+
     this.loadValuesFromPackage();
     if (!all && typeof license === "undefined") {
       const confirmation = await UserInput.askConfirmation(
@@ -535,14 +549,6 @@ export class TemplateSync extends Command<CommandOptions<typeof argzz>, void> {
       );
     if (automation) await this.getAutomation();
 
-    if (typeof scripts === "undefined")
-      scripts = await UserInput.askConfirmation(
-        "scripts",
-        "Do you want to get scripts?",
-        true
-      );
-
-    if (scripts) await this.getScripts();
     if (typeof styles === "undefined")
       styles = await UserInput.askConfirmation(
         "styles",
@@ -550,6 +556,7 @@ export class TemplateSync extends Command<CommandOptions<typeof argzz>, void> {
         true
       );
     if (styles) await this.getStyles();
+
     if (typeof docs === "undefined")
       docs = await UserInput.askConfirmation(
         "docs",
