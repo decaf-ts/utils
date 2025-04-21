@@ -455,7 +455,7 @@ class TemplateSync extends Command<CommandOptions<typeof argzz>, void> {
     }
 
     this.loadValuesFromPackage();
-    if (typeof license === "undefined") {
+    if (!all && typeof license === "undefined") {
       const confirmation = await UserInput.askConfirmation(
         "license",
         "Do you want to set a license?",
