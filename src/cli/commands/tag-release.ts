@@ -23,7 +23,7 @@ const options = {
 
 /**
  * @class ReleaseScript
- * @extends {Command<typeof options, void>}
+ * @extends {Command}
  * @cavegory scripts
  * @description A command-line script for managing releases and version updates.
  * @summary This script automates the process of creating and pushing new releases. It handles version updates,

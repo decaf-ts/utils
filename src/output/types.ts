@@ -83,23 +83,10 @@ export type LoggingConfig = {
  * @memberOf @decaf-ts/utils
  */
 export interface ThemeOption {
-  /**
-   * @description The foreground color code for the styled element.
-   * @summary Can be a single number for predefined colors, an RGB array, or undefined for default color.
-   */
   fg?: number | [number] | [number, number, number];
 
-  /**
-   * @description The background color code for the styled element.
-   * @summary Can be a single number for predefined colors, an RGB array, or undefined for default color.
-   */
   bg?: number | [number] | [number, number, number];
 
-  /**
-   * @description An array of style codes to apply to the element.
-   * @summary These codes represent additional styling options such as bold, italic, etc.
-   * Undefined means no additional styles are applied.
-   */
   style?: number[] | [keyof typeof styles];
 }
 
@@ -159,8 +146,8 @@ export interface Theme {
  * to apply color styling to text or chain multiple color operations.
  *
  * @interface Color
- * @memberOf module:@asdasdasd/input
- */
+ * @memberOf module:@decaf-ts/utils
+ * */
 export interface Color {
   /**
    * @description Applies the color to the given text.
@@ -182,7 +169,7 @@ export interface Color {
  * and text styles to strings in terminal output.
  *
  * @interface Kleur
- * @memberOf module:@asdasdasd/input
+ * @memberOf module:@decaf-ts/utils
  */
 export interface Kleur {
   // Colors

@@ -85,7 +85,7 @@ export class Environment<T extends object> extends ObjectAccumulator<T> {
    * @summary Adds new properties to the environment from the provided object.
    * @template V
    * @param {V} value - The object to accumulate into the environment.
-   * @return {typeof Environment._instance & V & ObjectAccumulator<typeof Environment._instance & V>} The updated environment instance.
+   * @return {V} The updated environment instance.
    */
   static accumulate<V extends object>(
     value: V

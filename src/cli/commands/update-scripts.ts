@@ -139,13 +139,13 @@ const argzz = {
 
 /**
  * @class TemplateSync
- * @extends {Command<CommandOptions<typeof args>, void>}
+ * @extends {Command}
  * @category scripts
  * @description A command-line tool for synchronizing project templates and configurations.
  * @summary This class provides functionality to download and update various project files and configurations from a remote repository.
  * It supports updating licenses, IDE configurations, scripts, styles, documentation, workflows, and templates.
  *
- * @param {CommandOptions<typeof args>} args - The command options for TemplateSync
+ * @param {CommandOptions} args - The command options for TemplateSync
  */
 export class TemplateSync extends Command<CommandOptions<typeof argzz>, void> {
   private replacements: Record<string, string | number> = {};
@@ -180,7 +180,7 @@ export class TemplateSync extends Command<CommandOptions<typeof argzz>, void> {
   /**
    * @description Downloads files for a specific option category.
    * @summary This method downloads all files associated with a given option key from the remote repository.
-   * @param {keyof typeof options} key - The key representing the option category to download
+   * @param {string} key - The key representing the option category to download
    * @returns {Promise<void>}
    * @throws {Error} If the specified option key is not found
    */

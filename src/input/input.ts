@@ -82,10 +82,6 @@ export class UserInput<R extends string = string> implements PromptObject<R> {
    */
   onState?: PrevCaller<R, void> | undefined;
 
-  /**
-   * @description The onRender callback function.
-   * @summary A function called when the prompt is rendered.
-   */
   onRender?: ((kleur: Kleur) => void) | undefined;
 
   /**
@@ -142,10 +138,6 @@ export class UserInput<R extends string = string> implements PromptObject<R> {
    */
   inactive?: string | PrevCaller<R, string | Falsy> | undefined;
 
-  /**
-   * @description The choices for select inputs.
-   * @summary The list of options presented to the user.
-   */
   choices?: Choice[] | PrevCaller<R, Choice[] | Falsy> | undefined;
 
   /**
@@ -160,10 +152,6 @@ export class UserInput<R extends string = string> implements PromptObject<R> {
    */
   warn?: string | PrevCaller<R, string | Falsy> | undefined;
 
-  /**
-   * @description The suggest function for autocomplete inputs.
-   * @summary A function to provide suggestions based on user input.
-   */
   suggest?: ((input: any, choices: Choice[]) => Promise<any>) | undefined;
 
   /**
@@ -434,13 +422,6 @@ export class UserInput<R extends string = string> implements PromptObject<R> {
     return this;
   }
 
-  /**
-   * @description Sets the choices for select inputs.
-   * @summary Configures the list of options presented to the user.
-   *
-   * @param value - The list of choices.
-   * @returns This UserInput instance for method chaining.
-   */
   setChoices(
     value: Choice[] | PrevCaller<R, Choice[] | Falsy> | undefined
   ): this {
@@ -475,13 +456,6 @@ export class UserInput<R extends string = string> implements PromptObject<R> {
     return this;
   }
 
-  /**
-   * @description Sets the suggest function for autocomplete inputs.
-   * @summary Configures a function to provide suggestions based on user input.
-   *
-   * @param value - The suggest function.
-   * @returns This UserInput instance for method chaining.
-   */
   setSuggest(
     value: ((input: any, choices: Choice[]) => Promise<any>) | undefined
   ): this {

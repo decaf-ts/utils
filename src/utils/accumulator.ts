@@ -49,7 +49,7 @@ export class ObjectAccumulator<T extends object> {
    * @summary Adds properties from a new object to the accumulator, maintaining type information
    * @template V - The type of the object being accumulated
    * @param {V} value - The object to accumulate
-   * @returns {T & V & ObjectAccumulator<T & V>} A new ObjectAccumulator instance with updated type information
+   * @returns A new ObjectAccumulator instance with updated type information
    * @mermaid
    * sequenceDiagram
    *   participant A as Accumulator
@@ -72,7 +72,7 @@ export class ObjectAccumulator<T extends object> {
    * @summary Gets a value from the accumulated object using a type-safe key
    * @template K - The key type, must be a key of this
    * @param {K} key - The key of the value to retrieve
-   * @returns {this[K] | undefined} The value associated with the key, or undefined if not found
+   * @returns {any | undefined} The value associated with the key, or undefined if not found
    */
   get<K extends keyof this>(key: K): this[K] | undefined {
     return this[key];
@@ -91,8 +91,8 @@ export class ObjectAccumulator<T extends object> {
   /**
    * @description Removes a key-value pair from the accumulator
    * @summary Deletes a property from the accumulated object
-   * @param {keyof this | string} key - The key of the property to remove
-   * @returns {Omit<this, typeof key> & ObjectAccumulator<Omit<this, typeof key>> | this} The accumulator instance with the specified property removed
+   * @param {string} key - The key of the property to remove
+   * @returns {} The accumulator instance with the specified property removed
    */
   remove(
     key: keyof this | string
@@ -119,7 +119,7 @@ export class ObjectAccumulator<T extends object> {
   /**
    * @description Retrieves all values from the accumulator
    * @summary Gets an array of all accumulated property values
-   * @returns {T[keyof T][]} An array of values
+   * @returns An array of values
    */
   values(): T[keyof T][] {
     return Object.values(this);
@@ -146,7 +146,7 @@ export class ObjectAccumulator<T extends object> {
   /**
    * @description Executes a callback for each key-value pair in the accumulator
    * @summary Iterates over all accumulated properties, calling a function for each
-   * @param {(value: this[keyof this], key: keyof this, i: number) => void} callback - The function to execute for each entry
+   * @param {function(any, string, number): void} callback - The function to execute for each entry
    * @returns {void}
    */
   forEach(
@@ -161,7 +161,7 @@ export class ObjectAccumulator<T extends object> {
    * @description Creates a new array with the results of calling a provided function on every element in the accumulator
    * @summary Maps each accumulated property to a new value using a callback function
    * @template R - The type of the mapped values
-   * @param {(value: this[keyof this], key: keyof this, i: number) => R} callback - Function that produces an element of the new array
+   * @param {function(any, string,number): R} callback - Function that produces an element of the new array
    * @returns {R[]} A new array with each element being the result of the callback function
    */
   map<R>(

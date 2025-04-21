@@ -64,7 +64,7 @@ export type Token =
  * @description The result of parsing command-line arguments.
  * @summary Contains parsed values, positional arguments, and optionally the parsed tokens.
  * @typedef {Object} ParseArgsResult
- * @property {Object.<string, string | boolean | (string | boolean)[] | undefined>} values - Parsed option values.
+ * @property {string | boolean | string[] | boolean[] | undefined} values - Parsed option values.
  * @property {string[]} positionals - Positional arguments.
  * @property {Token[]} [tokens] - Parsed tokens (if requested).
  * @memberOf @decaf-ts/utils

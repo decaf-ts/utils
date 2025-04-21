@@ -107,14 +107,14 @@ export class TestReporter {
   /**
    * @description Function for adding messages to the test report
    * @summary Static handler for processing and storing test messages
-   * @type {(params: AddMsgParams) => Promise<void>}
+   * @type {function(AddMsgParams): Promise<void>}
    */
   protected static addMsgFunction: (params: AddMsgParams) => Promise<void>;
 
   /**
    * @description Function for adding attachments to the test report
    * @summary Static handler for processing and storing test attachments
-   * @type {(params: AddAttachParams) => Promise<void>}
+   * @type {function(AddAttachParams): Promise<void>}
    */
   protected static addAttachFunction: (
     params: AddAttachParams

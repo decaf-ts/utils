@@ -7,8 +7,8 @@ import { Environment } from "./environment";
  * @template R - The type of the resolved value.
  * @template E - The type of the error value, defaulting to Error.
  * @typedef {Object} PromiseExecutor
- * @property {function(value: R | PromiseLike<R>): void} resolve - Function to resolve the promise.
- * @property {function(error: E): void} reject - Function to reject the promise.
+ * @property {function(R): void} resolve - Function to resolve the promise.
+ * @property {function(E): void} reject - Function to reject the promise.
  * @memberOf @decaf-ts/utils
  */
 export interface PromiseExecutor<R, E = Error> {

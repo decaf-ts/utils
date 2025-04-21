@@ -20,8 +20,6 @@ export type OutputType = "stdout" | "stderr";
  * @template C - The type of the output writer, extending StandardOutputWriter<R>.
  * @template E - The type of the error value, defaulting to number.
  *
- * @typedef {new(lock: PromiseExecutor<R, E>, ...args: unknown[]) => C} OutputWriterConstructor
- *
  * @param {PromiseExecutor<R, E>} lock - The promise executor for managing asynchronous operations.
  * @param {...unknown[]} args - Additional arguments passed to the constructor.
  * @return {C} An instance of the output writer.
