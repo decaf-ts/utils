@@ -1,6 +1,6 @@
 import path from "path";
-import { Command } from "../cli/command";
-import { CommandOptions } from "../cli/types";
+import { Command } from "../command";
+import { CommandOptions } from "../types";
 import {
   getPackage,
   HttpClient,
@@ -11,10 +11,10 @@ import {
   SetupScriptKey,
   Tokens,
   writeFile,
-} from "../utils";
-import { LoggingConfig } from "../output";
-import { DefaultCommandValues } from "../cli";
-import { UserInput } from "../input";
+} from "../../utils";
+import { LoggingConfig } from "../../output";
+import { DefaultCommandValues } from "../index";
+import { UserInput } from "../../input";
 import fs from "fs";
 
 const baseUrl =
@@ -580,15 +580,3 @@ export class TemplateSync extends Command<CommandOptions<typeof argzz>, void> {
     if (pkg) await this.updatePackageScrips();
   }
 }
-
-new TemplateSync()
-  .execute()
-  .then(() =>
-    TemplateSync.log.info(
-      "Template updated successfully. Please confirm all changes before commiting"
-    )
-  )
-  .catch((e: unknown) => {
-    TemplateSync.log.error(`Error preparing template: ${e}`);
-    process.exit(1);
-  });

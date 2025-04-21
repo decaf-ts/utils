@@ -1,4 +1,4 @@
-import { TemplateSync } from "../operations";
+import { TemplateSync } from "../cli/commands";
 
 new TemplateSync()
   .execute()

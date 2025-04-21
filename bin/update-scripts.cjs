@@ -303,6 +303,179 @@ exports.AbortCode = "Aborted";
 
 /***/ }),
 
+/***/ 191:
+/***/ ((__unused_webpack_module, exports, __webpack_require__) => {
+
+
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.ReleaseScript = void 0;
+const utils_1 = __webpack_require__(686);
+const constants_1 = __webpack_require__(154);
+const input_1 = __webpack_require__(714);
+const command_1 = __webpack_require__(529);
+const options = {
+    ci: {
+        type: "boolean",
+        default: true,
+    },
+    message: {
+        type: "string",
+        short: "m",
+    },
+    tag: {
+        type: "string",
+        short: "t",
+        default: undefined,
+    },
+};
+/**
+ * @class ReleaseScript
+ * @extends {Command<typeof options, void>}
+ * @cavegory scripts
+ * @description A command-line script for managing releases and version updates.
+ * @summary This script automates the process of creating and pushing new releases. It handles version updates,
+ * commit messages, and optionally publishes to NPM. The script supports semantic versioning and can work in both CI and non-CI environments.
+ *
+ * @param {Object} options - Configuration options for the script
+ * @param {boolean} options.ci - Whether the script is running in a CI environment (default: true)
+ * @param {string} options.message - The release message (short: 'm')
+ * @param {string} options.tag - The version tag to use (short: 't', default: undefined)
+ */
+class ReleaseScript extends command_1.Command {
+    constructor() {
+        super("ReleaseScript", options);
+    }
+    /**
+     * @description Prepares the version for the release.
+     * @summary This method validates the provided tag or prompts the user for a new one if not provided or invalid.
+     * It also displays the latest git tags for reference.
+     * @param {string} tag - The version tag to prepare
+     * @returns {Promise<string>} The prepared version tag
+     *
+     * @mermaid
+     * sequenceDiagram
+     *   participant R as ReleaseScript
+     *   participant T as TestVersion
+     *   participant U as UserInput
+     *   participant G as Git
+     *   R->>T: testVersion(tag)
+     *   alt tag is valid
+     *     T-->>R: return tag
+     *   else tag is invalid or not provided
+     *     R->>G: List latest git tags
+     *     R->>U: Prompt for new tag
+     *     U-->>R: return new tag
+     *   end
+     */
+    async prepareVersion(tag) {
+        const log = this.log.for(this.prepareVersion);
+        tag = this.testVersion(tag || "");
+        if (!tag) {
+            log.verbose("No release message provided. Prompting for one:");
+            log.info(`Listing latest git tags:`);
+            await (0, utils_1.runCommand)("git tag --sort=-taggerdate | head -n 5").promise;
+            return await input_1.UserInput.insistForText("tag", "Enter the new tag number (accepts v*.*.*[-...])", (val) => !!val.toString().match(/^v[0-9]+\.[0-9]+.[0-9]+(-[0-9a-zA-Z-]+)?$/));
+        }
+        return tag;
+    }
+    /**
+     * @description Tests if the provided version is valid.
+     * @summary This method checks if the version is a valid semantic version or a predefined update type (PATCH, MINOR, MAJOR).
+     * @param {string} version - The version to test
+     * @returns {string | undefined} The validated version or undefined if invalid
+     */
+    testVersion(version) {
+        const log = this.log.for(this.testVersion);
+        version = version.trim().toLowerCase();
+        switch (version) {
+            case constants_1.SemVersion.PATCH:
+            case constants_1.SemVersion.MINOR:
+            case constants_1.SemVersion.MAJOR:
+                log.verbose(`Using provided SemVer update: ${version}`, 1);
+                return version;
+            default:
+                log.verbose(`Testing provided version for SemVer compatibility: ${version}`, 1);
+                if (!new RegExp(constants_1.SemVersionRegex).test(version)) {
+                    log.debug(`Invalid version number: ${version}`);
+                    return undefined;
+                }
+                log.verbose(`version approved: ${version}`, 1);
+                return version;
+        }
+    }
+    /**
+     * @description Prepares the release message.
+     * @summary This method either returns the provided message or prompts the user for a new one if not provided.
+     * @param {string} [message] - The release message
+     * @returns {Promise<string>} The prepared release message
+     */
+    async prepareMessage(message) {
+        const log = this.log.for(this.prepareMessage);
+        if (!message) {
+            log.verbose("No release message provided. Prompting for one");
+            return await input_1.UserInput.insistForText("message", "What should be the release message/ticket?", (val) => !!val && val.toString().length > 5);
+        }
+        return message;
+    }
+    /**
+     * @description Runs the release script.
+     * @summary This method orchestrates the entire release process, including version preparation, message creation,
+     * git operations, and npm publishing (if not in CI environment).
+     * @param {ParseArgsResult} args - The parsed command-line arguments
+     * @returns {Promise<void>}
+     *
+     * @mermaid
+     * sequenceDiagram
+     *   participant R as ReleaseScript
+     *   participant V as PrepareVersion
+     *   participant M as PrepareMessage
+     *   participant N as NPM
+     *   participant G as Git
+     *   participant U as UserInput
+     *   R->>V: prepareVersion(tag)
+     *   R->>M: prepareMessage(message)
+     *   R->>N: Run prepare-release script
+     *   R->>G: Check git status
+     *   alt changes exist
+     *     R->>U: Ask for confirmation
+     *     U-->>R: Confirm
+     *     R->>G: Add and commit changes
+     *   end
+     *   R->>N: Update npm version
+     *   R->>G: Push changes and tags
+     *   alt not CI environment
+     *     R->>N: Publish to npm
+     *   end
+     */
+    async run(args) {
+        let result;
+        const { ci } = args;
+        let { tag, message } = args;
+        tag = await this.prepareVersion(tag);
+        message = await this.prepareMessage(message);
+        result = await (0, utils_1.runCommand)(`npm run prepare-release -- ${tag} ${message}`, {
+            cwd: process.cwd(),
+        }).promise;
+        result = await (0, utils_1.runCommand)("git status --porcelain").promise;
+        await result;
+        if (result.logs.length &&
+            (await input_1.UserInput.askConfirmation("git-changes", "Do you want to push the changes to the remote repository?", true))) {
+            await (0, utils_1.runCommand)("git add .").promise;
+            await (0, utils_1.runCommand)(`git commit -m "${tag} - ${message} - after release preparation${ci ? "" : constants_1.NoCIFLag}"`).promise;
+        }
+        await (0, utils_1.runCommand)(`npm version "${tag}" -m "${message}${ci ? "" : constants_1.NoCIFLag}"`).promise;
+        await (0, utils_1.runCommand)("git push --follow-tags").promise;
+        if (!ci) {
+            await (0, utils_1.runCommand)("NPM_TOKEN=$(cat .npmtoken) npm publish --access public")
+                .promise;
+        }
+    }
+}
+exports.ReleaseScript = ReleaseScript;
+
+
+/***/ }),
+
 /***/ 317:
 /***/ ((module) => {
 
@@ -615,6 +788,31 @@ module.exports = require("prompts");
 
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
+
+
+/***/ }),
+
+/***/ 487:
+/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
+
+
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __exportStar = (this && this.__exportStar) || function(m, exports) {
+    for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports, p)) __createBinding(exports, m, p);
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+__exportStar(__webpack_require__(191), exports);
+__exportStar(__webpack_require__(639), exports);
 
 
 /***/ }),
@@ -1078,7 +1276,7 @@ function escapeRegExp(string) {
 
 /***/ }),
 
-/***/ 654:
+/***/ 639:
 /***/ (function(__unused_webpack_module, exports, __webpack_require__) {
 
 
@@ -2623,31 +2821,6 @@ exports.HttpClient = HttpClient;
 
 /***/ }),
 
-/***/ 804:
-/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
-
-
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    var desc = Object.getOwnPropertyDescriptor(m, k);
-    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
-      desc = { enumerable: true, get: function() { return m[k]; } };
-    }
-    Object.defineProperty(o, k2, desc);
-}) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-}));
-var __exportStar = (this && this.__exportStar) || function(m, exports) {
-    for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports, p)) __createBinding(exports, m, p);
-};
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-__exportStar(__webpack_require__(924), exports);
-__exportStar(__webpack_require__(654), exports);
-
-
-/***/ }),
-
 /***/ 834:
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
@@ -3234,179 +3407,6 @@ module.exports = require("fs");
 
 /***/ }),
 
-/***/ 924:
-/***/ ((__unused_webpack_module, exports, __webpack_require__) => {
-
-
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.ReleaseScript = void 0;
-const utils_1 = __webpack_require__(686);
-const constants_1 = __webpack_require__(154);
-const input_1 = __webpack_require__(714);
-const command_1 = __webpack_require__(529);
-const options = {
-    ci: {
-        type: "boolean",
-        default: true,
-    },
-    message: {
-        type: "string",
-        short: "m",
-    },
-    tag: {
-        type: "string",
-        short: "t",
-        default: undefined,
-    },
-};
-/**
- * @class ReleaseScript
- * @extends {Command<typeof options, void>}
- * @cavegory scripts
- * @description A command-line script for managing releases and version updates.
- * @summary This script automates the process of creating and pushing new releases. It handles version updates,
- * commit messages, and optionally publishes to NPM. The script supports semantic versioning and can work in both CI and non-CI environments.
- *
- * @param {Object} options - Configuration options for the script
- * @param {boolean} options.ci - Whether the script is running in a CI environment (default: true)
- * @param {string} options.message - The release message (short: 'm')
- * @param {string} options.tag - The version tag to use (short: 't', default: undefined)
- */
-class ReleaseScript extends command_1.Command {
-    constructor() {
-        super("ReleaseScript", options);
-    }
-    /**
-     * @description Prepares the version for the release.
-     * @summary This method validates the provided tag or prompts the user for a new one if not provided or invalid.
-     * It also displays the latest git tags for reference.
-     * @param {string} tag - The version tag to prepare
-     * @returns {Promise<string>} The prepared version tag
-     *
-     * @mermaid
-     * sequenceDiagram
-     *   participant R as ReleaseScript
-     *   participant T as TestVersion
-     *   participant U as UserInput
-     *   participant G as Git
-     *   R->>T: testVersion(tag)
-     *   alt tag is valid
-     *     T-->>R: return tag
-     *   else tag is invalid or not provided
-     *     R->>G: List latest git tags
-     *     R->>U: Prompt for new tag
-     *     U-->>R: return new tag
-     *   end
-     */
-    async prepareVersion(tag) {
-        const log = this.log.for(this.prepareVersion);
-        tag = this.testVersion(tag || "");
-        if (!tag) {
-            log.verbose("No release message provided. Prompting for one:");
-            log.info(`Listing latest git tags:`);
-            await (0, utils_1.runCommand)("git tag --sort=-taggerdate | head -n 5").promise;
-            return await input_1.UserInput.insistForText("tag", "Enter the new tag number (accepts v*.*.*[-...])", (val) => !!val.toString().match(/^v[0-9]+\.[0-9]+.[0-9]+(-[0-9a-zA-Z-]+)?$/));
-        }
-        return tag;
-    }
-    /**
-     * @description Tests if the provided version is valid.
-     * @summary This method checks if the version is a valid semantic version or a predefined update type (PATCH, MINOR, MAJOR).
-     * @param {string} version - The version to test
-     * @returns {string | undefined} The validated version or undefined if invalid
-     */
-    testVersion(version) {
-        const log = this.log.for(this.testVersion);
-        version = version.trim().toLowerCase();
-        switch (version) {
-            case constants_1.SemVersion.PATCH:
-            case constants_1.SemVersion.MINOR:
-            case constants_1.SemVersion.MAJOR:
-                log.verbose(`Using provided SemVer update: ${version}`, 1);
-                return version;
-            default:
-                log.verbose(`Testing provided version for SemVer compatibility: ${version}`, 1);
-                if (!new RegExp(constants_1.SemVersionRegex).test(version)) {
-                    log.debug(`Invalid version number: ${version}`);
-                    return undefined;
-                }
-                log.verbose(`version approved: ${version}`, 1);
-                return version;
-        }
-    }
-    /**
-     * @description Prepares the release message.
-     * @summary This method either returns the provided message or prompts the user for a new one if not provided.
-     * @param {string} [message] - The release message
-     * @returns {Promise<string>} The prepared release message
-     */
-    async prepareMessage(message) {
-        const log = this.log.for(this.prepareMessage);
-        if (!message) {
-            log.verbose("No release message provided. Prompting for one");
-            return await input_1.UserInput.insistForText("message", "What should be the release message/ticket?", (val) => !!val && val.toString().length > 5);
-        }
-        return message;
-    }
-    /**
-     * @description Runs the release script.
-     * @summary This method orchestrates the entire release process, including version preparation, message creation,
-     * git operations, and npm publishing (if not in CI environment).
-     * @param {ParseArgsResult} args - The parsed command-line arguments
-     * @returns {Promise<void>}
-     *
-     * @mermaid
-     * sequenceDiagram
-     *   participant R as ReleaseScript
-     *   participant V as PrepareVersion
-     *   participant M as PrepareMessage
-     *   participant N as NPM
-     *   participant G as Git
-     *   participant U as UserInput
-     *   R->>V: prepareVersion(tag)
-     *   R->>M: prepareMessage(message)
-     *   R->>N: Run prepare-release script
-     *   R->>G: Check git status
-     *   alt changes exist
-     *     R->>U: Ask for confirmation
-     *     U-->>R: Confirm
-     *     R->>G: Add and commit changes
-     *   end
-     *   R->>N: Update npm version
-     *   R->>G: Push changes and tags
-     *   alt not CI environment
-     *     R->>N: Publish to npm
-     *   end
-     */
-    async run(args) {
-        let result;
-        const { ci } = args;
-        let { tag, message } = args;
-        tag = await this.prepareVersion(tag);
-        message = await this.prepareMessage(message);
-        result = await (0, utils_1.runCommand)(`npm run prepare-release -- ${tag} ${message}`, {
-            cwd: process.cwd(),
-        }).promise;
-        result = await (0, utils_1.runCommand)("git status --porcelain").promise;
-        await result;
-        if (result.logs.length &&
-            (await input_1.UserInput.askConfirmation("git-changes", "Do you want to push the changes to the remote repository?", true))) {
-            await (0, utils_1.runCommand)("git add .").promise;
-            await (0, utils_1.runCommand)(`git commit -m "${tag} - ${message} - after release preparation${ci ? "" : constants_1.NoCIFLag}"`).promise;
-        }
-        await (0, utils_1.runCommand)(`npm version "${tag}" -m "${message}${ci ? "" : constants_1.NoCIFLag}"`).promise;
-        await (0, utils_1.runCommand)("git push --follow-tags").promise;
-        if (!ci) {
-            await (0, utils_1.runCommand)("NPM_TOKEN=$(cat .npmtoken) npm publish --access public")
-                .promise;
-        }
-    }
-}
-exports.ReleaseScript = ReleaseScript;
-
-
-/***/ }),
-
 /***/ 928:
 /***/ ((module) => {
 
@@ -3502,12 +3502,12 @@ var __webpack_exports__ = {};
 var exports = __webpack_exports__;
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-const operations_1 = __webpack_require__(804);
-new operations_1.TemplateSync()
+const commands_1 = __webpack_require__(487);
+new commands_1.TemplateSync()
     .execute()
-    .then(() => operations_1.TemplateSync.log.info("Template updated successfully. Please confirm all changes before commiting"))
+    .then(() => commands_1.TemplateSync.log.info("Template updated successfully. Please confirm all changes before commiting"))
     .catch((e) => {
-    operations_1.TemplateSync.log.error(`Error preparing template: ${e}`);
+    commands_1.TemplateSync.log.error(`Error preparing template: ${e}`);
     process.exit(1);
 });
 

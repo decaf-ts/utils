@@ -1,4 +1,4 @@
-import { ReleaseScript } from "../operations";
+import { ReleaseScript } from "../cli/commands";
 
 new ReleaseScript()
   .execute()
