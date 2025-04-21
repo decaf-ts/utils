@@ -405,7 +405,9 @@ export class TemplateSync extends Command<CommandOptions<typeof argzz>, void> {
         if (key in devDependencies) {
           const replaced = devDependencies[key];
           if (replaced !== devDependencies[key]) {
-            pkg.scripts[key] = replaced;
+            (pkg as any)["devDependencies"] =
+              (pkg as any)["devDependencies"] || {};
+            (pkg as any)["devDependencies"][key] = replaced;
           }
         }
       });

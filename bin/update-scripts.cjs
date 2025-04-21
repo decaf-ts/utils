@@ -4812,7 +4812,9 @@ class TemplateSync extends command_1.Command {
                 if (key in devDependencies) {
                     const replaced = devDependencies[key];
                     if (replaced !== devDependencies[key]) {
-                        pkg.scripts[key] = replaced;
+                        pkg["devDependencies"] =
+                            pkg["devDependencies"] || {};
+                        pkg["devDependencies"][key] = replaced;
                     }
                 }
             });
