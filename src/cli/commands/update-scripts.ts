@@ -62,6 +62,7 @@ const options = {
   ],
   styles: [".prettierrc", "eslint.config.js"],
   scripts: ["bin/update-scripts.cjs", "bin/tag-release.cjs"],
+  tests: ["jest.config.ts", "workdocs/reports/jest.report.config.json"],
   typescript: ["tsconfig.json"],
   docker: ["Dockerfile"],
   automation: [
@@ -123,6 +124,12 @@ const argzz = {
     type: "boolean",
   },
   pkg: {
+    type: "boolean",
+  },
+  dependencies: {
+    type: "boolean",
+  },
+  tests: {
     type: "boolean",
   },
   automation: {
@@ -265,6 +272,12 @@ export class TemplateSync extends Command<CommandOptions<typeof argzz>, void> {
   getAutomation = () => this.downloadOption("automation");
 
   /**
+   * @description Downloads automation documentation files.
+   * @returns {Promise<void>}
+   */
+  getTests = () => this.downloadOption("tests");
+
+  /**
    * @description Downloads docker image files.
    * @returns {Promise<void>}
    */
@@ -380,6 +393,30 @@ export class TemplateSync extends Command<CommandOptions<typeof argzz>, void> {
     }
   }
 
+  async updateDependencies() {
+    try {
+      const originalPkg = JSON.parse(
+        await HttpClient.downloadFile(`${baseUrl}/package.json`)
+      );
+      const { devDependencies } = originalPkg;
+
+      const pkg = getPackage() as { scripts: Record<string, string> };
+      Object.keys(pkg.scripts).forEach((key) => {
+        if (key in devDependencies) {
+          const replaced = devDependencies[key];
+          if (replaced !== devDependencies[key]) {
+            pkg.scripts[key] = replaced;
+          }
+        }
+      });
+
+      fs.writeFileSync("package.json", JSON.stringify(pkg, null, 2));
+      await runCommand("npm install").promise;
+    } catch (e: unknown) {
+      throw new Error(`Error fixing package.json dependencies: ${e}`);
+    }
+  }
+
   /**
    * @description Runs the template synchronization process.
    * @summary This method orchestrates the downloading of various project components based on the provided arguments.
@@ -438,6 +475,8 @@ export class TemplateSync extends Command<CommandOptions<typeof argzz>, void> {
       templates,
       docker,
       typescript,
+      dependencies,
+      tests,
       automation,
       pkg,
     } = args;
@@ -451,6 +490,8 @@ export class TemplateSync extends Command<CommandOptions<typeof argzz>, void> {
       docker ||
       typescript ||
       automation ||
+      dependencies ||
+      tests ||
       pkg
     )
       all = false;
@@ -485,6 +526,8 @@ export class TemplateSync extends Command<CommandOptions<typeof argzz>, void> {
       docker = true;
       typescript = true;
       pkg = true;
+      dependencies = true;
+      tests = true;
       automation = false;
     }
 
@@ -581,9 +624,25 @@ export class TemplateSync extends Command<CommandOptions<typeof argzz>, void> {
     if (typeof pkg === "undefined")
       pkg = await UserInput.askConfirmation(
         "pkg",
-        "Do you update your package.json scripts?",
+        "Do you want to update your package.json scripts?",
         true
       );
     if (pkg) await this.updatePackageScrips();
+
+    if (typeof tests === "undefined")
+      tests = await UserInput.askConfirmation(
+        "pkg",
+        "Do you want to update your test configs?",
+        true
+      );
+    if (tests) await this.getTests();
+
+    if (typeof dependencies === "undefined")
+      dependencies = await UserInput.askConfirmation(
+        "pkg",
+        "Do you want to update dev dependencies?",
+        true
+      );
+    if (dependencies) await this.updateDependencies();
   }
 }
