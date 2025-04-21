@@ -4515,7 +4515,7 @@ const options = {
     ],
     styles: [".prettierrc", "eslint.config.js"],
     scripts: ["bin/update-scripts.cjs", "bin/tag-release.cjs"],
-    tests: ["jest.config.ts", "workdocs/reports/jest.report.config.json"],
+    tests: ["jest.config.ts", "workdocs/reports/jest.coverage.config.json"],
     typescript: ["tsconfig.json"],
     docker: ["Dockerfile"],
     automation: [
