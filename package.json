@@ -25,7 +25,7 @@
     "coverage": "rimraf ./workdocs/reports/data/*.json && npm run test:all -- --coverage --config=./workdocs/reports/jest.coverage.config.ts",
     "lint": "eslint .",
     "lint-fix": "eslint --fix .",
-    "prepare-release": "npm run lint-fix && npm run build:prod && npm run coverage && npm run docs",
+    "prepare-release": "npm run lint-fix && npm run build && npm run coverage && npm run docs",
     "release": "./bin/tag-release.sh",
     "clean-publish": "npx clean-publish",
     "drawings": "for FILE in workdocs/drawings/*.drawio; do echo \"converting $FILE to image...\" && docker run --rm -v $(pwd):/data rlespinasse/drawio-export --format png $FILE; done && cp -rf workdocs/drawings/export/* workdocs/resources/",
