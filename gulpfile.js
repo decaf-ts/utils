@@ -35,9 +35,20 @@ function patchFiles() {
   return series(doPatch("lib"), doPatch("dist"));
 }
 
+function copyAssets() {
+  const copyAssets = (basePath, isESM) => {
+    return function doPatch() {
+      const jsonFiles = [`src/**/*.json`];
+      return src(jsonFiles).pipe(dest(`${basePath}/${isESM ? "esm/" : ""}`));
+    };
+  };
+
+  return series(copyAssets("lib"), copyAssets("lib", true));
+}
+
 function getWebpackConfig(isESM, isDev, isLib, nameOverride = name) {
   const webPackConfig = {
-    mode: isDev && !isLib ? "development" : "production", // can be changed to production to produce minified bundle
+    mode: isDev ? "development" : "production", // can be changed to production to produce minified bundle
     target: "node",
     module: {
       rules: [
@@ -52,7 +63,7 @@ function getWebpackConfig(isESM, isDev, isLib, nameOverride = name) {
             },
           ],
           include: [path.join(process.cwd(), "./src")],
-          exclude: /node_modules\/(?!styled-string-builder).*$/,
+          exclude: /node_modules/,
         },
       ],
     },
@@ -75,11 +86,8 @@ function getWebpackConfig(isESM, isDev, isLib, nameOverride = name) {
   };
 
   if (isLib) {
-    webPackConfig.externals = ["fs", "path", "util", "stream", "https"];
+    webPackConfig.externals = [nodeExternals()];
     webPackConfig.externalsPresets = { node: true };
-    webPackConfig.optimization = {
-      minimize: false,
-    };
   }
 
   if (isESM) webPackConfig.experiments = { outputModule: true };
@@ -107,44 +115,37 @@ function exportDefault(isDev, mode) {
         isolatedModules: false,
       });
 
-      const stream = src("./src/**/*.ts")
+      const stream = src("./src/**/*.(ts|json)")
         .pipe(replace(VERSION_STRING, `${version}`))
         .pipe(gulpIf(isDev, sourcemaps.init()))
         .pipe(tsProject());
 
       const destPath = `lib${mode === "commonjs" ? "" : "/esm"}`;
+      const typesPath = `dist/types`;
 
       const fixCjsImports = function (match, ...groups) {
         const renamedFile = groups[1] + ".cjs";
         const fileName = groups[1] + ".ts";
+        const { base, relative } = this.file;
+        const sourceFilePath = path.join(
+          base,
+          "src",
+          relative.replace(/([^\/]|[\w-_])+?\.cjs$/g, ""),
+          fileName
+        );
 
-        let filePath;
-
-        try {
-          filePath = path.join(
-            this.file.path.split(name)[0],
-            name,
-            "src",
-            this.file.path
-              .split(name)[1]
-              .split("/")
-              .slice(1, this.file.path.split(name)[1].split("/").length - 1)
-              .join("/"),
-            fileName
-          );
-        } catch (e) {
-          console.error("Error: ", e);
-          throw e;
+        let result;
+        if (!fs.existsSync(sourceFilePath)) {
+          result = groups[0] + groups[1] + "/index.cjs" + groups[2];
+        } else {
+          result = groups[0] + renamedFile + groups[2];
         }
 
-        if (!fs.existsSync(filePath))
-          return groups[0] + groups[1] + "/index.cjs" + groups[2];
-
-        return groups[0] + renamedFile + groups[2];
+        return result;
       };
 
       return merge([
-        stream.dts.pipe(dest(destPath)),
+        stream.dts.pipe(dest(typesPath)),
         stream.js
           .pipe(gulpIf(!isDev, uglify()))
           .pipe(gulpIf(isDev, sourcemaps.write()))
@@ -196,14 +197,21 @@ function makeDocs() {
       );
     };
   };
+  const copyFile = (source, destination) => {
+    return function copyFile() {
+      return src(source, { base: source, encoding: false }).pipe(
+        dest(destination)
+      );
+    };
+  };
 
   function compileReadme() {
-    return run.default("npx markdown-include ./mdCompile.json")();
+    return run.default("npx markdown-include ./workdocs/readme-md.json")();
   }
 
   function compileDocs() {
     return run.default(
-      "npx jsdoc -c jsdocs.json -t ./node_modules/better-docs"
+      "npx jsdoc -c ./workdocs/jsdocs.json -t ./node_modules/better-docs"
     )();
   }
 
@@ -217,10 +225,26 @@ function makeDocs() {
           dest: "./docs/workdocs/assets",
         },
         {
-          src: "workdocs/coverage",
-          dest: "./docs/workdocs/coverage",
+          src: "workdocs/reports/coverage",
+          dest: "./docs/workdocs/reports/coverage",
+        },
+        {
+          src: "workdocs/reports/html",
+          dest: "./docs/workdocs/reports/html",
+        },
+        {
+          src: "workdocs/resources",
+          dest: "./docs/workdocs/resources",
         },
       ].map((e) => copyFiles(e.src, e.dest))
+    ),
+    series(
+      ...[
+        {
+          src: "LICENSE.md",
+          dest: "./docs/LICENSE.md",
+        },
+      ].map((e) => copyFile(e.src, e.dest))
     )
   );
 }
@@ -252,7 +276,7 @@ export const dev = series(
       exportDefault(true, "es2022"),
       makeCommands("update-scripts"),
       makeCommands("tag-release"),
-      makeCommands("template-setup")
+      copyAssets()
     ),
     exportESMDist(true),
     exportJSDist(true)
@@ -267,7 +291,7 @@ export const prod = series(
       exportDefault(true, "es2022"),
       makeCommands("update-scripts"),
       makeCommands("tag-release"),
-      makeCommands("template-setup")
+      copyAssets()
     ),
     exportESMDist(false),
     exportJSDist(false)

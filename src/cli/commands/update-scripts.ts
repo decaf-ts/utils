@@ -304,7 +304,9 @@ export class TemplateSync extends Command<CommandOptions<typeof argzz>, void> {
       );
       const { scripts } = originalPkg;
 
-      const pkg = getPackage() as { scripts: Record<string, string> };
+      const pkg: typeof originalPkg = getPackage() as {
+        scripts: Record<string, string>;
+      };
       Object.keys(pkg.scripts).forEach((key) => {
         if (key in scripts) {
           const replaced = patchString(scripts[key], this.replacements);
@@ -313,6 +315,10 @@ export class TemplateSync extends Command<CommandOptions<typeof argzz>, void> {
           }
         }
       });
+
+      pkg["exports"]["require"] = originalPkg["exports"]["require"];
+      pkg["exports"]["import"] = originalPkg["exports"]["import"];
+      pkg["types"] = originalPkg["types"];
 
       fs.writeFileSync("package.json", JSON.stringify(pkg, null, 2));
     } catch (e: unknown) {
@@ -400,7 +406,9 @@ export class TemplateSync extends Command<CommandOptions<typeof argzz>, void> {
       );
       const { devDependencies } = originalPkg;
 
-      const pkg = getPackage() as { scripts: Record<string, string> };
+      const pkg: typeof originalPkg = getPackage() as {
+        scripts: Record<string, string>;
+      };
       Object.keys(pkg.scripts).forEach((key) => {
         if (key in devDependencies) {
           const replaced = devDependencies[key];

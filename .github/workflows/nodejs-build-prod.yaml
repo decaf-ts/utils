@@ -1,4 +1,4 @@
-name: Build Prod Test
+name: "Build & Test"
 
 on:
   workflow_dispatch: # on button click
@@ -25,4 +25,4 @@ jobs:
           node-version: ${{ matrix.node-version }}
       - run: npm ci
       - run: npm run build:prod
-      - run: npm test:all
+      - run: npm run test:all

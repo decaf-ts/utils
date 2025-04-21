@@ -1,8 +1,11 @@
 ### Description
 
-THis is a template project for Typescript repos.
+Provides Basic functionality to standardize APIs across repositories:
 
-By developers, [for developers](./tutorials/For%20Developers.md).
+ - cli;
+ - input;
+ - output;
+ - utils'
 
 
 

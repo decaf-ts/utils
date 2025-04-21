@@ -1,6 +1,6 @@
 import { PromiseExecutor } from "../../src/utils/types";
 import { Logging } from "../../src/output/logging";
-import { style } from "@tvenceslau/styled-string";
+import { style } from "styled-string-builder";
 import { Encoding } from "../../src/utils/constants";
 import { StandardOutputWriter } from "../../src";
 

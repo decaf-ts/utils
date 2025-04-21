@@ -1,4 +1,4 @@
-name: Snyk Analysis
+name: "Snyk Analysis"
 on:
   push:
     tags:

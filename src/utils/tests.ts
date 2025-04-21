@@ -289,7 +289,7 @@ export class TestReporter {
   async reportGraph(reference: string, config: any) {
     this.deps = await installIfNotAvailable([dependencies[2]], this.deps);
     const { ChartJSNodeCanvas } = await normalizeImport(
-      import("chartjs-node-canvas")
+      import(dependencies[2])
     );
 
     const width = 600; //px

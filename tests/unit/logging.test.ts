@@ -1,10 +1,10 @@
 import { Logging, MiniLogger } from "../../src/output/logging";
 import { DefaultLoggingConfig, LogLevel } from "../../src/utils/constants";
 import { LoggingConfig, Theme } from "../../src/output/types";
-import * as styledString from "@tvenceslau/styled-string";
+import * as styledString from "styled-string-builder";
 
 // Mock the styled-string library
-jest.mock("@tvenceslau/styled-string", () => {
+jest.mock("styled-string-builder", () => {
   const mockStyle = jest.fn().mockImplementation(() => ({
     text: "styled-text",
     background: jest.fn().mockReturnThis(),

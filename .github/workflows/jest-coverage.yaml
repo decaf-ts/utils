@@ -1,8 +1,6 @@
-name: 'coverage'
+name: 'Test Coverage'
+
 on:
-  tags:
-    - 'v?[0-9]+.[0-9]+.[0-9]+'
-    - '!*-no-ci'
   pull_request:
     # The branches below must be a subset of the branches above
     branches: [ master, main ]

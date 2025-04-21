@@ -1,12 +1,17 @@
 /lib
 /dist
 /docs
-/workdocs/coverage
 /workdocs/drawings/*
 !/workdocs/drawings/*.drawio
-/workdocs/resources/**/*
-!/workdocs/resources/junit/.gitlock
-!/workdocs/resources/html/.gitlock
+/workdocs/resources/*
+/workdocs/reports/*
+!/workdocs/reports/data
+/workdocs/reports/data/*
+!/workdocs/reports/data/.gitkeep
+!/workdocs/reports/images
+/workdocs/reports/images/*
+!/workdocs/reports/images/.gitkeep
+!/workdocs/reports/jest.coverage.config.ts
 /workdocs/uml/*
 !/workdocs/uml/*.puml
 /.token
@@ -14,4 +19,4 @@
 /.dockertoken
 /.confluence-token
 /node_modules
-/temp
+!.gitkeep

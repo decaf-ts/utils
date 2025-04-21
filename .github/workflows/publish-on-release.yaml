@@ -1,4 +1,4 @@
-name: Publish
+name: "Publish on Release"
 
 on:
   release:
@@ -23,4 +23,4 @@ jobs:
       - run: npm publish --access public
         env:
           GITHUB_TOKEN: ${{ secrets.CONSECUTIVE_ACTION_TRIGGER }}
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}

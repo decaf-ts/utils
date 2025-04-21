@@ -18,8 +18,8 @@ to abide by its terms.
 ### Bootstrapping the project
 
 ```bash
-git clone https://github.com/asdasdasd/undefined.git
-cd undefined
+git clone https://github.com/decaf-ts/utils.git
+cd utils
 npm install
 npm run build
 ```
