@@ -1317,6 +1317,7 @@ const options = {
         ".idea/runConfigurations/Integration_Tests.run.xml",
         ".idea/runConfigurations/Bundling_Tests.run.xml",
         ".idea/runConfigurations/lint-fix.run.xml",
+        ".idea/runConfigurations/release.run.xml",
         ".idea/runConfigurations/test_circular.run.xml",
         ".idea/runConfigurations/uml.run.xml",
         ".idea/runConfigurations/Unit Tests.run.xml",
