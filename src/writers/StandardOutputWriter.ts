@@ -4,7 +4,7 @@ import { PromiseExecutor } from "../utils/types";
 import { OutputType } from "./types";
 import { Logging } from "../output/logging";
 import { VerbosityLogger } from "../output/types";
-import { style } from "@tvenceslau/styled-string";
+import { style } from "styled-string-builder";
 
 /**
  * @description A standard output writer for handling command execution output.

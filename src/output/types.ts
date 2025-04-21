@@ -1,5 +1,5 @@
 import { LogLevel } from "../utils/constants";
-import { styles } from "@tvenceslau/styled-string";
+import { styles } from "styled-string-builder";
 
 export type StringLike = string | { toString: () => string };
 

@@ -1,6 +1,6 @@
 import { VerbosityLogger } from "./types";
 import slogans from "../assets/slogans.json";
-import { style } from "@tvenceslau/styled-string";
+import { style } from "styled-string-builder";
 
 /**
  * @description Array of ANSI color codes for banner styling.
