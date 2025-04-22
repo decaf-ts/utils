@@ -1,4 +1,4 @@
-import prompts, {
+import {
   Answers,
   Choice,
   Falsy,
@@ -8,6 +8,7 @@ import prompts, {
   PromptType,
   ValueOrFunc,
 } from "prompts";
+import prompts from "prompts";
 import { parseArgs, ParseArgsConfig } from "util";
 import { Writable, Readable } from "stream";
 import { Logging } from "../output/logging";

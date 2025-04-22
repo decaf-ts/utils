@@ -36,27 +36,27 @@ describe("StandardOutputWriter", () => {
   describe("log", () => {
     it("should format and log stdout messages", () => {
       writer["log"]("stdout", "test message");
-      expect(mockLogger.info).toHaveBeenCalledWith("stdout: test message");
+      expect(mockLogger.info).toHaveBeenCalledWith("test message");
     });
 
     it("should format and log stderr messages with red ERROR text", () => {
       writer["log"]("stderr", "error message");
       expect(mockLogger.info).toHaveBeenCalledWith(
-        `${style("ERROR").red.text}: error message`
+        `${style("error message").red.text}`
       );
     });
 
     it("should handle Buffer input", () => {
       const buffer = Buffer.from("test buffer", Encoding);
       writer["log"]("stdout", buffer);
-      expect(mockLogger.info).toHaveBeenCalledWith("stdout: test buffer");
+      expect(mockLogger.info).toHaveBeenCalledWith("test buffer");
     });
   });
 
   describe("data", () => {
     it("should log data as stdout", () => {
       writer.data("test output");
-      expect(mockLogger.info).toHaveBeenCalledWith("stdout: test output");
+      expect(mockLogger.info).toHaveBeenCalledWith("test output");
     });
   });
 
@@ -64,7 +64,7 @@ describe("StandardOutputWriter", () => {
     it("should log error as stderr", () => {
       writer.error("test error");
       expect(mockLogger.info).toHaveBeenCalledWith(
-        `${style("ERROR").red.text}: test error`
+        `${style("test error").red.text}`
       );
     });
   });
@@ -74,7 +74,7 @@ describe("StandardOutputWriter", () => {
       const error = new Error("test error");
       writer.errors(error);
       expect(mockLogger.info).toHaveBeenCalledWith(
-        `${style("ERROR").red.text}: Error executing command exited : Error: test error`
+        `${style("Error executing command exited : Error: test error").red.text}`
       );
     });
   });

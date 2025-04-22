@@ -1,4 +1,3 @@
-#!/usr/bin/node
 import { TemplateSync } from "../cli/commands";
 
 new TemplateSync()

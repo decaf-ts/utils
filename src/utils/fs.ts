@@ -106,6 +106,135 @@ export function writeFile(path: string, data: string | Buffer): void {
 }
 
 /**
+ * @description Retrieves all files recursively from a directory.
+ * @summary Traverses through directories and subdirectories to collect all file paths.
+ *
+ * @param {string} p - The path to start searching from.
+ * @param filter
+ * @return {string[]} Array of file paths.
+ *
+ * @function getAllFiles
+ *
+ * @memberOf module:fs-utils
+ */
+export function getAllFiles(
+  p: string,
+  filter?: (f: string, i?: number) => boolean
+): string[] {
+  const log = logger.for(getAllFiles);
+  const files: string[] = [];
+
+  try {
+    log.verbose(`Retrieving all files from "${p}"...`);
+    const entries = fs.readdirSync(p);
+
+    entries.forEach((entry) => {
+      const fullPath = path.join(p, entry);
+      const stat = fs.statSync(fullPath);
+
+      if (stat.isFile()) {
+        files.push(fullPath);
+      } else if (stat.isDirectory()) {
+        files.push(...getAllFiles(fullPath));
+      }
+    });
+    if (!filter) return files;
+    return files.filter(filter);
+  } catch (error: unknown) {
+    log.verbose(`Error retrieving files from "${p}": ${error}`);
+    throw new Error(`Error retrieving files from "${p}": ${error}`);
+  }
+}
+
+export async function renameFile(source: string, dest: string) {
+  const log = logger.for(renameFile);
+  let descriptorSource, descriptorDest;
+
+  try {
+    descriptorSource = fs.statSync(source);
+  } catch (error: unknown) {
+    log.verbose(`Source path "${source}" does not exist: ${error}`);
+    throw new Error(`Source path "${source}" does not exist: ${error}`);
+  }
+
+  try {
+    descriptorDest = fs.statSync(dest);
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  } catch (e: unknown) {
+    // do nothing. its ok
+  }
+  if (descriptorDest) {
+    log.verbose(`Destination path "${dest}" already exists`);
+    throw new Error(`Destination path "${dest}" already exists`);
+  }
+
+  try {
+    log.verbose(
+      `Renaming ${descriptorSource.isFile() ? "file" : "directory"} "${source}" to "${dest}...`
+    );
+    fs.renameSync(source, dest);
+    log.verbose(`Successfully renamed to "${dest}"`);
+  } catch (error: unknown) {
+    log.verbose(
+      `Error renaming ${descriptorSource.isFile() ? "file" : "directory"} "${source}" to "${dest}": ${error}`
+    );
+    throw new Error(
+      `Error renaming ${descriptorSource.isFile() ? "file" : "directory"} "${source}" to "${dest}": ${error}`
+    );
+  }
+}
+
+export function copyFile(source: string, dest: string) {
+  const log = logger.for(copyFile);
+  let descriptorSource, descriptorDest;
+  try {
+    descriptorSource = fs.statSync(source);
+  } catch (error: unknown) {
+    log.verbose(`Source path "${source}" does not exist: ${error}`);
+    throw new Error(`Source path "${source}" does not exist: ${error}`);
+  }
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    descriptorDest = fs.statSync(dest);
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  } catch (error: unknown) {
+    if (descriptorSource.isDirectory()) {
+      log.verbose(`Dest path "${dest}" does not exist. creating`);
+      fs.mkdirSync(dest, { recursive: true });
+    }
+  }
+
+  try {
+    log.verbose(
+      `Copying ${descriptorSource.isFile() ? "file" : "directory"} "${source}" to "${dest}...`
+    );
+    fs.cpSync(source, dest, { recursive: true });
+  } catch (error: unknown) {
+    log.verbose(
+      `Error copying ${descriptorSource.isFile() ? "file" : "directory"} "${source}" to "${dest}: ${error}`
+    );
+    throw new Error(
+      `Error copying ${descriptorSource.isFile() ? "file" : "directory"} "${source}" to "${dest}: ${error}`
+    );
+  }
+}
+
+export function deletePath(p: string) {
+  const log = logger.for(deletePath);
+  try {
+    const descriptor = fs.statSync(p);
+    if (descriptor.isFile()) {
+      log.verbose(`Deleting file "${p}...`);
+      fs.rmSync(p, { recursive: true, force: true });
+    } else if (descriptor.isDirectory())
+      fs.rmSync(p, { recursive: true, force: true });
+  } catch (error: unknown) {
+    log.verbose(`Error Deleting "${p}": ${error}`);
+    throw new Error(`Error Deleting "${p}": ${error}`);
+  }
+}
+
+/**
  * @description Retrieves package information from package.json.
  * @summary Loads and parses the package.json file from a specified directory or the current working directory. Can return the entire package object or a specific property.
  * @param {string} [p=process.cwd()] - The directory path where the package.json file is located.

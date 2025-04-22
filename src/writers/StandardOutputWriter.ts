@@ -49,8 +49,7 @@ export class StandardOutputWriter<R = string> implements OutputWriter {
    */
   protected log(type: OutputType, data: string | Buffer) {
     data = Buffer.isBuffer(data) ? data.toString(Encoding) : data;
-    const formatedType = type === "stderr" ? style("ERROR").red.text : type;
-    const log = `${formatedType}: ${data}`;
+    const log = type === "stderr" ? style(data).red.text : data;
     this.logger.info(log);
   }
 

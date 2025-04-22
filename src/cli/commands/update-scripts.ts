@@ -61,7 +61,11 @@ const options = {
     "workdocs/readme-md.json",
   ],
   styles: [".prettierrc", "eslint.config.js"],
-  scripts: ["bin/update-scripts.cjs", "bin/tag-release.cjs"],
+  scripts: [
+    "bin/update-scripts.cjs",
+    "bin/tag-release.cjs",
+    "bin/build-scripts.cjs",
+  ],
   tests: ["jest.config.ts", "workdocs/reports/jest.coverage.config.ts"],
   typescript: ["tsconfig.json"],
   docker: ["Dockerfile"],
