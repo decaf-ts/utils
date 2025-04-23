@@ -1,6 +1,5 @@
 .github
 .run
-/bin
 /src
 /docs
 /tests
