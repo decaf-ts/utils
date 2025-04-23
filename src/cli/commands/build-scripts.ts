@@ -156,6 +156,9 @@ export class BuildScripts extends Command<
   async buildCommands() {
     for (const cmd of Commands) {
       await this.bundle(Modes.CJS, true, true, `src/bin/${cmd}.ts`, cmd);
+      let data = readFile(`bin/${cmd}.cjs`);
+      data = "#!/usr/bin/env node\n" + data;
+      writeFile(`bin/${cmd}.cjs`, data);
     }
   }
 
