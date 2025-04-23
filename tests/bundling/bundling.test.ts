@@ -14,7 +14,9 @@ describe("Distribution Tests", () => {
     let distFile: Dirent[];
     try {
       distFile = fs
-        .readdirSync(path.join(process.cwd(), "dist"), { withFileTypes: true })
+        .readdirSync(path.join(__dirname, "../../dist"), {
+          withFileTypes: true,
+        })
         .filter((d) => d.isFile() && !d.name.endsWith("esm.js"));
     } catch (e: unknown) {
       throw new Error("Error reading JS bundle: " + e);
