@@ -11,7 +11,7 @@
   "bin": {
     "tag-release": "bin/tag-release.cjs",
     "update-scripts": "bin/update-scripts.cjs",
-    "build-scripts": "bin/tag-release.cjs"
+    "build-scripts": "bin/build-scripts.cjs"
   },
   "scripts": {
     "do-install": "TOKEN=$(cat .token) npm install",
