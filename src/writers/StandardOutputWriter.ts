@@ -2,9 +2,8 @@ import { Encoding } from "../utils/constants";
 import { OutputWriter } from "./OutputWriter";
 import { PromiseExecutor } from "../utils/types";
 import { OutputType } from "./types";
-import { Logging } from "../output/logging";
-import { VerbosityLogger } from "../output/types";
 import { style } from "styled-string-builder";
+import { Logger, Logging } from "@decaf-ts/logging";
 
 /**
  * @description A standard output writer for handling command execution output.
@@ -21,7 +20,7 @@ import { style } from "styled-string-builder";
  * @class
  */
 export class StandardOutputWriter<R = string> implements OutputWriter {
-  protected logger: VerbosityLogger;
+  protected logger: Logger;
 
   /**
    * @description Initializes a new instance of StandardOutputWriter.

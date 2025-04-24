@@ -1,5 +1,5 @@
-import { LoggingConfig } from "../output/types";
 import { ParseArgsOptionConfig } from "../input/types";
+import { LoggingConfig } from "@decaf-ts/logging";
 
 /**
  * @description Interface for input options.

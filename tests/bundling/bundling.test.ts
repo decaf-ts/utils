@@ -4,10 +4,9 @@ import * as path from "path";
 
 describe("Distribution Tests", () => {
   it("reads lib", () => {
-    const { Logging, Command, VERSION } = require("../../lib/index.cjs");
+    const { Command, VERSION } = require("../../lib/index.cjs");
     expect(VERSION).toBeDefined();
     expect(Command).toBeDefined();
-    expect(Logging).toBeDefined();
   });
 
   it("reads JS Bundle", () => {
@@ -25,11 +24,8 @@ describe("Distribution Tests", () => {
     if (distFile.length === 0)
       throw new Error("There should only be a js file in directory");
 
-    const { Logging, Command, VERSION } = require(
-      `../../dist/${distFile[0].name}`
-    );
+    const { Command, VERSION } = require(`../../dist/${distFile[0].name}`);
     expect(VERSION).toBeDefined();
     expect(Command).toBeDefined();
-    expect(Logging).toBeDefined();
   });
 });

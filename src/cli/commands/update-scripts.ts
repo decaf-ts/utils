@@ -12,10 +12,10 @@ import {
   Tokens,
   writeFile,
 } from "../../utils";
-import { LoggingConfig } from "../../output";
 import { DefaultCommandValues } from "../index";
 import { UserInput } from "../../input";
 import fs from "fs";
+import { LoggingConfig } from "@decaf-ts/logging";
 
 const baseUrl =
   "https://raw.githubusercontent.com/decaf-ts/ts-workspace/master";

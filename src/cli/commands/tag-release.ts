@@ -2,8 +2,8 @@ import { runCommand } from "../../utils/utils";
 import { NoCIFLag, SemVersion, SemVersionRegex } from "../../utils/constants";
 import { UserInput } from "../../input/input";
 import { Command } from "../command";
-import { LoggingConfig } from "../../output";
 import { DefaultCommandValues } from "../index";
+import { LoggingConfig } from "@decaf-ts/logging";
 
 const options = {
   ci: {

@@ -1,6 +1,6 @@
 import { RegexpOutputWriter } from "../../src/writers/RegexpOutputWriter";
 import { PromiseExecutor } from "../../src/utils/types";
-import { Logging } from "../../src/output/logging";
+import { Logging } from "@decaf-ts/logging";
 
 describe("RegexpOutputWriter", () => {
   let writer: RegexpOutputWriter;

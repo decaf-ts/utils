@@ -1,8 +1,8 @@
 import { PromiseExecutor } from "../../src/utils/types";
-import { Logging } from "../../src/output/logging";
 import { style } from "styled-string-builder";
 import { Encoding } from "../../src/utils/constants";
 import { StandardOutputWriter } from "../../src";
+import { Logging } from "@decaf-ts/logging";
 
 describe("StandardOutputWriter", () => {
   let writer: StandardOutputWriter;

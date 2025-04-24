@@ -1,13 +1,17 @@
 import { ParseArgsResult } from "../input/types";
-import { LoggingConfig, VerbosityLogger } from "../output/types";
 import { CommandOptions } from "./types";
-import { Logging } from "../output/logging";
-import { DefaultLoggingConfig, LogLevel } from "../utils/constants";
 import { UserInput } from "../input/input";
 import { DefaultCommandOptions, DefaultCommandValues } from "./constants";
 import { getDependencies, getPackageVersion } from "../utils/fs";
 import { printBanner } from "../output/common";
 import { Environment } from "../utils/environment";
+import {
+  DefaultLoggingConfig,
+  Logger,
+  Logging,
+  LoggingConfig,
+  LogLevel,
+} from "@decaf-ts/logging";
 
 /**
  * @class Command
@@ -26,16 +30,16 @@ export abstract class Command<I, R> {
   /**
    * @static
    * @description Static logger for the Command class.
-   * @type {VerbosityLogger}
+   * @type {Logger}
    */
-  static log: VerbosityLogger;
+  static log: Logger;
 
   /**
    * @protected
    * @description Instance logger for the command.
-   * @type {VerbosityLogger}
+   * @type {Logger}
    */
-  protected log: VerbosityLogger;
+  protected log: Logger;
 
   protected constructor(
     protected name: string,
@@ -50,7 +54,11 @@ export abstract class Command<I, R> {
       this.log = Command.log;
     }
     this.log = Command.log.for(this.name);
-    this.inputs = Object.assign({}, DefaultCommandOptions, inputs);
+    this.inputs = Object.assign(
+      {},
+      DefaultCommandOptions,
+      inputs
+    ) as CommandOptions<I>;
   }
 
   /**

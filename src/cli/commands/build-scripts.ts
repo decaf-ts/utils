@@ -1,4 +1,3 @@
-import { LoggingConfig } from "../../output";
 import { Command } from "../command";
 import { CommandOptions } from "../types";
 import { DefaultCommandOptions, DefaultCommandValues } from "../constants";
@@ -20,6 +19,7 @@ import typescript from "@rollup/plugin-typescript";
 import commonjs from "@rollup/plugin-commonjs";
 import { nodeResolve } from "@rollup/plugin-node-resolve";
 import json from "@rollup/plugin-json";
+import { LoggingConfig } from "@decaf-ts/logging";
 
 const VERSION_STRING = "##VERSION##";
 
@@ -169,7 +169,11 @@ export class BuildScripts extends Command<
     entryFile: string = "src/index.ts",
     nameOverride: string = this.pkgName,
     externals?: string[],
-    include: string[] = ["prompts", "styled-string-builder"]
+    include: string[] = [
+      "prompts",
+      "styled-string-builder",
+      "@decaf-ts/logging",
+    ]
   ) {
     const isEsm = mode === Modes.ESM;
     const pkgName = this.pkgName;

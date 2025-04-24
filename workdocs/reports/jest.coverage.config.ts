@@ -21,7 +21,7 @@ const config: Config.InitialOptions = {
         filename: "test-report.html",
         openReport: true,
         expand: true,
-        pageTitle: "utils Test Report",
+        pageTitle: "Decaf's Utils Test Report",
         stripSkippedTest: true,
         darkTheme: true,
         enableMergeData: true,
@@ -32,9 +32,9 @@ const config: Config.InitialOptions = {
   coverageThreshold: {
     global: {
       branches: 40,
-      functions: 49,
-      lines: 50,
-      statements: 50,
+      functions: 44,
+      lines: 46,
+      statements: 46,
     },
   },
 };

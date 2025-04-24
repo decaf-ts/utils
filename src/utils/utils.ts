@@ -5,10 +5,9 @@ import {
 } from "child_process";
 import { StandardOutputWriter } from "../writers/StandardOutputWriter";
 import { CommandResult } from "./types";
-import { Logging } from "../output/logging";
 import { OutputWriterConstructor } from "../writers/types";
-import { VerbosityLogger } from "../output/types";
 import { AbortCode } from "./constants";
+import { Logger, Logging } from "@decaf-ts/logging";
 
 /**
  * @description Creates a locked version of a function.
@@ -106,7 +105,7 @@ export function spawnCommand<R = string>(
   command: string,
   opts: SpawnOptionsWithoutStdio,
   abort: AbortController,
-  logger: VerbosityLogger
+  logger: Logger
 ): ChildProcessWithoutNullStreams {
   function spawnInner(command: string, controller: AbortController) {
     const [cmd, argz] = output.parseCommand(command);

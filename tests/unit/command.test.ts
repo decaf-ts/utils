@@ -1,14 +1,12 @@
 import { Command } from "../../src/cli/command";
-import { Logging } from "../../src/output/logging";
-import { VerbosityLogger } from "../../src/output/types";
 import { UserInput } from "../../src/input/input";
 import { Environment } from "../../src/utils/environment";
-import { DefaultLoggingConfig } from "../../src/utils/constants";
 import * as fsUtils from "../../src/utils/fs";
 import { ParseArgsResult } from "../../src/input/types";
+import { DefaultLoggingConfig, Logger, Logging } from "@decaf-ts/logging";
 
 // Mock dependencies
-jest.mock("../../src/output/logging");
+jest.mock("@decaf-ts/logging");
 jest.mock("../../src/input/input");
 jest.mock("../../src/utils/fs");
 
@@ -40,7 +38,7 @@ class TestCommand extends Command<{ testOption?: string }, string> {
 
 describe("Command", () => {
   let command: TestCommand;
-  let mockLog: jest.Mocked<VerbosityLogger>;
+  let mockLog: jest.Mocked<Logger>;
 
   beforeEach(() => {
     jest.clearAllMocks();
@@ -54,7 +52,7 @@ describe("Command", () => {
       debug: jest.fn(),
       verbose: jest.fn(),
       silly: jest.fn(),
-    } as unknown as jest.Mocked<VerbosityLogger>;
+    } as unknown as jest.Mocked<Logger>;
 
     (Logging.for as jest.Mock).mockReturnValue(mockLog);
 

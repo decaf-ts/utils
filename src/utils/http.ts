@@ -1,5 +1,5 @@
 import https from "https";
-import { Logging } from "../output/logging";
+import { Logging } from "@decaf-ts/logging";
 
 /**
  * @description A simple HTTP client for downloading files.

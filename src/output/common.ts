@@ -1,6 +1,6 @@
-import { VerbosityLogger } from "./types";
 import slogans from "../assets/slogans.json";
 import { style } from "styled-string-builder";
+import { Logger } from "@decaf-ts/logging";
 
 /**
  * @description Array of ANSI color codes for banner styling.
@@ -21,7 +21,7 @@ const colors = [
 /**
  * @description Prints a styled banner to the console.
  * @summary Generates and prints a colorful ASCII art banner with a random slogan.
- * @param {VerbosityLogger} [logger] - Optional logger for verbose output.
+ * @param {Logger} [logger] - Optional logger for verbose output.
  * @function printBanner
  * @mermaid
  * sequenceDiagram
@@ -42,7 +42,7 @@ const colors = [
  *     printBanner->>console: Log styled line
  *   end
  */
-export function printBanner(logger?: VerbosityLogger) {
+export function printBanner(logger?: Logger) {
   const message = getSlogan();
   const banner: string | string[] =
     `#                 ░▒▓███████▓▒░  ░▒▓████████▓▒░  ░▒▓██████▓▒░   ░▒▓██████▓▒░  ░▒▓████████▓▒░       ░▒▓████████▓▒░  ░▒▓███████▓▒░ 

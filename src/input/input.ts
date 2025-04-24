@@ -11,9 +11,8 @@ import {
 import prompts from "prompts";
 import { parseArgs, ParseArgsConfig } from "util";
 import { Writable, Readable } from "stream";
-import { Logging } from "../output/logging";
-import { Kleur } from "../output/types";
-import { ParseArgsOptionsConfig, ParseArgsResult } from "./types";
+import { Kleur, ParseArgsOptionsConfig, ParseArgsResult } from "./types";
+import { Logging } from "@decaf-ts/logging";
 
 /**
  * @description Represents a user input prompt with various configuration options.
