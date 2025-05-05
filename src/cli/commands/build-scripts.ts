@@ -172,6 +172,7 @@ export class BuildScripts extends Command<
     include: string[] = [
       "prompts",
       "styled-string-builder",
+      "typed-object-accumulator",
       "@decaf-ts/logging",
     ]
   ) {
