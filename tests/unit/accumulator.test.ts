@@ -1,4 +1,4 @@
-import { ObjectAccumulator } from "../../src/utils/accumulator";
+import { ObjectAccumulator } from "typed-object-accumulator";
 
 describe("ObjectAccumulator", () => {
   let accumulator: ObjectAccumulator<any>;

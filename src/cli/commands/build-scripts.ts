@@ -193,6 +193,7 @@ export class BuildScripts extends Command<
           "child_process",
           "util",
           "https",
+          "tslib",
         ],
         ...(externals || []),
       ])
