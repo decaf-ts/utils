@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 import { TemplateSync } from "../cli/commands";
 
 new TemplateSync()

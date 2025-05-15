@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 import { BuildScripts } from "../cli/commands";
 
 new BuildScripts()

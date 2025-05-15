@@ -1,0 +1,5 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="build-scripts.ts" type="NodeJSConfigurationType" application-parameters="--dev --logLevel=debug --commands" nameIsGenerated="true" path-to-js-file="src/bin/build-scripts.ts" typescript-loader="bundled" working-dir="$PROJECT_DIR$">
+    <method v="2" />
+  </configuration>
+</component>

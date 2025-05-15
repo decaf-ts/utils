@@ -14,12 +14,14 @@ import {
 } from "../../utils";
 import fs from "fs";
 import path from "path";
-import { rollup, InputOptions, OutputOptions, RollupBuild } from "rollup";
+import { InputOptions, OutputOptions, rollup, RollupBuild } from "rollup";
 import typescript from "@rollup/plugin-typescript";
 import commonjs from "@rollup/plugin-commonjs";
 import { nodeResolve } from "@rollup/plugin-node-resolve";
 import json from "@rollup/plugin-json";
 import { LoggingConfig } from "@decaf-ts/logging";
+import * as ts from "typescript";
+import { Diagnostic, EmitResult, ModuleKind, SourceFile } from "typescript";
 
 const VERSION_STRING = "##VERSION##";
 
@@ -53,6 +55,122 @@ const options = {
   },
 };
 
+const cjs2Transformer = () => {
+  const log = BuildScripts.log.for(cjs2Transformer);
+  const resolutionCache = new Map<string, string>();
+
+  return (transformationContext: ts.TransformationContext) => {
+    return (sourceFile: ts.SourceFile) => {
+      const sourceDir = path.dirname(sourceFile.fileName);
+
+      function resolvePath(importPath: string) {
+        const cacheKey = JSON.stringify([sourceDir, importPath]);
+        const cachedValue = resolutionCache.get(cacheKey);
+        if (cachedValue != null) return cachedValue;
+
+        let resolvedPath = importPath;
+        try {
+          resolvedPath = path.resolve(sourceDir, resolvedPath + ".ts");
+        } catch (error: unknown) {
+          throw new Error(`Failed to resolve path ${importPath}: ${error}`);
+        }
+        let stat;
+        try {
+          stat = fs.statSync(resolvedPath);
+        } catch (e: unknown) {
+          try {
+            log.verbose(
+              `Testing existence of path ${resolvedPath} as a folder defaulting to index file`
+            );
+            stat = fs.statSync(resolvedPath.replace(/\.ts$/gm, ""));
+          } catch (e2: unknown) {
+            throw new Error(
+              `Failed to resolve path ${importPath}: ${e}, ${e2}`
+            );
+          }
+        }
+        if (stat.isDirectory())
+          resolvedPath = resolvedPath.replace(/\.ts$/gm, "/index.ts");
+
+        if (path.isAbsolute(resolvedPath)) {
+          const extension =
+            (/\.tsx?$/.exec(path.basename(resolvedPath)) || [])[0] || void 0;
+          const mappedExtension = ".cjs";
+
+          resolvedPath =
+            "./" +
+            path.relative(
+              sourceDir,
+              path.resolve(
+                path.dirname(resolvedPath),
+                path.basename(resolvedPath, extension) + mappedExtension
+              )
+            );
+        }
+
+        resolutionCache.set(cacheKey, resolvedPath);
+        return resolvedPath;
+      }
+
+      function visitNode(node: ts.Node): ts.VisitResult<ts.Node> {
+        if (shouldMutateModuleSpecifier(node)) {
+          if (ts.isImportDeclaration(node)) {
+            const resolvedPath = resolvePath(node.moduleSpecifier.text);
+            const newModuleSpecifier =
+              transformationContext.factory.createStringLiteral(resolvedPath);
+            return transformationContext.factory.updateImportDeclaration(
+              node,
+              node.modifiers,
+              node.importClause,
+              newModuleSpecifier,
+              undefined
+            );
+          } else if (ts.isExportDeclaration(node)) {
+            const resolvedPath = resolvePath(node.moduleSpecifier.text);
+            const newModuleSpecifier =
+              transformationContext.factory.createStringLiteral(resolvedPath);
+            return transformationContext.factory.updateExportDeclaration(
+              node,
+              node.modifiers,
+              node.isTypeOnly,
+              node.exportClause,
+              newModuleSpecifier,
+              undefined
+            );
+          }
+        }
+
+        return ts.visitEachChild(node, visitNode, transformationContext);
+      }
+
+      function shouldMutateModuleSpecifier(node: ts.Node): node is (
+        | ts.ImportDeclaration
+        | ts.ExportDeclaration
+      ) & {
+        moduleSpecifier: ts.StringLiteral;
+      } {
+        if (!ts.isImportDeclaration(node) && !ts.isExportDeclaration(node))
+          return false;
+
+        if (node.moduleSpecifier === undefined) return false;
+        // only when module specifier is valid
+        if (!ts.isStringLiteral(node.moduleSpecifier)) return false;
+        // only when path is relative
+        if (
+          !node.moduleSpecifier.text.startsWith("./") &&
+          !node.moduleSpecifier.text.startsWith("../")
+        )
+          return false;
+        // only when module specifier has no extension
+        if (path.extname(node.moduleSpecifier.text) !== "") return false;
+        return true;
+      }
+
+      return ts.visitNode(sourceFile, visitNode) as SourceFile;
+    };
+  };
+};
+
 export class BuildScripts extends Command<
   CommandOptions<typeof options>,
   void
@@ -75,27 +193,6 @@ export class BuildScripts extends Command<
     this.replacements[VERSION_STRING] = this.pkgVersion;
   }
 
-  patchCjsImports(file: string) {
-    const regexp = /(require\(["'])(\..*?)(["']\)[;,])/g;
-    let data = readFile(file);
-    data = data.replace(regexp, (match, ...groups: string[]) => {
-      const renamedFile = groups[1] + ".cjs";
-      const dirname = path.dirname(file).replace("lib", "src");
-      const fileName = groups[1] + ".ts";
-      const sourceFilePath = path.join(dirname, fileName);
-
-      let result;
-      if (!fs.existsSync(sourceFilePath)) {
-        result = groups[0] + groups[1] + "/index.cjs" + groups[2];
-      } else {
-        result = groups[0] + renamedFile + groups[2];
-      }
-
-      return result;
-    });
-    writeFile(file, data);
-  }
-
   patchFiles(p: string) {
     const log = this.log.for(this.patchFiles);
     const { name, version } = getPackage() as any;
@@ -110,15 +207,119 @@ export class BuildScripts extends Command<
     log.verbose(`Module ${name} ${version} patched in ${p}...`);
   }
 
-  private async build(isDev: boolean, mode: Modes, bundle = false) {
-    const log = this.log.for(this.build);
+  private reportDiagnostics(diagnostics: Diagnostic[]): void {
+    diagnostics.forEach((diagnostic) => {
+      let message = "Error";
+      if (diagnostic.file && diagnostic.start) {
+        const { line, character } =
+          diagnostic.file.getLineAndCharacterOfPosition(diagnostic.start);
+        message += ` ${diagnostic.file.fileName} (${line + 1},${character + 1})`;
+      }
+      message +=
+        ": " + ts.flattenDiagnosticMessageText(diagnostic.messageText, "\n");
+      console.log(message);
+    });
+  }
+
+  private readConfigFile(configFileName: string) {
+    // Read config file
+    const configFileText = fs.readFileSync(configFileName).toString();
+
+    // Parse JSON, after removing comments. Just fancier JSON.parse
+    const result = ts.parseConfigFileTextToJson(configFileName, configFileText);
+    const configObject = result.config;
+    if (!configObject) {
+      this.reportDiagnostics([result.error!]);
+      throw new Error("Failed to parse tsconfig.json");
+    }
+
+    // Extract config infromation
+    const configParseResult = ts.parseJsonConfigFileContent(
+      configObject,
+      ts.sys,
+      path.dirname(configFileName)
+    );
+    if (configParseResult.errors.length > 0) {
+      this.reportDiagnostics(configParseResult.errors);
+      throw new Error("Failed to parse tsconfig.json");
+    }
+    return configParseResult;
+  }
+
+  private async buildTs(isDev: boolean, mode: Modes, bundle = false) {
+    const log = this.log.for(this.buildTs);
     log.info(
       `Building ${this.pkgName} ${this.pkgVersion} module (${mode}) in ${isDev ? "dev" : "prod"} mode...`
     );
+    let tsConfig;
+    try {
+      tsConfig = this.readConfigFile("./tsconfig.json");
+    } catch (e: unknown) {
+      throw new Error(`Failed to parse tsconfig.json: ${e}`);
+    }
 
-    await runCommand(
-      `npx tsc --module ${bundle ? "amd" : mode}${isDev ? " --inlineSourceMap" : " --sourceMap false"} --outDir ${bundle ? "dist" : `lib${mode === Modes.ESM ? "/esm" : ""}`}${bundle ? ` --isolatedModules false --outFile ${this.pkgName}` : ""}`
-    ).promise;
+    if (bundle) {
+      tsConfig.options.module = ModuleKind.AMD;
+      tsConfig.options.outDir = "dist";
+      tsConfig.options.isolatedModules = false;
+      tsConfig.options.outFile = this.pkgName;
+    } else {
+      tsConfig.options.outDir = `lib${mode === Modes.ESM ? "/esm" : ""}`;
+      tsConfig.options.module =
+        mode === Modes.ESM ? ModuleKind.ES2022 : ModuleKind.CommonJS;
+    }
+
+    if (isDev) {
+      tsConfig.options.inlineSourceMap = true;
+    } else {
+      tsConfig.options.sourceMap = false;
+    }
+
+    const program = ts.createProgram(tsConfig.fileNames, tsConfig.options);
+
+    const transformations: { before?: any[] } = {};
+    if (mode === Modes.CJS) {
+      transformations.before = [cjs2Transformer()];
+    }
+
+    const emitResult: EmitResult = program.emit(
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      transformations
+    );
+
+    const allDiagnostics = ts
+      .getPreEmitDiagnostics(program)
+      .concat(emitResult.diagnostics);
+
+    allDiagnostics.forEach((diagnostic) => {
+      if (diagnostic.file) {
+        const { line, character } =
+          diagnostic.file.getLineAndCharacterOfPosition(diagnostic.start!);
+        const message = ts.flattenDiagnosticMessageText(
+          diagnostic.messageText,
+          "\n"
+        );
+        console.log(
+          `${diagnostic.file.fileName} (${line + 1},${character + 1}): ${message}`
+        );
+      } else {
+        console.log(
+          ts.flattenDiagnosticMessageText(diagnostic.messageText, "\n")
+        );
+      }
+    });
+    if (emitResult.emitSkipped) {
+      throw new Error("Build failed");
+    }
+  }
+
+  private async build(isDev: boolean, mode: Modes, bundle = false) {
+    const log = this.log.for(this.build);
+    await this.buildTs(isDev, mode, bundle);
+
     log.verbose(
       `Module ${this.pkgName} ${this.pkgVersion} (${mode}) built in ${isDev ? "dev" : "prod"} mode...`
     );
@@ -132,7 +333,6 @@ export class BuildScripts extends Command<
         log.verbose(`Patching ${file}'s cjs imports...`);
         const f = file.replace(".js", ".cjs");
         await renameFile(file, f);
-        this.patchCjsImports(f);
       }
     }
   }
@@ -157,7 +357,8 @@ export class BuildScripts extends Command<
     for (const cmd of Commands) {
       await this.bundle(Modes.CJS, true, true, `src/bin/${cmd}.ts`, cmd);
       let data = readFile(`bin/${cmd}.cjs`);
-      data = "#!/usr/bin/env node\n" + data;
+      if (!data.includes("#!/usr/bin/env node"))
+        data = "#!/usr/bin/env node\n" + data;
       writeFile(`bin/${cmd}.cjs`, data);
     }
   }
@@ -190,6 +391,7 @@ export class BuildScripts extends Command<
           "@rollup/plugin-commonjs",
           "@rollup/plugin-node-resolve",
           "child_process",
+          "tslib",
           "util",
           "https",
         ],

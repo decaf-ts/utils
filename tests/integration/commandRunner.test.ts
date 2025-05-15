@@ -24,7 +24,7 @@ describe("runCommand Integration Tests", () => {
     const result = await runCommand(
       `echo ${testString}`,
       {},
-      RegexpOutputWriter,
+      RegexpOutputWriter as any,
       "World"
     ).promise;
     expect(result).toBe("World");
@@ -62,7 +62,7 @@ describe("runCommand Integration Tests", () => {
     const result = await runCommand(
       'echo "Error: File not found (error code: 404)"',
       {},
-      RegexpOutputWriter,
+      RegexpOutputWriter as any,
       "error code: (\\d+)"
     ).promise;
     expect(result).toBe("error code: 404");
@@ -73,7 +73,7 @@ describe("runCommand Integration Tests", () => {
     const commandPromise = runCommand(
       'echo "Start" && sleep 1 && echo "Middle" && sleep 1 && echo "End"',
       {},
-      RegexpOutputWriter,
+      RegexpOutputWriter as any,
       "Middle"
     );
     commandPromise.promise.then(() => {
