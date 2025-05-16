@@ -1,6 +1,6 @@
 {
   "name": "@decaf-ts/utils",
-  "version": "0.2.10",
+  "version": "0.2.11",
   "description": "module management utils for decaf-ts",
   "exports": {
     "require": "./lib/index.cjs",
