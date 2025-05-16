@@ -357,8 +357,7 @@ export class BuildScripts extends Command<
     for (const cmd of Commands) {
       await this.bundle(Modes.CJS, true, true, `src/bin/${cmd}.ts`, cmd);
       let data = readFile(`bin/${cmd}.cjs`);
-      if (!data.includes("#!/usr/bin/env node"))
-        data = "#!/usr/bin/env node\n" + data;
+      data = "#!/usr/bin/env node\n" + data;
       writeFile(`bin/${cmd}.cjs`, data);
     }
   }
@@ -373,6 +372,7 @@ export class BuildScripts extends Command<
     include: string[] = [
       "prompts",
       "styled-string-builder",
+      "typed-object-accumulator",
       "@decaf-ts/logging",
     ]
   ) {
@@ -474,12 +474,12 @@ export class BuildScripts extends Command<
     }
     fs.mkdirSync("lib");
     fs.mkdirSync("dist");
-    await this.build(isDev, Modes.CJS);
     await this.build(isDev, Modes.ESM);
-    await this.bundle(Modes.CJS, true, false);
+    await this.build(isDev, Modes.CJS);
     await this.bundle(Modes.ESM, true, false);
-    this.patchFiles("lib");
-    this.patchFiles("dist");
+    await this.bundle(Modes.CJS, true, false);
+    // this.patchFiles("lib");
+    // this.patchFiles("dist");
     this.copyAssets(Modes.CJS);
     this.copyAssets(Modes.ESM);
   }

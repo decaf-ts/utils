@@ -1,6 +1,6 @@
 import { Environment } from "../../src/utils/environment";
-import { ObjectAccumulator } from "../../src/utils/accumulator";
 import { isBrowser } from "../../src/utils/web";
+import { ObjectAccumulator } from "typed-object-accumulator";
 
 jest.mock("../../src/utils/web");
 

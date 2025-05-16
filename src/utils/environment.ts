@@ -1,7 +1,7 @@
 import { toENVFormat } from "./text";
-import { ObjectAccumulator } from "./accumulator";
 import { EnvironmentFactory } from "./types";
 import { isBrowser } from "./web";
+import { ObjectAccumulator } from "typed-object-accumulator";
 
 /**
  * @class Environment

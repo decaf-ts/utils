@@ -2,7 +2,6 @@
   "name": "@decaf-ts/utils",
   "version": "0.2.9",
   "description": "module management utils for decaf-ts",
-  "type": "module",
   "exports": {
     "require": "./lib/index.cjs",
     "import": "./lib/esm/index.js"
@@ -116,6 +115,7 @@
   "dependencies": {
     "@decaf-ts/logging": "^0.2.0",
     "prompts": "^2.4.2",
-    "styled-string-builder": "^1.4.6"
+    "styled-string-builder": "^1.4.6",
+    "typed-object-accumulator": "^0.1.4"
   }
 }
