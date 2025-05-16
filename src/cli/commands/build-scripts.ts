@@ -271,6 +271,7 @@ export class BuildScripts extends Command<
 
     if (isDev) {
       tsConfig.options.inlineSourceMap = true;
+      tsConfig.options.sourceMap = false;
     } else {
       tsConfig.options.sourceMap = false;
     }
@@ -478,8 +479,8 @@ export class BuildScripts extends Command<
     await this.build(isDev, Modes.CJS);
     await this.bundle(Modes.ESM, true, false);
     await this.bundle(Modes.CJS, true, false);
-    // this.patchFiles("lib");
-    // this.patchFiles("dist");
+    this.patchFiles("lib");
+    this.patchFiles("dist");
     this.copyAssets(Modes.CJS);
     this.copyAssets(Modes.ESM);
   }
