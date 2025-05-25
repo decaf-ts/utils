@@ -47,7 +47,7 @@ export class Environment<T extends object> extends ObjectAccumulator<T> {
     return env[k];
   }
 
-  protected expand<V extends object>(value: V): void {
+  protected override expand<V extends object>(value: V): void {
     Object.entries(value).forEach(([k, v]) => {
       Object.defineProperty(this, k, {
         get: () => {

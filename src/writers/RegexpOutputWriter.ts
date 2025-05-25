@@ -92,7 +92,7 @@ export class RegexpOutputWriter extends StandardOutputWriter<string> {
    *
    * @param chunk - The data chunk to process.
    */
-  data(chunk: any) {
+  override data(chunk: any) {
     super.data(chunk);
     this.testAndResolve(String(chunk));
   }
@@ -103,7 +103,7 @@ export class RegexpOutputWriter extends StandardOutputWriter<string> {
    *
    * @param chunk - The error chunk to process.
    */
-  error(chunk: any) {
+  override error(chunk: any) {
     super.error(chunk);
     this.testAndReject(String(chunk));
   }
