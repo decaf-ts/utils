@@ -2,6 +2,7 @@
   "name": "@decaf-ts/utils",
   "version": "0.2.11",
   "description": "module management utils for decaf-ts",
+  "type": "module",
   "exports": {
     "require": "./lib/index.cjs",
     "import": "./lib/esm/index.js"
