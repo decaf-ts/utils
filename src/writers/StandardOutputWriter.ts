@@ -12,24 +12,63 @@ import { Logger, Logging } from "@decaf-ts/logging";
  * error output, and exit codes. It also includes utility methods for parsing commands
  * and resolving or rejecting promises based on execution results.
  *
- * @template R - The type of the resolved value, defaulting to number.
+ * @template R - The type of the resolved value, defaulting to string.
  *
+ * @param cmd - The command string to be executed.
  * @param lock - A PromiseExecutor to control the asynchronous flow.
  * @param args - Additional arguments (unused in the current implementation).
  *
  * @class
+ * @example
+ * ```typescript
+ * import { StandardOutputWriter } from '@decaf-ts/utils';
+ * import { PromiseExecutor } from '@decaf-ts/utils';
+ * 
+ * // Create a promise executor
+ * const executor: PromiseExecutor<string> = {
+ *   resolve: (value) => console.log(`Resolved: ${value}`),
+ *   reject: (error) => console.error(`Rejected: ${error.message}`)
+ * };
+ * 
+ * // Create a standard output writer
+ * const writer = new StandardOutputWriter('ls -la', executor);
+ * 
+ * // Use the writer to handle command output
+ * writer.data('File list output...');
+ * writer.exit(0, ['Command executed successfully']);
+ * ```
+ *
+ * @mermaid
+ * sequenceDiagram
+ *   participant Client
+ *   participant StandardOutputWriter
+ *   participant Logger
+ *   participant PromiseExecutor
+ *   
+ *   Client->>StandardOutputWriter: new StandardOutputWriter(cmd, lock)
+ *   StandardOutputWriter->>Logger: Logging.for(cmd)
+ *   
+ *   Client->>StandardOutputWriter: data(chunk)
+ *   StandardOutputWriter->>StandardOutputWriter: log("stdout", chunk)
+ *   StandardOutputWriter->>Logger: logger.info(log)
+ *   
+ *   Client->>StandardOutputWriter: error(chunk)
+ *   StandardOutputWriter->>StandardOutputWriter: log("stderr", chunk)
+ *   StandardOutputWriter->>Logger: logger.info(log)
+ *   
+ *   Client->>StandardOutputWriter: exit(code, logs)
+ *   StandardOutputWriter->>StandardOutputWriter: log("stdout", exitMessage)
+ *   alt code === 0
+ *     StandardOutputWriter->>StandardOutputWriter: resolve(logs)
+ *     StandardOutputWriter->>PromiseExecutor: lock.resolve(reason)
+ *   else code !== 0
+ *     StandardOutputWriter->>StandardOutputWriter: reject(error)
+ *     StandardOutputWriter->>PromiseExecutor: lock.reject(reason)
+ *   end
  */
 export class StandardOutputWriter<R = string> implements OutputWriter {
   protected logger: Logger;
 
-  /**
-   * @description Initializes a new instance of StandardOutputWriter.
-   * @summary Constructs the StandardOutputWriter with a lock mechanism and optional arguments.
-   *
-   * @param cmd
-   * @param lock - A PromiseExecutor to control the asynchronous flow.
-   * @param args - Additional arguments (currently unused).
-   */
   constructor(
     protected cmd: string,
     protected lock: PromiseExecutor<R>,
@@ -87,7 +126,7 @@ export class StandardOutputWriter<R = string> implements OutputWriter {
    * @summary Logs the exit code and resolves or rejects the promise based on the code.
    *
    * @param code - The exit code of the command.
-   * @param logs
+   * @param logs - Array of log messages to be processed before exiting.
    */
   exit(code: number | string, logs: string[]) {
     this.log(

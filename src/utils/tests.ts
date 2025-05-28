@@ -8,7 +8,7 @@ import { SimpleDependencyMap } from "./types";
  * @interface AddAttachParams
  * @description Parameters for adding an attachment to a report
  * @summary Interface for attachment parameters
- * @memberOf module:@decaf-ts/utils
+ * @memberOf module:utils
  */
 export interface AddAttachParams {
   attach: string | Buffer;
@@ -21,7 +21,7 @@ export interface AddAttachParams {
  * @interface AddMsgParams
  * @description Parameters for adding a message to a report
  * @summary Interface for message parameters
- * @memberOf module:@decaf-ts/utils
+ * @memberOf module:utils
  */
 export interface AddMsgParams {
   message: string | object;
@@ -32,14 +32,35 @@ export interface AddMsgParams {
  * @typedef {("json"|"image"|"text"|"md")} PayloadType
  * @description Types of payloads that can be handled
  * @summary Union type for payload types
- * @memberOf module:@decaf-ts/utils
+ * @memberOf module:utils
  */
 export type PayloadType = "json" | "image" | "text" | "md";
 
+/**
+ * @description Environment variable key for Jest HTML reporters temporary directory path
+ * @summary Constant defining the environment variable key for Jest HTML reporters
+ * @const JestReportersTempPathEnvKey
+ * @memberOf module:utils
+ */
 export const JestReportersTempPathEnvKey = "JEST_HTML_REPORTERS_TEMP_DIR_PATH";
 
+/**
+ * @description Array of dependencies required by the test reporter
+ * @summary List of npm packages needed for reporting functionality
+ * @const dependencies
+ * @memberOf module:utils
+ */
 const dependencies = ["jest-html-reporters", "json2md", "chartjs-node-canvas"];
 
+/**
+ * @description Normalizes imports to handle both CommonJS and ESModule formats
+ * @summary Utility function to handle module import differences between formats
+ * @template T - Type of the imported module
+ * @param {Promise<T>} importPromise - Promise returned by dynamic import
+ * @return {Promise<T>} Normalized module
+ * @function normalizeImport
+ * @memberOf module:utils
+ */
 async function normalizeImport<T>(importPromise: Promise<T>): Promise<T> {
   // CommonJS's `module.exports` is wrapped as `default` in ESModule.
   return importPromise.then((m: any) => (m.default || m) as T);
@@ -246,6 +267,15 @@ export class TestReporter {
     }
   }
 
+  /**
+   * @description Reports data with a specified type
+   * @summary Wrapper method for reporting various types of data
+   * @param {string} reference - Reference identifier for the data
+   * @param {string | number | object} data - Data to be reported
+   * @param {PayloadType} [type="json"] - Type of the payload
+   * @param {boolean} [trim=false] - Whether to trim the data
+   * @return {Promise<void>} Promise that resolves when data is reported
+   */
   async reportData(
     reference: string,
     data: string | number | object,
@@ -255,6 +285,14 @@ export class TestReporter {
     return this.report(reference, data, type, trim);
   }
 
+  /**
+   * @description Reports a JSON object
+   * @summary Convenience method for reporting JSON objects
+   * @param {string} reference - Reference identifier for the object
+   * @param {object} json - JSON object to be reported
+   * @param {boolean} [trim=false] - Whether to trim the object
+   * @return {Promise<void>} Promise that resolves when object is reported
+   */
   async reportObject(reference: string, json: object, trim = false) {
     return this.report(reference, json, "json", trim);
   }

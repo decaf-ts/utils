@@ -11,7 +11,7 @@ import {
 import prompts from "prompts";
 import { parseArgs, ParseArgsConfig } from "util";
 import { Writable, Readable } from "stream";
-import { Kleur, ParseArgsOptionsConfig, ParseArgsResult } from "./types";
+import { ParseArgsOptionsConfig, ParseArgsResult } from "./types";
 import { Logging } from "@decaf-ts/logging";
 
 /**
@@ -26,6 +26,49 @@ import { Logging } from "@decaf-ts/logging";
  * @param name - The name of the prompt, used as the key in the returned answers object.
  *
  * @class
+ * @example
+ * ```typescript
+ * import { UserInput } from '@decaf-ts/utils';
+ *
+ * // Create a simple text input
+ * const nameInput = new UserInput('name')
+ *   .setMessage('What is your name?')
+ *   .setInitial('User');
+ *
+ * // Create a number input with validation
+ * const ageInput = new UserInput('age')
+ *   .setType('number')
+ *   .setMessage('How old are you?')
+ *   .setMin(0)
+ *   .setMax(120);
+ *
+ * // Ask for input and process the results
+ * async function getUserInfo() {
+ *   const answers = await UserInput.ask([nameInput, ageInput]);
+ *   console.log(`Hello ${answers.name}, you are ${answers.age} years old.`);
+ * }
+ *
+ * getUserInfo();
+ * ```
+ *
+ * @mermaid
+ * sequenceDiagram
+ *   participant Client
+ *   participant UserInput
+ *   participant PromptLibrary
+ *
+ *   Client->>UserInput: new UserInput(name)
+ *   Client->>UserInput: setMessage(message)
+ *   Client->>UserInput: setType(type)
+ *   Client->>UserInput: setInitial(initial)
+ *   Client->>UserInput: Other configuration methods
+ *
+ *   Client->>UserInput: ask()
+ *   UserInput->>PromptLibrary: prompts(question)
+ *   PromptLibrary->>Client: Display prompt
+ *   Client->>PromptLibrary: User provides input
+ *   PromptLibrary->>UserInput: Return answers
+ *   UserInput->>Client: Return processed answers
  */
 export class UserInput<R extends string = string> implements PromptObject<R> {
   private static readonly logger = Logging.for(UserInput);
@@ -82,8 +125,6 @@ export class UserInput<R extends string = string> implements PromptObject<R> {
    */
   onState?: PrevCaller<R, void> | undefined;
 
-  onRender?: ((kleur: Kleur) => void) | undefined;
-
   /**
    * @description The minimum value for number inputs.
    * @summary The lowest number the user can input.
@@ -138,6 +179,10 @@ export class UserInput<R extends string = string> implements PromptObject<R> {
    */
   inactive?: string | PrevCaller<R, string | Falsy> | undefined;
 
+  /**
+   * @description The available choices for select, multiselect, or autocomplete inputs.
+   * @summary An array of options that the user can select from in choice-based prompts.
+   */
   choices?: Choice[] | PrevCaller<R, Choice[] | Falsy> | undefined;
 
   /**
@@ -178,12 +223,6 @@ export class UserInput<R extends string = string> implements PromptObject<R> {
    */
   stdin?: Readable | undefined;
 
-  /**
-   * @description Creates a new UserInput instance.
-   * @summary Initializes a new UserInput object with the given name.
-   *
-   * @param name - The name of the prompt.
-   */
   constructor(name: ValueOrFunc<R>) {
     this.name = name;
   }
@@ -285,19 +324,6 @@ export class UserInput<R extends string = string> implements PromptObject<R> {
   setOnState(value: PrevCaller<R, void> | undefined): this {
     UserInput.logger.verbose(`Setting onState callback`);
     this.onState = value;
-    return this;
-  }
-
-  /**
-   * @description Sets the onRender callback of the prompt.
-   * @summary Configures a function to be called when the prompt is rendered.
-   *
-   * @param value - The onRender callback function.
-   * @returns This UserInput instance for method chaining.
-   */
-  setOnRender(value: ((kleur: Kleur) => void) | undefined): this {
-    UserInput.logger.verbose(`Setting onRender callback`);
-    this.onRender = value;
     return this;
   }
 
@@ -422,6 +448,13 @@ export class UserInput<R extends string = string> implements PromptObject<R> {
     return this;
   }
 
+  /**
+   * @description Sets the choices for select, multiselect, or autocomplete inputs.
+   * @summary Configures the available options that the user can select from in choice-based prompts.
+   *
+   * @param value - The array of choices or a function to determine the choices.
+   * @returns This UserInput instance for method chaining.
+   */
   setChoices(
     value: Choice[] | PrevCaller<R, Choice[] | Falsy> | undefined
   ): this {
@@ -456,6 +489,13 @@ export class UserInput<R extends string = string> implements PromptObject<R> {
     return this;
   }
 
+  /**
+   * @description Sets the suggestion function for autocomplete inputs.
+   * @summary Configures a function that provides suggestions based on the user's input and available choices.
+   *
+   * @param value - A function that takes the current input and available choices and returns a Promise resolving to suggestions.
+   * @returns This UserInput instance for method chaining.
+   */
   setSuggest(
     value: ((input: any, choices: Choice[]) => Promise<any>) | undefined
   ): this {
@@ -651,8 +691,8 @@ export class UserInput<R extends string = string> implements PromptObject<R> {
    * @template R - The type of the expected result.
    * @param input - The UserInput instance to use for prompting.
    * @param test - A function to validate the user's input.
+   * @param defaultConfirmation - The default value for the confirmation prompt (true for yes, false for no).
    * @param limit - The maximum number of attempts allowed (default is 1).
-   * @param defaultConfirmation
    * @return A Promise that resolves to the valid input or undefined if the limit is reached.
    *
    * @mermaid
@@ -730,7 +770,7 @@ export class UserInput<R extends string = string> implements PromptObject<R> {
    * @param test - A function to validate the user's input.
    * @param mask - The character used to mask the input (optional, for password-like inputs).
    * @param initial - The initial value presented to the user (optional).
-   * @param defaultConfirmation
+   * @param defaultConfirmation - The default value for the confirmation prompt (true for yes, false for no).
    * @param limit - The maximum number of attempts allowed (default is -1, meaning unlimited).
    * @return A Promise that resolves to the valid input or undefined if the limit is reached.
    */
@@ -768,7 +808,7 @@ export class UserInput<R extends string = string> implements PromptObject<R> {
    * @param min - The minimum allowed value (optional).
    * @param max - The maximum allowed value (optional).
    * @param initial - The initial value presented to the user (optional).
-   * @param defaultConfirmation
+   * @param defaultConfirmation - The default value for the confirmation prompt (true for yes, false for no).
    * @param limit - The maximum number of attempts allowed (default is -1, meaning unlimited).
    * @return A Promise that resolves to the valid input or undefined if the limit is reached.
    */

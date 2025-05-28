@@ -2,7 +2,7 @@
  * @description Single line markdown element type
  * @summary Represents the possible header levels in markdown
  * @typedef {"h1"|"h2"|"h3"|"h4"|"h5"|"h6"} MdSingleLineElement
- * @memberOf @decaf-ts/utils
+ * @memberOf module:utils
  */
 export type MdSingleLineElement = "h1" | "h2" | "h3" | "h4" | "h5" | "h6";
 
@@ -10,7 +10,7 @@ export type MdSingleLineElement = "h1" | "h2" | "h3" | "h4" | "h5" | "h6";
  * @description Multi-line element types in markdown
  * @summary Defines the available multi-line element types
  * @typedef {"p"|"blockquote"} MdMultiLineElement
- * @memberOf @decaf-ts/utils
+ * @memberOf module:utils
  */
 export type MdMultiLineElement = "p" | "blockquote";
 
@@ -18,7 +18,7 @@ export type MdMultiLineElement = "p" | "blockquote";
  * @description List element types in markdown
  * @summary Defines the available list types
  * @typedef {"ul"|"ol"} MdListElement
- * @memberOf @decaf-ts/utils
+ * @memberOf module:utils
  */
 export type MdListElement = "ul" | "ol";
 
@@ -28,7 +28,7 @@ export type MdListElement = "ul" | "ol";
  * @typedef {Object} MdSingleLine
  * @property {string} [ul] - unordered list
  * @property {string} [ol] - ordered list
- * @memberOf @decaf-ts/utils
+ * @memberOf module:utils
  */
 export type MdSingleLine = {
   [k in MdSingleLineElement]?: string;
@@ -39,7 +39,7 @@ export type MdSingleLine = {
  * @typedef {Object} MdMultiLine
  * @property {string|string[]} [p] - Paragraph content
  * @property {string|string[]} [blockquote] - Blockquote content
- * @memberOf @decaf-ts/utils
+ * @memberOf module:utils
  */
 export type MdMultiLine = { [k in MdMultiLineElement]?: string | string[] };
 
@@ -50,7 +50,7 @@ export type MdMultiLine = { [k in MdMultiLineElement]?: string | string[] };
  * @property {string} [title] - Optional image title
  * @property {string} source - Image source URL
  * @property {string} [alt] - Optional alternative text
- * @memberOf @decaf-ts/utils
+ * @memberOf module:utils
  */
 export type MdImageDefinition = {
   title?: string;
@@ -63,7 +63,7 @@ export type MdImageDefinition = {
  * @summary Represents an image element with its properties
  * @typedef {Object} MdImage
  * @property {MdImageDefinition} img - The image definition object
- * @memberOf @decaf-ts/utils
+ * @memberOf module:utils
  */
 export type MdImage = { img: MdImageDefinition };
 
@@ -73,7 +73,7 @@ export type MdImage = { img: MdImageDefinition };
  * @typedef {Object} MdListItem
  * @property {string[]} ul - Unordered list items
  * @property {string[]} ol - Ordered list items
- * @memberOf @decaf-ts/utils
+ * @memberOf module:utils
  */
 export type MdListItem = { [k in MdListElement]: string[] };
 
@@ -83,7 +83,7 @@ export type MdListItem = { [k in MdListElement]: string[] };
  * @typedef {Object} MdTableDefinition
  * @property {string[]} headers - Array of table header names
  * @property {Object[]} rows - Array of row objects containing column values
- * @memberOf @decaf-ts/utils
+ * @memberOf module:utils
  */
 export type MdTableDefinition = {
   headers: string[];
@@ -95,7 +95,7 @@ export type MdTableDefinition = {
  * @summary Represents a table structure with headers and rows
  * @typedef {Object} MdTable
  * @property {MdTableDefinition} table - The table definition object
- * @memberOf @decaf-ts/utils
+ * @memberOf module:utils
  */
 export type MdTable = { table: MdTableDefinition };
 
@@ -105,7 +105,7 @@ export type MdTable = { table: MdTableDefinition };
  * @typedef {Object} MdCodeDefinition
  * @property {string} [language] - Optional programming language specification
  * @property {string|string[]} content - The code content as string or array of strings
- * @memberOf @decaf-ts/utils
+ * @memberOf module:utils
  */
 export type MdCodeDefinition = {
   language?: string;
@@ -117,7 +117,7 @@ export type MdCodeDefinition = {
  * @summary Represents a code block with optional language specification
  * @typedef {Object} MdCode
  * @property {MdCodeDefinition} code - The code block definition object
- * @memberOf @decaf-ts/utils
+ * @memberOf module:utils
  */
 export type MdCode = { code: MdCodeDefinition };
 
@@ -126,7 +126,7 @@ export type MdCode = { code: MdCodeDefinition };
  * @summary Represents a horizontal rule separator
  * @typedef {Object} MdSeparator
  * @property {string} hr - The horizontal rule representation
- * @memberOf @decaf-ts/utils
+ * @memberOf module:utils
  */
 export type MdSeparator = { hr: string };
 
@@ -135,7 +135,7 @@ export type MdSeparator = { hr: string };
  * @summary Represents a hyperlink with title and source
  * @typedef {Object} MdLink
  * @property {{title: string, source: string}} link - The link definition object
- * @memberOf @decaf-ts/utils
+ * @memberOf module:utils
  */
 export type MdLink = {
   link: {
@@ -150,7 +150,7 @@ export type MdLink = {
  * This type combines various markdown elements including headers, paragraphs, images, lists,
  * tables, code blocks, separators, and links into a union type for flexible markdown content creation.
  * @typedef {(MdSingleLine | MdMultiLine | MdImage | MdListItem | MdTable | MdCode | MdSeparator | MdLink)} MdElements
- * @memberOf @decaf-ts/utils
+ * @memberOf module:utils
  */
 export type MdElements =
   | MdSingleLine

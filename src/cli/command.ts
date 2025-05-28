@@ -18,7 +18,7 @@ import {
  * @abstract
  * @template I - The type of input options for the command.
  * @template R - The return type of the command execution.
- * @memberOf utils/cli
+ * @memberOf module:utils
  * @description Abstract base class for command implementation.
  * @summary Provides a structure for creating command-line interface commands with input handling, logging, and execution flow.
  *

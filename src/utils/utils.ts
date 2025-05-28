@@ -43,7 +43,7 @@ import { Logger, Logging } from "@decaf-ts/logging";
  *   end
  *   LockedFunction->>LockedFunction: Update lock
  *
- * @memberOf @decaf-ts/utils
+ * @memberOf module:utils
  */
 export function lockify<R>(f: (...params: unknown[]) => R) {
   let lock: Promise<R | void> = Promise.resolve();
@@ -54,13 +54,39 @@ export function lockify<R>(f: (...params: unknown[]) => R) {
   };
 }
 
+/**
+ * @description Chains multiple abort signals to a controller.
+ * @summary Creates a mechanism where multiple abort signals can trigger a single abort controller.
+ * This is useful for coordinating cancellation across multiple asynchronous operations.
+ *
+ * @param {AbortController} controller - The abort controller to be triggered by signals.
+ * @param {...AbortSignal} signals - One or more abort signals that can trigger the controller.
+ * @return {AbortController} The input controller, now connected to the signals.
+ *
+ * @function chainAbortController
+ *
+ * @memberOf module:utils
+ */
 export function chainAbortController(
   controller: AbortController,
   ...signals: AbortSignal[]
 ): AbortController;
+
+/**
+ * @description Creates a new controller chained to multiple abort signals.
+ * @summary Creates a new abort controller that will be triggered if any of the provided signals are aborted.
+ *
+ * @param {...AbortSignal} signals - One or more abort signals that can trigger the new controller.
+ * @return {AbortController} A new abort controller connected to the signals.
+ *
+ * @function chainAbortController
+ *
+ * @memberOf module:utils
+ */
 export function chainAbortController(
   ...signals: AbortSignal[]
 ): AbortController;
+
 export function chainAbortController(
   argument0: AbortController | AbortSignal,
   ...remainder: AbortSignal[]
@@ -100,6 +126,24 @@ export function chainAbortController(
   return controller;
 }
 
+/**
+ * @description Spawns a command as a child process with output handling.
+ * @summary Creates a child process to execute a command with support for piping multiple commands,
+ * custom output handling, and abort control. This function handles the low-level details of
+ * spawning processes and connecting their inputs/outputs when piping is used.
+ *
+ * @template R - The type of the processed output, defaulting to string.
+ * @param {StandardOutputWriter<R>} output - The output writer to handle command output.
+ * @param {string} command - The command to execute, can include pipe operators.
+ * @param {SpawnOptionsWithoutStdio} opts - Options for the spawned process.
+ * @param {AbortController} abort - Controller to abort the command execution.
+ * @param {Logger} logger - Logger for recording command execution details.
+ * @return {ChildProcessWithoutNullStreams} The spawned child process.
+ *
+ * @function spawnCommand
+ *
+ * @memberOf module:utils
+ */
 export function spawnCommand<R = string>(
   output: StandardOutputWriter<R>,
   command: string,
@@ -188,7 +232,7 @@ export function spawnCommand<R = string>(
  *   OutputWriter-->>runCommand: Resolve or reject promise
  *   runCommand-->>Caller: Return CommandResult
  *
- * @memberOf @decaf-ts/utils
+ * @memberOf module:utils
  */
 export function runCommand<R = string>(
   command: string,

@@ -5,6 +5,7 @@ import { Logger } from "@decaf-ts/logging";
 /**
  * @description Array of ANSI color codes for banner styling.
  * @summary Defines a set of ANSI color codes used to style the banner text.
+ * @memberOf module:utils
  */
 const colors = [
   "\x1b[38;5;215m", // soft orange
@@ -22,6 +23,7 @@ const colors = [
  * @description Prints a styled banner to the console.
  * @summary Generates and prints a colorful ASCII art banner with a random slogan.
  * @param {Logger} [logger] - Optional logger for verbose output.
+ * @memberOf module:utils
  * @function printBanner
  * @mermaid
  * sequenceDiagram
@@ -68,6 +70,7 @@ export function printBanner(logger?: Logger) {
  * @param {number} [i] - Optional index to retrieve a specific slogan.
  * @return {string} The selected slogan.
  * @function getSlogan
+ * @memberOf module:utils
  * @mermaid
  * sequenceDiagram
  *   participant getSlogan

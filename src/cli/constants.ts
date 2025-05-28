@@ -27,6 +27,7 @@
  * @property {Object} banner - Banner display option.
  * @property {string} banner.type - The type of the banner option (boolean).
  * @property {boolean} banner.default - The default value for banner display (false).
+ * @memberOf module:utils
  */
 export const DefaultCommandOptions = {
   verbose: {
@@ -68,6 +69,7 @@ export const DefaultCommandOptions = {
  * @const DefaultCommandValues
  * @typedef {Object} DefaultCommandValues
  * @property {unknown} [key: string] - The default value for each option in DefaultCommandOptions.
+ * @memberOf module:utils
  */
 export const DefaultCommandValues: {
   [k in keyof typeof DefaultCommandOptions]: unknown;

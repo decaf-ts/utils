@@ -39,7 +39,7 @@ const logger = Logging.for("fs");
  *   writeFile-->>patchFile: File written
  *   patchFile-->>Caller: Patching complete
  *
- * @memberOf module:fs-utils
+ * @memberOf module:utils
  */
 export function patchFile(
   path: string,
@@ -110,12 +110,12 @@ export function writeFile(path: string, data: string | Buffer): void {
  * @summary Traverses through directories and subdirectories to collect all file paths.
  *
  * @param {string} p - The path to start searching from.
- * @param filter
+ * @param {function} [filter] - Optional function to filter files by name or index.
  * @return {string[]} Array of file paths.
  *
  * @function getAllFiles
  *
- * @memberOf module:fs-utils
+ * @memberOf module:utils
  */
 export function getAllFiles(
   p: string,
@@ -146,6 +146,18 @@ export function getAllFiles(
   }
 }
 
+/**
+ * @description Renames a file or directory.
+ * @summary Moves a file or directory from the source path to the destination path.
+ *
+ * @param {string} source - The source path of the file or directory.
+ * @param {string} dest - The destination path for the file or directory.
+ * @return {Promise<void>} A promise that resolves when the rename operation is complete.
+ *
+ * @function renameFile
+ *
+ * @memberOf module:utils
+ */
 export async function renameFile(source: string, dest: string) {
   const log = logger.for(renameFile);
   let descriptorSource, descriptorDest;
@@ -184,6 +196,18 @@ export async function renameFile(source: string, dest: string) {
   }
 }
 
+/**
+ * @description Copies a file or directory.
+ * @summary Creates a copy of a file or directory from the source path to the destination path.
+ *
+ * @param {string} source - The source path of the file or directory.
+ * @param {string} dest - The destination path for the file or directory.
+ * @return {void}
+ *
+ * @function copyFile
+ *
+ * @memberOf module:utils
+ */
 export function copyFile(source: string, dest: string) {
   const log = logger.for(copyFile);
   let descriptorSource, descriptorDest;
@@ -219,6 +243,17 @@ export function copyFile(source: string, dest: string) {
   }
 }
 
+/**
+ * @description Deletes a file or directory.
+ * @summary Removes a file or directory at the specified path, with recursive and force options enabled.
+ *
+ * @param {string} p - The path to the file or directory to delete.
+ * @return {void}
+ *
+ * @function deletePath
+ *
+ * @memberOf module:utils
+ */
 export function deletePath(p: string) {
   const log = logger.for(deletePath);
   try {
@@ -283,6 +318,19 @@ export function getPackage(
   return pkg;
 }
 
+/**
+ * @description Sets an attribute in the package.json file.
+ * @summary Updates a specific attribute in the package.json file with the provided value.
+ *
+ * @param {string} attr - The attribute name to set in package.json.
+ * @param {string | number | object} value - The value to set for the attribute.
+ * @param {string} [p=process.cwd()] - The directory path where the package.json file is located.
+ * @return {void}
+ *
+ * @function setPackageAttribute
+ *
+ * @memberOf module:utils
+ */
 export function setPackageAttribute(
   attr: string,
   value: string,
@@ -299,7 +347,7 @@ export function setPackageAttribute(
  * @param {string} [p=process.cwd()] - The directory path where the package.json file is located.
  * @return {string} The version string from package.json.
  * @function getPackageVersion
- * @memberOf module:fs-utils
+ * @memberOf module:utils
  */
 export function getPackageVersion(p = process.cwd()): string {
   return getPackage(p, "version") as string;
@@ -324,7 +372,7 @@ export function getPackageVersion(p = process.cwd()): string {
  *   JSON-->>getDependencies: Return parsed object
  *   getDependencies->>getDependencies: Process dependencies
  *   getDependencies-->>Caller: Return processed dependencies
- * @memberOf module:fs-utils
+ * @memberOf module:utils
  */
 export async function getDependencies(
   path: string = process.cwd()
@@ -350,6 +398,16 @@ export async function getDependencies(
   };
 }
 
+/**
+ * @description Updates project dependencies to their latest versions.
+ * @summary Runs npm-check-updates to update package.json and then installs the updated dependencies.
+ *
+ * @return {Promise<void>} A promise that resolves when dependencies are updated.
+ *
+ * @function updateDependencies
+ *
+ * @memberOf module:utils
+ */
 export async function updateDependencies() {
   const log = logger.for(updateDependencies);
   log.info("checking for updates...");
@@ -358,6 +416,18 @@ export async function updateDependencies() {
   await runCommand("npx npm run do-install").promise;
 }
 
+/**
+ * @description Installs dependencies if they are not already available.
+ * @summary Checks if specified dependencies are installed and installs any that are missing.
+ *
+ * @param {string[] | string} deps - The dependencies to check and potentially install.
+ * @param {SimpleDependencyMap} [dependencies] - Optional map of existing dependencies.
+ * @return {Promise<SimpleDependencyMap>} Updated map of dependencies.
+ *
+ * @function installIfNotAvailable
+ *
+ * @memberOf module:utils
+ */
 export async function installIfNotAvailable(
   deps: string[] | string,
   dependencies?: SimpleDependencyMap
@@ -383,6 +453,16 @@ export async function installIfNotAvailable(
   return dependencies;
 }
 
+/**
+ * @description Pushes changes to Git repository.
+ * @summary Temporarily changes Git user configuration, commits all changes, pushes to remote, and restores original user configuration.
+ *
+ * @return {Promise<void>} A promise that resolves when changes are pushed.
+ *
+ * @function pushToGit
+ *
+ * @memberOf module:utils
+ */
 export async function pushToGit() {
   const log = logger.for(pushToGit);
   const gitUser = await runCommand("git config user.name").promise;
@@ -399,6 +479,20 @@ export async function pushToGit() {
   log.verbose(`reverted to git id: ${gitUser}/${gitEmail}`);
 }
 
+/**
+ * @description Installs project dependencies.
+ * @summary Installs production, development, and peer dependencies as specified.
+ *
+ * @param {object} dependencies - Object containing arrays of dependencies to install.
+ * @param {string[]} [dependencies.prod] - Production dependencies to install.
+ * @param {string[]} [dependencies.dev] - Development dependencies to install.
+ * @param {string[]} [dependencies.peer] - Peer dependencies to install.
+ * @return {Promise<void>} A promise that resolves when all dependencies are installed.
+ *
+ * @function installDependencies
+ *
+ * @memberOf module:utils
+ */
 export async function installDependencies(dependencies: {
   prod?: string[];
   dev?: string[];
@@ -427,6 +521,18 @@ export async function installDependencies(dependencies: {
   }
 }
 
+/**
+ * @description Normalizes imports to handle both CommonJS and ESModule formats.
+ * @summary Utility function to handle module import differences between formats.
+ *
+ * @template T - Type of the imported module.
+ * @param {Promise<T>} importPromise - Promise returned by dynamic import.
+ * @return {Promise<T>} Normalized module.
+ *
+ * @function normalizeImport
+ *
+ * @memberOf module:utils
+ */
 export async function normalizeImport<T>(
   importPromise: Promise<T>
 ): Promise<T> {

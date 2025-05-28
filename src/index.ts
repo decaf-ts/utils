@@ -5,7 +5,7 @@ export * from "./utils";
 export * from "./writers";
 
 /**
- * @module @decaf-ts/utils
+ * @module utils
  * @description
  * This module serves a light version of Decaf CLI tool, providing a comprehensive set of utilities
  * and functionalities for command-line interface operations. It encompasses several key components:
@@ -36,6 +36,6 @@ export * from "./writers";
  * with the placeholder "##VERSION##" being substituted with the current version.
  *
  * @const VERSION
- * @memberOf module:@decaf-ts/utils
+ * @memberOf module:utils
  */
 export const VERSION = "##VERSION##";

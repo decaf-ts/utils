@@ -9,11 +9,61 @@ import { PromiseExecutor } from "../utils/types";
  *
  * @template T - The type of the resolved value, defaulting to string.
  *
+ * @param cmd - The command string to be executed.
  * @param lock - A PromiseExecutor to control the asynchronous flow.
  * @param regexp - A string or RegExp to match against the output.
- * @param flags - Optional flags for the RegExp constructor.
+ * @param flags - Optional flags for the RegExp constructor, defaults to "g".
  *
  * @class
+ * @example
+ * ```typescript
+ * import { RegexpOutputWriter } from '@decaf-ts/utils';
+ * import { PromiseExecutor } from '@decaf-ts/utils';
+ * 
+ * // Create a promise executor
+ * const executor: PromiseExecutor<string, Error> = {
+ *   resolve: (value) => console.log(`Resolved: ${value}`),
+ *   reject: (error) => console.error(`Rejected: ${error.message}`)
+ * };
+ * 
+ * // Create a regexp output writer that matches version numbers
+ * const writer = new RegexpOutputWriter('node --version', executor, /v(\d+\.\d+\.\d+)/);
+ * 
+ * // Use the writer to handle command output
+ * writer.data('v14.17.0');  // This will automatically resolve with "v14.17.0"
+ * ```
+ *
+ * @mermaid
+ * sequenceDiagram
+ *   participant Client
+ *   participant RegexpOutputWriter
+ *   participant StandardOutputWriter
+ *   participant Logger
+ *   
+ *   Client->>RegexpOutputWriter: new RegexpOutputWriter(cmd, lock, regexp, flags)
+ *   RegexpOutputWriter->>StandardOutputWriter: super(cmd, lock)
+ *   StandardOutputWriter->>Logger: Logging.for(cmd)
+ *   RegexpOutputWriter->>RegexpOutputWriter: compile regexp
+ *   
+ *   Client->>RegexpOutputWriter: data(chunk)
+ *   RegexpOutputWriter->>StandardOutputWriter: super.data(chunk)
+ *   StandardOutputWriter->>Logger: logger.info(log)
+ *   RegexpOutputWriter->>RegexpOutputWriter: testAndResolve(chunk)
+ *   RegexpOutputWriter->>RegexpOutputWriter: test(chunk)
+ *   alt match found
+ *     RegexpOutputWriter->>RegexpOutputWriter: resolve(match[0])
+ *     RegexpOutputWriter->>StandardOutputWriter: resolve(match[0])
+ *   end
+ *   
+ *   Client->>RegexpOutputWriter: error(chunk)
+ *   RegexpOutputWriter->>StandardOutputWriter: super.error(chunk)
+ *   StandardOutputWriter->>Logger: logger.info(log)
+ *   RegexpOutputWriter->>RegexpOutputWriter: testAndReject(chunk)
+ *   RegexpOutputWriter->>RegexpOutputWriter: test(chunk)
+ *   alt match found
+ *     RegexpOutputWriter->>RegexpOutputWriter: reject(match[0])
+ *     RegexpOutputWriter->>StandardOutputWriter: reject(match[0])
+ *   end
  */
 export class RegexpOutputWriter extends StandardOutputWriter<string> {
   /**
@@ -22,15 +72,6 @@ export class RegexpOutputWriter extends StandardOutputWriter<string> {
    */
   protected readonly regexp: RegExp;
 
-  /**
-   * @description Initializes a new instance of RegexpOutputWriter.
-   * @summary Constructs the RegexpOutputWriter with a lock mechanism and a regular expression.
-   *
-   * @param cmd
-   * @param lock - A PromiseExecutor to control the asynchronous flow.
-   * @param regexp - A string or RegExp to match against the output.
-   * @param flags - Optional flags for the RegExp constructor, defaults to "g".
-   */
   constructor(
     cmd: string,
     lock: PromiseExecutor<string, Error>,

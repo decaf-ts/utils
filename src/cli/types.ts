@@ -9,6 +9,7 @@ import { LoggingConfig } from "@decaf-ts/logging";
  * @property {boolean} [version] - Flag to show version information.
  * @property {boolean} [banner] - Flag to show banner.
  * @property {boolean} [help] - Flag to show help information.
+ * @memberOf module:utils
  */
 export type InputOptions = {
   verbose?: number;
@@ -22,6 +23,7 @@ export type InputOptions = {
  * @summary Combines input options, input option configurations, and logging configurations into a single type.
  * @template I - The type of additional input options specific to the command.
  * @typedef {Object} CommandOptions
+ * @memberOf module:utils
  */
 export type CommandOptions<I> = I &
   Partial<{ [k in keyof InputOptions]: ParseArgsOptionConfig }> &

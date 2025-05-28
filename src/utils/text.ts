@@ -11,7 +11,7 @@
  *
  * @function padEnd
  *
- * @memberOf module:TextUtils
+ * @memberOf module:utils
  */
 export function padEnd(
   str: string,
@@ -45,7 +45,7 @@ export function padEnd(
  *   String.replace->>patchString: Return replaced string
  *   patchString-->>Caller: Return patched string
  *
- * @memberOf module:TextUtils
+ * @memberOf module:utils
  */
 export function patchPlaceholders(
   input: string,
@@ -57,6 +57,20 @@ export function patchPlaceholders(
   );
 }
 
+/**
+ * @description Replaces occurrences of keys with their corresponding values in a string.
+ * @summary Iterates through a set of key-value pairs and replaces all occurrences of each key
+ * in the input string with its corresponding value. Supports regular expression flags for customized replacement.
+ *
+ * @param {string} input - The input string in which replacements will be made.
+ * @param {Record<string, number | string>} values - An object containing key-value pairs for replacement.
+ * @param {string} [flags="g"] - Regular expression flags to control the replacement behavior.
+ * @return {string} The string with all specified replacements applied.
+ *
+ * @function patchString
+ *
+ * @memberOf module:utils
+ */
 export function patchString(
   input: string,
   values: Record<string, number | string>,
@@ -79,7 +93,7 @@ export function patchString(
  *
  * @function toCamelCase
  *
- * @memberOf module:TextUtils
+ * @memberOf module:utils
  */
 export function toCamelCase(text: string): string {
   return text
@@ -99,7 +113,7 @@ export function toCamelCase(text: string): string {
  *
  * @function toENVFormat
  *
- * @memberOf module:TextUtils
+ * @memberOf module:utils
  */
 export function toENVFormat(text: string): string {
   return toSnakeCase(text).toUpperCase();
@@ -114,7 +128,7 @@ export function toENVFormat(text: string): string {
  *
  * @function toSnakeCase
  *
- * @memberOf module:TextUtils
+ * @memberOf module:utils
  */
 export function toSnakeCase(text: string): string {
   return text
@@ -132,7 +146,7 @@ export function toSnakeCase(text: string): string {
  *
  * @function toKebabCase
  *
- * @memberOf module:TextUtils
+ * @memberOf module:utils
  */
 export function toKebabCase(text: string): string {
   return text
@@ -151,7 +165,7 @@ export function toKebabCase(text: string): string {
  *
  * @function toPascalCase
  *
- * @memberOf module:TextUtils
+ * @memberOf module:utils
  */
 export function toPascalCase(text: string): string {
   return text
@@ -159,6 +173,18 @@ export function toPascalCase(text: string): string {
     .replace(/\s+/g, "");
 }
 
+/**
+ * @description Escapes special characters in a string for use in a regular expression.
+ * @summary Adds backslashes before characters that have special meaning in regular expressions,
+ * allowing the string to be used as a literal match in a RegExp.
+ *
+ * @param {string} string - The string to escape for regular expression use.
+ * @return {string} The escaped string safe for use in regular expressions.
+ *
+ * @function escapeRegExp
+ *
+ * @memberOf module:utils
+ */
 export function escapeRegExp(string: string) {
   return string.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"); // $& means the whole matched string
 }

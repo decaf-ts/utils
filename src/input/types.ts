@@ -4,7 +4,7 @@
  * to apply color styling to text or chain multiple color operations.
  *
  * @interface Color
- * @memberOf module:@decaf-ts/utils
+ * @memberOf module:utils
  * */
 export interface Color {
   /**
@@ -27,7 +27,7 @@ export interface Color {
  * and text styles to strings in terminal output.
  *
  * @interface Kleur
- * @memberOf module:@decaf-ts/utils
+ * @memberOf module:utils
  */
 export interface Kleur {
   // Colors
@@ -97,7 +97,7 @@ export interface Kleur {
  * @property {boolean} [multiple] - Whether the option can be specified multiple times.
  * @property {string} [short] - The short (single-character) alias for the option.
  * @property {string | boolean | string[] | boolean[]} [default] - The default value(s) for the option.
- * @memberOf @decaf-ts/utils
+ * @memberOf module:utils
  */
 export interface ParseArgsOptionConfig {
   type: "string" | "boolean";
@@ -110,7 +110,7 @@ export interface ParseArgsOptionConfig {
  * @description Configuration for all command-line argument options.
  * @summary A mapping of long option names to their configurations.
  * @interface ParseArgsOptionsConfig
- * @memberOf @decaf-ts/utils
+ * @memberOf module:utils
  */
 export interface ParseArgsOptionsConfig {
   [longOption: string]: ParseArgsOptionConfig;
@@ -120,7 +120,7 @@ export interface ParseArgsOptionsConfig {
  * @description Represents a parsed command-line option token.
  * @summary Can be either an option with a value or an option without a value.
  * @typedef {Object} OptionToken
- * @memberOf @decaf-ts/utils
+ * @memberOf module:utils
  */
 export type OptionToken =
   | {
@@ -144,7 +144,7 @@ export type OptionToken =
  * @description Represents a parsed command-line token.
  * @summary Can be an option, a positional argument, or an option terminator.
  * @typedef {OptionToken | Object} Token
- * @memberOf @decaf-ts/utils
+ * @memberOf module:utils
  */
 export type Token =
   | OptionToken
@@ -158,7 +158,7 @@ export type Token =
  * @property {string | boolean | string[] | boolean[] | undefined} values - Parsed option values.
  * @property {string[]} positionals - Positional arguments.
  * @property {Token[]} [tokens] - Parsed tokens (if requested).
- * @memberOf @decaf-ts/utils
+ * @memberOf module:utils
  */
 export type ParseArgsResult = {
   values: { [p: string]: string | boolean | (string | boolean)[] | undefined };

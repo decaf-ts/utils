@@ -34,6 +34,12 @@ export class Environment<T extends object> extends ObjectAccumulator<T> {
     super();
   }
 
+  /**
+   * @description Retrieves a value from the environment
+   * @summary Gets a value from the environment variables, handling browser and Node.js environments differently
+   * @param {string} k - The key to retrieve from the environment
+   * @return {unknown} The value from the environment, or undefined if not found
+   */
   protected fromEnv(k: string) {
     let env: Record<string, unknown>;
     if (isBrowser()) {
@@ -47,6 +53,13 @@ export class Environment<T extends object> extends ObjectAccumulator<T> {
     return env[k];
   }
 
+  /**
+   * @description Expands an object into the environment
+   * @summary Defines properties on the environment object that can be accessed as getters and setters
+   * @template V - Type of the object being expanded
+   * @param {V} value - The object to expand into the environment
+   * @return {void}
+   */
   protected override expand<V extends object>(value: V): void {
     Object.entries(value).forEach(([k, v]) => {
       Object.defineProperty(this, k, {

@@ -6,7 +6,7 @@
  * This interface allows for consistent output handling across different parts of the application.
  *
  * @interface OutputWriter
- * @memberOf @decaf-ts/utils
+ * @memberOf module:utils
  */
 export interface OutputWriter {
   /**
@@ -45,7 +45,7 @@ export interface OutputWriter {
    * This method is called when the program needs to exit, either successfully or due to an error.
    *
    * @param code - The exit code to be used when terminating the program.
-   * @param logs
+   * @param logs - Array of log messages to be processed before exiting.
    * @return void
    */
   exit(code: number, logs: string[]): void;

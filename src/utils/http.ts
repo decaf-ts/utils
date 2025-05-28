@@ -6,7 +6,7 @@ import { Logging } from "@decaf-ts/logging";
  * @summary This class provides functionality to download files from HTTPS URLs.
  * It uses Node.js built-in https module to make requests.
  *
- * @class
+ * @class HttpClient
  */
 export class HttpClient {
   protected static log = Logging.for(HttpClient);
