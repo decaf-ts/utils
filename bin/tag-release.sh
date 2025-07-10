@@ -80,3 +80,9 @@ if [[ "$MESSAGE" =~ -no-ci$ ]]; then
   NPM_TOKEN=$(cat .npmtoken) npm publish --access public
 fi
 
+
+
+
+
+
+
