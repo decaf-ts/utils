@@ -55,7 +55,7 @@ const options = {
   },
 };
 
-const cjs2Transformer = () => {
+const cjs2Transformer = (ext = ".cjs") => {
   const log = BuildScripts.log.for(cjs2Transformer);
   const resolutionCache = new Map<string, string>();
 
@@ -95,7 +95,6 @@ const cjs2Transformer = () => {
         if (path.isAbsolute(resolvedPath)) {
           const extension =
             (/\.tsx?$/.exec(path.basename(resolvedPath)) || [])[0] || void 0;
-          const mappedExtension = ".cjs";
 
           resolvedPath =
             "./" +
@@ -103,7 +102,7 @@ const cjs2Transformer = () => {
               sourceDir,
               path.resolve(
                 path.dirname(resolvedPath),
-                path.basename(resolvedPath, extension) + mappedExtension
+                path.basename(resolvedPath, extension) + ext
               )
             );
         }
@@ -280,7 +279,9 @@ export class BuildScripts extends Command<
 
     const transformations: { before?: any[] } = {};
     if (mode === Modes.CJS) {
-      transformations.before = [cjs2Transformer()];
+      transformations.before = [cjs2Transformer(".cjs")];
+    } else if (mode === Modes.ESM) {
+      transformations.before = [cjs2Transformer(".js")];
     }
 
     const emitResult: EmitResult = program.emit(
