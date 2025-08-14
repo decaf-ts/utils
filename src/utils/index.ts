@@ -5,3 +5,4 @@ export * from "./http";
 export * from "./text";
 export * from "./types";
 export * from "./utils";
+export * from "./web";
