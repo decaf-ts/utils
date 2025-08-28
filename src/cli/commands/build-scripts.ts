@@ -30,6 +30,12 @@ enum Modes {
   ESM = "es2022",
 }
 
+enum BuildMode {
+  BUILD = "build",
+  BUNDLE = "bundle",
+  ALL = "all",
+}
+
 const Commands = ["update-scripts", "tag-release", "build-scripts"];
 
 const options = {
@@ -40,6 +46,10 @@ const options = {
   dev: {
     type: "boolean",
     default: false,
+  },
+  buildMode: {
+    type: "string",
+    default: BuildMode.ALL,
   },
   docs: {
     type: "boolean",
@@ -461,7 +471,7 @@ export class BuildScripts extends Command<
     }
   }
 
-  private async buildByEnv(isDev: boolean) {
+  private async buildByEnv(isDev: boolean, mode: BuildMode = BuildMode.ALL) {
     try {
       deletePath("lib");
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -476,22 +486,29 @@ export class BuildScripts extends Command<
     }
     fs.mkdirSync("lib");
     fs.mkdirSync("dist");
-    await this.build(isDev, Modes.ESM);
-    await this.build(isDev, Modes.CJS);
-    await this.bundle(Modes.ESM, true, false);
-    await this.bundle(Modes.CJS, true, false);
-    this.patchFiles("lib");
-    this.patchFiles("dist");
+
+    if ([BuildMode.ALL, BuildMode.BUILD].includes(mode)) {
+      await this.build(isDev, Modes.ESM);
+      await this.build(isDev, Modes.CJS);
+      this.patchFiles("lib");
+    }
+
+    if ([BuildMode.ALL, BuildMode.BUNDLE].includes(mode)) {
+      await this.bundle(Modes.ESM, true, false);
+      await this.bundle(Modes.CJS, true, false);
+      this.patchFiles("dist");
+    }
+
     this.copyAssets(Modes.CJS);
     this.copyAssets(Modes.ESM);
   }
 
-  async buildDev() {
-    return this.buildByEnv(true);
+  async buildDev(mode: BuildMode = BuildMode.ALL) {
+    return this.buildByEnv(true, mode);
   }
 
-  async buildProd() {
-    return this.buildByEnv(false);
+  async buildProd(mode: BuildMode = BuildMode.ALL) {
+    return this.buildByEnv(false, mode);
   }
 
   async buildDocs() {
@@ -532,17 +549,17 @@ export class BuildScripts extends Command<
     answers: LoggingConfig &
       typeof DefaultCommandValues & { [k in keyof typeof options]: unknown }
   ): Promise<string | void | R> {
-    const { dev, prod, docs, commands } = answers;
+    const { dev, prod, docs, commands, buildMode } = answers;
 
     if (commands) {
       await this.buildCommands();
     }
 
     if (dev) {
-      return await this.buildDev();
+      return await this.buildDev(buildMode as BuildMode);
     }
     if (prod) {
-      return await this.buildProd();
+      return await this.buildProd(buildMode as BuildMode);
     }
     if (docs) {
       return await this.buildDocs();
