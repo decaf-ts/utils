@@ -71,7 +71,6 @@ export function printBanner(logger?: Logger) {
  * @return {string} The selected slogan.
  * @function getSlogan
  * @memberOf module:utils
- *
  * @mermaid
  * sequenceDiagram
  *   participant getSlogan
