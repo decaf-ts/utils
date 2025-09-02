@@ -1,4 +1,4 @@
-import slogans from "../assets/slogans.json";
+import { slogans } from "../assets/slogans";
 import { style } from "styled-string-builder";
 import { Logger } from "@decaf-ts/logging";
 
