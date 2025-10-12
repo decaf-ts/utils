@@ -4,14 +4,12 @@ import { UserInput } from "../input/input";
 import { DefaultCommandOptions, DefaultCommandValues } from "./constants";
 import { getDependencies, getPackageVersion } from "../utils/fs";
 import { printBanner } from "../output/common";
-import { LoggedEnvironment as Environment } from "@decaf-ts/logging";
 import {
-  DefaultLoggingConfig,
   LoggedClass,
+  LoggedEnvironment,
   Logger,
   Logging,
   LoggingConfig,
-  LogLevel,
 } from "@decaf-ts/logging";
 
 /**
@@ -149,19 +147,10 @@ export abstract class Command<I, R> extends LoggedClass {
    */
   async execute(): Promise<R | string | void> {
     const args: ParseArgsResult = UserInput.parseArgs(this.inputs);
-    const env = Environment.accumulate(DefaultLoggingConfig)
-      .accumulate(DefaultCommandValues)
-      .accumulate(args.values);
-    const { timestamp, verbose, version, help, logLevel, logStyle, banner } =
-      env;
-
-    this.log.setConfig({
-      ...env,
-      timestamp: !!timestamp,
-      level: logLevel as LogLevel,
-      style: !!logStyle,
-      verbose: (verbose as number) || 0,
-    });
+    const env = LoggedEnvironment.accumulate(DefaultCommandValues).accumulate(
+      args.values
+    );
+    const { version, help, banner } = env;
 
     if (version) {
       return getPackageVersion();
@@ -183,7 +172,7 @@ export abstract class Command<I, R> extends LoggedClass {
 
     let result;
     try {
-      result = await this.run(env);
+      result = await this.run(env as any);
     } catch (e: unknown) {
       this.log.error(`Error while running provided cli function: ${e}`);
       throw e;
