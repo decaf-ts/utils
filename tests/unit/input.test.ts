@@ -1,4 +1,5 @@
 // input.test.ts
+import { Writable, Readable } from "stream";
 import { UserInput } from "../../src/input/input";
 
 describe("UserInput Class", () => {
@@ -60,6 +61,75 @@ describe("UserInput Class", () => {
       const userInput = new UserInput("testPrompt");
       userInput.setOnState(onStateCallback);
       expect(userInput.onState).toBe(onStateCallback);
+    });
+  });
+
+
+  describe("additional setters", () => {
+    it("should configure optional behaviours", () => {
+      const userInput = new UserInput("advanced");
+      const format = jest.fn();
+      const validate = jest.fn();
+      const onState = jest.fn();
+      const suggest = jest.fn(async () => "option-a");
+      const stdout = new Writable({
+        write(_chunk, _encoding, callback) {
+          callback();
+        },
+      });
+      const stdin = new Readable({
+        read() {
+          this.push(null);
+        },
+      });
+
+      userInput
+        .setFormat(format)
+        .setValidate(validate)
+        .setOnState(onState)
+        .setMin(1)
+        .setMax(10)
+        .setFloat(true)
+        .setRound(2)
+        .setInstructions("instruction")
+        .setIncrement(2)
+        .setSeparator(",")
+        .setActive("active")
+        .setInactive("inactive")
+        .setChoices([
+          {
+            title: "Option A",
+            value: "option-a",
+          } as any,
+        ])
+        .setHint("Hint")
+        .setWarn("Warn")
+        .setSuggest(suggest)
+        .setLimit(5)
+        .setMask("*")
+        .setStdout(stdout)
+        .setStdin(stdin);
+
+      expect(userInput.format).toBe(format);
+      expect(userInput.validate).toBe(validate);
+      expect(userInput.onState).toBe(onState);
+      expect(userInput.min).toBe(1);
+      expect(userInput.max).toBe(10);
+      expect(userInput.float).toBe(true);
+      expect(userInput.round).toBe(2);
+      expect(userInput.instructions).toBe("instruction");
+      expect(userInput.increment).toBe(2);
+      expect(userInput.separator).toBe(",");
+      expect(userInput.active).toBe("active");
+      expect(userInput.inactive).toBe("inactive");
+      expect(userInput.choices).toHaveLength(1);
+      expect(userInput.hint).toBe("Hint");
+      expect(userInput.warn).toBe("Warn");
+      expect(userInput.suggest).toBe(suggest);
+      expect(userInput.limit).toBe(5);
+      expect(userInput.mask).toBe("*");
+      expect(userInput.stdout).toBe(stdout);
+      expect(userInput.stdin).toBe(stdin);
     });
   });
 

@@ -6,35 +6,25 @@ export * from "./writers";
 
 /**
  * @module utils
- * @description
- * This module serves a light version of Decaf CLI tool, providing a comprehensive set of utilities
- * and functionalities for command-line interface operations. It encompasses several key components:
+ * @description Utilities and building blocks for Decaf-TS CLI and scripting.
+ * @summary Aggregates CLI command infrastructure, input helpers, output writers, filesystem/network utilities,
+ * and shared types. Consumers typically use {@link Command}, {@link UserInput}, {@link StandardOutputWriter},
+ * {@link printBanner}, and utilities from {@link module:utils|utils}.
  *
- * 1. Input Handling: Manages user input and command-line arguments processing.
- * 2. Utility Functions: Offers a collection of helper functions and constants for various operations.
- * 3. Type Definitions: Defines custom types and interfaces used throughout the module.
- * 4. Output Management: Provides different output writing strategies for flexible console output handling.
+ * This entrypoint re-exports subpackages:
+ * - CLI framework under `./cli` (command base, options, built-in commands)
+ * - Input helpers under `./input` (prompting and arg parsing)
+ * - Output helpers under `./output` (banner and styling)
+ * - General utilities under `./utils` (fs, http, exec, types)
+ * - Writers under `./writers` (stdout/stderr processors)
  *
- * The module is designed to facilitate the creation of robust CLI applications by offering:
- * - Standardized input parsing and validation
- * - Consistent output formatting and handling
- * - Reusable utility functions for common CLI tasks
- * - Extensible architecture for adding new commands and features
- *
- * It supports various output modes, including standard console output and regular expression-based output,
- * allowing for versatile data presentation and processing. The modular structure enables easy maintenance
- * and extension of the CLI functionality.
- *
- * This module is particularly useful for developers building complex command-line tools that require
- * structured input handling, flexible output formatting, and a rich set of utility functions.
+ * Note: Individual exports are documented in their source files.
  */
 
 /**
  * @description Represents the current version of the module.
- * @summary This constant stores the version number of the @asdasdasd/utils module.
- * The actual version number is replaced during the build process,
- * with the placeholder "##VERSION##" being substituted with the current version.
- *
+ * @summary Stores the version for the @decaf-ts/utils package. The build replaces
+ * the placeholder with the actual version number at publish time.
  * @const VERSION
  * @memberOf module:utils
  */

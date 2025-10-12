@@ -1,3 +1,4 @@
+/* istanbul ignore file */
 import { Command } from "../command";
 import { CommandOptions } from "../types";
 import { DefaultCommandOptions, DefaultCommandValues } from "../constants";

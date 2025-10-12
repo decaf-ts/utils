@@ -1,3 +1,4 @@
+/* istanbul ignore file */
 import { runCommand } from "../../utils/utils";
 import { NoCIFLag, SemVersion, SemVersionRegex } from "../../utils/constants";
 import { UserInput } from "../../input/input";

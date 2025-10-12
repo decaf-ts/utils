@@ -690,7 +690,7 @@ export class UserInput<R extends string = string> implements PromptObject<R> {
    *
    * @template R - The type of the expected result.
    * @param input - The UserInput instance to use for prompting.
-   * @param test - A function to validate the user's input.
+   * @param {function(string):boolean} test - Validator function receiving the user input and returning whether it is valid.
    * @param defaultConfirmation - The default value for the confirmation prompt (true for yes, false for no).
    * @param limit - The maximum number of attempts allowed (default is 1).
    * @return A Promise that resolves to the valid input or undefined if the limit is reached.
@@ -767,7 +767,7 @@ export class UserInput<R extends string = string> implements PromptObject<R> {
    *
    * @param name - The name of the prompt, used as the key in the returned answers object.
    * @param question - The message displayed to the user.
-   * @param test - A function to validate the user's input.
+   * @param {function(number):boolean} test - Validator function receiving the user input and returning whether it is valid.
    * @param mask - The character used to mask the input (optional, for password-like inputs).
    * @param initial - The initial value presented to the user (optional).
    * @param defaultConfirmation - The default value for the confirmation prompt (true for yes, false for no).

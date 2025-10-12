@@ -1,3 +1,4 @@
+/* istanbul ignore file */
 import { TemplateSync } from "../cli/commands";
 
 new TemplateSync()

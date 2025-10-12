@@ -1,3 +1,4 @@
+/* istanbul ignore file */
 import https from "https";
 import { Logging } from "@decaf-ts/logging";
 

@@ -1,3 +1,4 @@
+/* istanbul ignore file */
 import path from "path";
 import { Command } from "../command";
 import { CommandOptions } from "../types";

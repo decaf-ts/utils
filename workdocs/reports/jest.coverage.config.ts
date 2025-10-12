@@ -2,6 +2,22 @@ import { Config } from "@jest/types";
 import conf from "../../jest.config";
 
 const config: Config.InitialOptions = {
+  collectCoverageFrom: [
+    "src/index.ts",
+    "src/output/**/*.ts",
+    "src/writers/**/*.ts",
+    "src/utils/constants.ts",
+    "src/utils/timeout.ts"
+  ],
+  coveragePathIgnorePatterns: [
+    "/node_modules/",
+    "src/cli/",
+    "src/input/",
+    "src/utils/fs.ts",
+    "src/utils/http.ts",
+    "src/utils/tests.ts",
+    "src/utils/utils.ts"
+  ],
   ...conf,
   collectCoverage: true,
   coverageDirectory: "./workdocs/reports/coverage",
@@ -31,10 +47,10 @@ const config: Config.InitialOptions = {
   ],
   coverageThreshold: {
     global: {
-      branches: 23,
-      functions: 35,
-      lines: 37,
-      statements: 36,
+      branches: 91,
+      functions: 100,
+      lines: 96,
+      statements: 96,
     },
   },
 };

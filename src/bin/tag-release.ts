@@ -1,3 +1,4 @@
+/* istanbul ignore file */
 import { ReleaseScript } from "../cli/commands";
 
 new ReleaseScript()

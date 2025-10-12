@@ -1,3 +1,19 @@
+/**
+ * @description Definition of a slogan item.
+ * @summary Represents a single slogan entry with text and tags.
+ * @typedef {Object} SloganItem
+ * @property {string} Slogan - The slogan text.
+ * @property {string} Tags - Comma-separated tags describing the slogan.
+ * @memberOf module:utils
+ */
+
+/**
+ * @description List of available slogans for banners and messages.
+ * @summary Immutable array of slogan entries used by {@link getSlogan} and banner rendering.
+ * @type {SloganItem[]}
+ * @const slogans
+ * @memberOf module:utils
+ */
 export const slogans = [
   {
     Slogan: "No caffeine, no chaos. Just clean code.",
