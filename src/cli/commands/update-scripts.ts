@@ -5,7 +5,6 @@ import {
   getPackage,
   HttpClient,
   patchFile,
-  patchString,
   runCommand,
   setPackageAttribute,
   SetupScriptKey,
@@ -15,7 +14,7 @@ import {
 import { DefaultCommandValues } from "../index";
 import { UserInput } from "../../input";
 import fs from "fs";
-import { LoggingConfig } from "@decaf-ts/logging";
+import { LoggingConfig, patchString } from "@decaf-ts/logging";
 
 const baseUrl =
   "https://raw.githubusercontent.com/decaf-ts/ts-workspace/master";

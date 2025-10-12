@@ -1,9 +1,8 @@
 import fs from "fs";
 import path from "path";
-import { patchString } from "./text";
 import { runCommand } from "./utils";
 import { DependencyMap, SimpleDependencyMap } from "./types";
-import { Logging } from "@decaf-ts/logging";
+import { Logging, patchString } from "@decaf-ts/logging";
 
 const logger = Logging.for("fs");
 

@@ -4,9 +4,10 @@ import { UserInput } from "../input/input";
 import { DefaultCommandOptions, DefaultCommandValues } from "./constants";
 import { getDependencies, getPackageVersion } from "../utils/fs";
 import { printBanner } from "../output/common";
-import { Environment } from "../utils/environment";
+import { LoggedEnvironment as Environment } from "@decaf-ts/logging";
 import {
   DefaultLoggingConfig,
+  LoggedClass,
   Logger,
   Logging,
   LoggingConfig,
@@ -26,7 +27,7 @@ import {
  * @param {CommandOptions<I>} [inputs] - The input options for the command.
  * @param {string[]} [requirements] - The list of required dependencies for the command.
  */
-export abstract class Command<I, R> {
+export abstract class Command<I, R> extends LoggedClass {
   /**
    * @static
    * @description Static logger for the Command class.
@@ -34,26 +35,18 @@ export abstract class Command<I, R> {
    */
   static log: Logger;
 
-  /**
-   * @protected
-   * @description Instance logger for the command.
-   * @type {Logger}
-   */
-  protected log: Logger;
-
   protected constructor(
     protected name: string,
     protected inputs: CommandOptions<I> = {} as unknown as CommandOptions<I>,
     protected requirements: string[] = []
   ) {
+    super();
     if (!Command.log) {
       Object.defineProperty(Command, "log", {
         writable: false,
         value: Logging.for(Command.name),
       });
-      this.log = Command.log;
     }
-    this.log = Command.log.for(this.name);
     this.inputs = Object.assign(
       {},
       DefaultCommandOptions,

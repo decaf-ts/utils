@@ -24,6 +24,7 @@ import * as ts from "typescript";
 import { Diagnostic, EmitResult, ModuleKind, SourceFile } from "typescript";
 
 const VERSION_STRING = "##VERSION##";
+const PACKAGE_STRING = "##PACKAGE##";
 
 enum Modes {
   CJS = "commonjs",
@@ -200,6 +201,7 @@ export class BuildScripts extends Command<
     this.pkgName = name.includes("@") ? name.split("/")[1] : name;
     this.pkgVersion = version;
     this.replacements[VERSION_STRING] = this.pkgVersion;
+    this.replacements[PACKAGE_STRING] = name;
   }
 
   patchFiles(p: string) {
@@ -314,13 +316,11 @@ export class BuildScripts extends Command<
           diagnostic.messageText,
           "\n"
         );
-        console.log(
+        log.info(
           `${diagnostic.file.fileName} (${line + 1},${character + 1}): ${message}`
         );
       } else {
-        console.log(
-          ts.flattenDiagnosticMessageText(diagnostic.messageText, "\n")
-        );
+        log.info(ts.flattenDiagnosticMessageText(diagnostic.messageText, "\n"));
       }
     });
     if (emitResult.emitSkipped) {

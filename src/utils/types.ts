@@ -1,5 +1,5 @@
 import { ChildProcessWithoutNullStreams } from "child_process";
-import { Environment } from "./environment";
+import { Environment } from "@decaf-ts/logging";
 
 /**
  * @description Defines the structure for promise resolution and rejection.
