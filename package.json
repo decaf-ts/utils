@@ -14,7 +14,7 @@
     "build-scripts": "bin/build-scripts.cjs"
   },
   "scripts": {
-    "do-install": "TOKEN=$(cat .token) npm install",
+    "do-install": "NPM_TOKEN=$(cat .npmtoken) npm install",
     "update-dependencies": "PREFIX=\"decaf-ts\"; npm ls | grep \"$PREFIX\" | awk -F/ '{print $NF}' | sed 's/@.*//' | xargs -I package npm update @\"$PREFIX\"/package",
     "update-scripts": "node ./bin/update-scripts.cjs",
     "on-first-run": "node ./bin/update-scripts.cjs --boot",
