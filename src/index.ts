@@ -29,3 +29,12 @@ export * from "./writers";
  * @memberOf module:utils
  */
 export const VERSION = "##VERSION##";
+
+/**
+ * @description Represents the current version of the module.
+ * @summary Stores the version for the @decaf-ts/utils package. The build replaces
+ * the placeholder with the actual version number at publish time.
+ * @const VERSION
+ * @memberOf module:utils
+ */
+export const PACKAGE_NAME = "##PACKAGE##";
