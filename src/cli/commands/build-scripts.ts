@@ -37,7 +37,11 @@ enum BuildMode {
   ALL = "all",
 }
 
-const Commands = ["update-scripts", "tag-release", "build-scripts"];
+enum SEPARATORS {
+  DOT = "."
+}
+
+const binSourceLocation = "/src/bin"
 
 const options = {
   prod: {
@@ -366,11 +370,15 @@ export class BuildScripts extends Command<
   }
 
   async buildCommands() {
-    for (const cmd of Commands) {
-      await this.bundle(Modes.CJS, true, true, `src/bin/${cmd}.ts`, cmd);
+    const commands: string[]  = fs.readdirSync(path.join(process.cwd() + binSourceLocation)).map((cmd) => cmd.split(SEPARATORS.DOT)[0]) 
+    for (const cmd of commands) {
+      if (!cmd.endsWith(".ts")) continue;
+
+      await this.bundle(Modes.CJS, true, true, `${binSourceLocation}/${cmd}.ts`, cmd);
       let data = readFile(`bin/${cmd}.cjs`);
       data = "#!/usr/bin/env node\n" + data;
       writeFile(`bin/${cmd}.cjs`, data);
+      fs.chmodSync(`bin/${cmd}.cjs`, "755");
     }
   }
 
