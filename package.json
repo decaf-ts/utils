@@ -9,9 +9,9 @@
   },
   "types": "lib/index.d.ts",
   "bin": {
-    "tag-release": "lib/bin/tag-release.cjs",
-    "update-scripts": "lib/bin/update-scripts.cjs",
-    "build-scripts": "lib/bin/build-scripts.cjs"
+    "tag-release": "bin/tag-release.cjs",
+    "update-scripts": "bin/update-scripts.cjs",
+    "build-scripts": "bin/build-scripts.cjs"
   },
   "scripts": {
     "do-install": "NPM_TOKEN=$(cat .npmtoken) npm install",
