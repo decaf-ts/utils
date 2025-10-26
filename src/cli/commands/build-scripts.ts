@@ -289,8 +289,6 @@ export class BuildScripts extends Command<
     logLevel: LogLevel
   ): string {
     const msg = this.formatDiagnostics(diagnostics);
-    if (!Object.values(LogLevel).includes(logLevel))
-      throw new Error(`Invalid LogLevel ${logLevel}`);
     try {
       this.log[logLevel](msg);
     } catch (e: unknown) {
@@ -358,17 +356,13 @@ export class BuildScripts extends Command<
 
       if (warnings.length) this.reportDiagnostics(warnings, LogLevel.info);
       if (errors.length) {
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        const formatted = this.reportDiagnostics(
-          diagnostics as Diagnostic[],
-          LogLevel.error
-        );
-        this.log.info(
-          `TypeScript reported ${diagnostics.length} diagnostic(s) during check; aborting.`
-        );
-        // throw new Error(
+        this.reportDiagnostics(diagnostics as Diagnostic[], LogLevel.error);
+        // this.log.info(
         //   `TypeScript reported ${diagnostics.length} diagnostic(s) during check; aborting.`
         // );
+        throw new Error(
+          `TypeScript reported ${diagnostics.length} diagnostic(s) during check; aborting.`
+        );
       }
       if (suggestions.length)
         this.reportDiagnostics(suggestions, LogLevel.info);
