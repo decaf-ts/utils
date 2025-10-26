@@ -436,11 +436,17 @@ export class BuildScripts extends Command<
     }
 
     // Always emit inline source maps from tsc (bundler will emit external maps for production bundles).
-    // Emit external source maps from TypeScript for easier debugging.
-    // Keep inline maps disabled so bundler controls final map placement.
-    tsConfig.options.inlineSourceMap = false;
-    tsConfig.options.inlineSources = false;
-    tsConfig.options.sourceMap = true;
+    // For dev builds we want TypeScript to emit inline source maps so no separate .map files are produced.
+    // For production we emit external source maps so the bundler can further transform and emit them.
+    if (isDev) {
+      tsConfig.options.inlineSourceMap = true;
+      tsConfig.options.inlineSources = true;
+      tsConfig.options.sourceMap = false;
+    } else {
+      tsConfig.options.inlineSourceMap = false;
+      tsConfig.options.inlineSources = false;
+      tsConfig.options.sourceMap = true;
+    }
 
     // For production builds we still keep TypeScript comments (removeComments=false in tsconfig)
     // Bundler/terser will strip comments for production bundles as requested.
@@ -587,11 +593,11 @@ export class BuildScripts extends Command<
           module: "esnext",
           declaration: false,
           outDir: isLib ? "bin" : "dist",
-          // Ask the TypeScript plugin to emit proper (external) source maps so
-          // Rollup can consume/transform them. We keep inlineSourceMap=false
-          // so maps are separate at the plugin stage.
-          sourceMap: true,
-          inlineSourceMap: false,
+          // For dev bundles emit inline source maps (no separate .map files).
+          // For prod bundles emit external maps so Rollup can write them to disk.
+          sourceMap: isDev ? false : true,
+          inlineSourceMap: isDev ? true : false,
+          inlineSources: isDev ? true : false,
         },
         include: ["src/**/*.ts"],
         exclude: ["node_modules", "**/*.spec.ts"],
