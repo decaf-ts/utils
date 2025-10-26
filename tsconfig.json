@@ -18,7 +18,7 @@
     // Ensure that Babel can safely transpile files in the TypeScript project
     "isolatedModules": true,
     // Source map configuration: emit inline source maps by default, do NOT emit separate .map files from tsc
-    "sourceMap": true /* Disabled to avoid conflicting separate .map output (use inlineSourceMap) */,
+    "sourceMap": true /* Disabled by default to avoid conflicting separate .map output; build scripts will enable maps as needed */,
     // "outFile": "./",                             /* Concatenate and emit output to single file. */
     "outDir": "lib" /* Redirect output structure to the directory. */,
     "rootDirs": [
@@ -67,8 +67,8 @@
     /* Source Map Options */
     // "sourceRoot": "",                            /* Specify the location where debugger should locate TypeScript files instead of source locations. */
     // "mapRoot": "",                               /* Specify the location where debugger should locate map files instead of generated locations. */
-    "inlineSourceMap": false /* Emit a single file with source maps instead of having a separate file. */,
-    "inlineSources": false /* Emit the source alongside the sourcemaps within a single file; requires '--inlineSourceMap' or '--sourceMap' to be set. */,
+    "inlineSourceMap": false /* Disabled by default; build scripts set inline source maps for tsc when required. */,
+    "inlineSources": false /* Disabled by default; build scripts enable when needed. */,
 
     /* Experimental Options */
     "experimentalDecorators": true /* Enables experimental support for ES7 decorators. */,

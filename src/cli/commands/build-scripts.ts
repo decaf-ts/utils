@@ -569,8 +569,10 @@ export class BuildScripts extends Command<
       ])
     );
 
-    // decide rollup sourcemap mode: for dev use inline sourcemap, for prod use external file
-    const rollupSourceMapInput = isDev ? true : true; // always tell plugins rollup will handle maps (plugin expects this)
+    // For plugin-typescript we want it to emit source maps (not inline) so Rollup can
+    // decide whether to inline or emit external files. The Rollup output.sourcemap
+    // controls final map placement. Do NOT set a non-standard `sourcemap` field on
+    // the rollup input options (Rollup will reject it).
     const rollupSourceMapOutput: false | true | "inline" | "hidden" = isDev
       ? "inline"
       : true;
@@ -581,7 +583,10 @@ export class BuildScripts extends Command<
           module: "esnext",
           declaration: false,
           outDir: isLib ? "bin" : "dist",
-          sourceMap: rollupSourceMapInput,
+          // Ask the TypeScript plugin to emit proper (external) source maps so
+          // Rollup can consume/transform them. We keep inlineSourceMap=false
+          // so maps are separate at the plugin stage.
+          sourceMap: true,
           inlineSourceMap: false,
         },
         include: ["src/**/*.ts"],
@@ -593,40 +598,51 @@ export class BuildScripts extends Command<
 
     // production minification
     try {
-      // @ts-ignore: optional dependency; types may not be installed in all environments
       const terserMod: any = await import("@rollup/plugin-terser");
       const terserFn =
         (terserMod && terserMod.terser) || terserMod.default || terserMod;
 
-      // base terser options
-      const baseTerserOptions: any = {
+      // Configure terser differently for dev vs prod:
+      // - Dev: strip JSDoc/comments, keep code readable (no mangle, no compress), emit inline maps
+      // - Prod: full aggressive minification + mangling, emit external source maps
+      const terserOptionsDev: any = {
+        parse: { ecma: 2020 },
+        compress: false,
+        mangle: false,
+        format: {
+          comments: false,
+          beautify: true,
+        },
+        sourceMap: false,
+      };
+
+      const terserOptionsProd: any = {
         parse: { ecma: 2020 },
         compress: {
           ecma: 2020,
-          passes: isDev ? 1 : 3,
-          drop_console: !isDev,
-          drop_debugger: !isDev,
+          passes: 5,
+          drop_console: true,
+          drop_debugger: true,
           toplevel: true,
           module: isEsm,
-          unsafe: !isDev,
-          unsafe_arrows: !isDev,
-          unsafe_comps: !isDev,
-          collapse_vars: !isDev,
-          reduce_funcs: !isDev,
-          reduce_vars: !isDev,
+          unsafe: true,
+          unsafe_arrows: true,
+          unsafe_comps: true,
+          collapse_vars: true,
+          reduce_funcs: true,
+          reduce_vars: true,
         },
         mangle: {
-          toplevel: !isDev,
+          toplevel: true,
         },
         format: {
-          comments: isDev ? false : false, // always strip comments from final bundle
+          comments: false,
           ascii_only: true,
         },
         toplevel: true,
       };
 
-      // in dev we still want to strip JSDoc/comments but avoid aggressive mangling
-      plugins.push(terserFn(baseTerserOptions));
+      plugins.push(terserFn(isDev ? terserOptionsDev : terserOptionsProd));
     } catch {
       // if terser isn't available, ignore
     }
@@ -647,12 +663,7 @@ export class BuildScripts extends Command<
       input: entryFile,
       plugins: plugins,
       external: ext,
-      // ensure rollup knows to generate sourcemaps for plugins that need it
-      // plugin-typescript requires this option to be set when it generates maps
-      // set to true so plugin will create source maps; output options control inline vs external
       onwarn: undefined,
-      // inform rollup/plugins that sourcemaps should be generated
-      sourcemap: rollupSourceMapInput,
       // enable tree-shaking for production bundles
       treeshake: !isDev,
     } as any;
