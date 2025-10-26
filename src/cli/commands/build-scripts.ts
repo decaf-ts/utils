@@ -510,7 +510,7 @@ export class BuildScripts extends Command<
     if (!isDev) {
       // terser is optional at runtime; import lazily inside bundle to avoid test-time resolution errors
       try {
-        const terserMod: any = await import("rollup-plugin-terser");
+        const terserMod: any = await import("@rollup/plugin-terser");
         const terserFn =
           (terserMod && terserMod.terser) || terserMod.default || terserMod;
         plugins.push(terserFn());
