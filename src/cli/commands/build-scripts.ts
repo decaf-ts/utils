@@ -530,6 +530,7 @@ export class BuildScripts extends Command<
     await this.checkTsDiagnostics(isDev, mode, true);
     const isEsm = mode === Modes.ESM;
     const pkgName = this.pkgName;
+    const log = this.log;
 
     // normalize include and externals
     const include = Array.from(
@@ -696,7 +697,8 @@ export class BuildScripts extends Command<
 
     try {
       const bundle = await rollup(input as any);
-      console.log(bundle.watchFiles);
+      // only log watchFiles at verbose level to avoid noisy console output
+      log.verbose(bundle.watchFiles);
       async function generateOutputs(bundle: RollupBuild) {
         for (const outputOptions of outputs) {
           await bundle.write(outputOptions);
