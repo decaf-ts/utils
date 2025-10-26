@@ -13,12 +13,13 @@
     "checkJs": true /* Report errors in .js files. */,
     // "jsx": "preserve",                           /* Specify JSX code generation: 'preserve', 'react-native', 'react', 'react-jsx' or 'react-jsxdev'. */
     "declaration": true /* Generates corresponding '.d.ts' file. */,
-    "declarationMap": false /* Generates a sourcemap for each corresponding '.d.ts' file. */,
+    "declarationMap": false /* Keep declarationMap disabled by default; builds may enable it when needed. */,
     "emitDeclarationOnly": false,
     // Ensure that Babel can safely transpile files in the TypeScript project
     "isolatedModules": true,
-    // Source map configuration: emit inline source maps by default, do NOT emit separate .map files from tsc
-    "sourceMap": true /* Disabled by default to avoid conflicting separate .map output; build scripts will enable maps as needed */,
+    // Source map configuration: enable source maps by default so debugging works in editors/tests.
+    // Build scripts will override to emit inline or external maps as needed.
+    "sourceMap": true /* MUST be enabled to allow debugging of code and tests */,
     // "outFile": "./",                             /* Concatenate and emit output to single file. */
     "outDir": "lib" /* Redirect output structure to the directory. */,
     "rootDirs": [
@@ -67,8 +68,8 @@
     /* Source Map Options */
     // "sourceRoot": "",                            /* Specify the location where debugger should locate TypeScript files instead of source locations. */
     // "mapRoot": "",                               /* Specify the location where debugger should locate map files instead of generated locations. */
-    "inlineSourceMap": false /* Disabled by default; build scripts set inline source maps for tsc when required. */,
-    "inlineSources": false /* Disabled by default; build scripts enable when needed. */,
+    "inlineSourceMap": false /* Must stay false so TypeScript emits external maps by default; bundlers/build scripts control inlining. */,
+    "inlineSources": false /* Avoid inlined sources by default; bundlers can enable when necessary. */,
 
     /* Experimental Options */
     "experimentalDecorators": true /* Enables experimental support for ES7 decorators. */,

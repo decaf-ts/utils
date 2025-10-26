@@ -399,9 +399,11 @@ export class BuildScripts extends Command<
 
     // Ensure TypeScript emits inline source maps for both dev and prod (bundlers will control external maps)
     // Keep comments in TS emit by default; bundling/minification will handle removal where requested.
-    tsConfig.options.inlineSourceMap = true;
-    tsConfig.options.inlineSources = true;
-    tsConfig.options.sourceMap = false;
+    // Emit external source maps from TypeScript so editors/debuggers can find them.
+    // Turn off inline maps/sources so bundlers (Rollup) can control whether maps are inlined or written externally.
+    tsConfig.options.inlineSourceMap = false;
+    tsConfig.options.inlineSources = false;
+    tsConfig.options.sourceMap = true;
 
     const program = ts.createProgram(tsConfig.fileNames, tsConfig.options);
     this.preCheckDiagnostics(program);
@@ -434,9 +436,11 @@ export class BuildScripts extends Command<
     }
 
     // Always emit inline source maps from tsc (bundler will emit external maps for production bundles).
-    tsConfig.options.inlineSourceMap = true;
-    tsConfig.options.inlineSources = true;
-    tsConfig.options.sourceMap = false;
+    // Emit external source maps from TypeScript for easier debugging.
+    // Keep inline maps disabled so bundler controls final map placement.
+    tsConfig.options.inlineSourceMap = false;
+    tsConfig.options.inlineSources = false;
+    tsConfig.options.sourceMap = true;
 
     // For production builds we still keep TypeScript comments (removeComments=false in tsconfig)
     // Bundler/terser will strip comments for production bundles as requested.
@@ -596,15 +600,24 @@ export class BuildScripts extends Command<
       json(),
     ];
 
-    // production minification
+    if (isLib) {
+      plugins.push(
+        commonjs({
+          include: [],
+          exclude: externalsList,
+        }),
+        nodeResolve({
+          resolveOnly: include,
+        })
+      );
+    }
+
+    // production minification: add terser last so it sees prior source maps
     try {
       const terserMod: any = await import("@rollup/plugin-terser");
       const terserFn =
         (terserMod && terserMod.terser) || terserMod.default || terserMod;
 
-      // Configure terser differently for dev vs prod:
-      // - Dev: strip JSDoc/comments, keep code readable (no mangle, no compress), emit inline maps
-      // - Prod: full aggressive minification + mangling, emit external source maps
       const terserOptionsDev: any = {
         parse: { ecma: 2020 },
         compress: false,
@@ -613,7 +626,6 @@ export class BuildScripts extends Command<
           comments: false,
           beautify: true,
         },
-        sourceMap: false,
       };
 
       const terserOptionsProd: any = {
@@ -645,18 +657,6 @@ export class BuildScripts extends Command<
       plugins.push(terserFn(isDev ? terserOptionsDev : terserOptionsProd));
     } catch {
       // if terser isn't available, ignore
-    }
-
-    if (isLib) {
-      plugins.push(
-        commonjs({
-          include: [],
-          exclude: externalsList,
-        }),
-        nodeResolve({
-          resolveOnly: include,
-        })
-      );
     }
 
     const input: InputOptions = {
