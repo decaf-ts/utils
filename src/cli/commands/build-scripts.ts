@@ -19,6 +19,10 @@ import { nodeResolve } from "@rollup/plugin-node-resolve";
 import json from "@rollup/plugin-json";
 import { builtinModules } from "module";
 import { LoggingConfig, LogLevel } from "@decaf-ts/logging";
+
+// declare optional terser module to satisfy TypeScript when types aren't installed
+declare module "@rollup/plugin-terser";
+
 import * as ts from "typescript";
 import { Diagnostic, EmitResult, ModuleKind, SourceFile } from "typescript";
 
@@ -592,10 +596,44 @@ export class BuildScripts extends Command<
     if (!isDev) {
       // terser is optional at runtime; import lazily inside bundle to avoid test-time resolution errors
       try {
+        // @ts-ignore: optional dependency; types may not be installed in all environments
         const terserMod: any = await import("@rollup/plugin-terser");
         const terserFn =
           (terserMod && terserMod.terser) || terserMod.default || terserMod;
-        plugins.push(terserFn());
+        // aggressive terser options for production builds
+        const terserOptions = {
+          parse: { ecma: 2020 },
+          compress: {
+            ecma: 2020,
+            passes: 3,
+            drop_console: true,
+            drop_debugger: true,
+            pure_funcs: [
+              "console.info",
+              "console.debug",
+              "console.warn",
+              "console.log",
+            ],
+            toplevel: true,
+            module: isEsm,
+            unsafe: true,
+            unsafe_arrows: true,
+            unsafe_comps: true,
+            collapse_vars: true,
+            reduce_funcs: true,
+            reduce_vars: true,
+          },
+          mangle: {
+            toplevel: true,
+          },
+          format: {
+            comments: false, // remove all comments
+            ascii_only: true,
+          },
+          toplevel: true,
+        };
+
+        plugins.push(terserFn(terserOptions));
       } catch {
         // if terser isn't available, ignore
       }
