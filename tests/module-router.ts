@@ -1,15 +1,15 @@
 import fs from "node:fs";
 import path from "node:path";
 
-export type WorkspaceModule = typeof import("../src");
+export type ModuleRouter = typeof import("../src");
 
 export const WorkspaceTargetEnvKey = "TEST_TARGET";
 
-export type WorkspaceTarget = "src" | "lib" | "dist";
+export type ModuleTarget = "src" | "lib" | "dist";
 
-const DEFAULT_TARGET: WorkspaceTarget = "src";
+const DEFAULT_TARGET: ModuleTarget = "src";
 
-const TARGET_SPECIFIERS: Record<WorkspaceTarget, string> = {
+const TARGET_SPECIFIERS: Record<ModuleTarget, string> = {
   src: "../src",
   lib: "../lib/index.cjs",
   dist: "../dist/ts-workspace.cjs",
@@ -21,7 +21,7 @@ function normalizeImport<T>(importPromise: Promise<T>): Promise<T> {
 
 function ensureTargetAvailable(
   resolvedPath: string,
-  target: WorkspaceTarget
+  target: ModuleTarget
 ): void {
   if (!fs.existsSync(resolvedPath))
     throw new Error(
@@ -30,7 +30,7 @@ function ensureTargetAvailable(
     );
 }
 
-export function getWorkspaceTarget(): WorkspaceTarget {
+export function getWorkspaceTarget(): ModuleTarget {
   const rawTarget = process.env[WorkspaceTargetEnvKey];
   if (!rawTarget) return DEFAULT_TARGET;
 
@@ -43,12 +43,12 @@ export function getWorkspaceTarget(): WorkspaceTarget {
   );
 }
 
-export async function loadWorkspaceModule(): Promise<WorkspaceModule> {
+export async function loadWorkspaceModule(): Promise<ModuleRouter> {
   const target = getWorkspaceTarget();
   const specifier = TARGET_SPECIFIERS[target];
   const resolved = path.resolve(__dirname, specifier);
   ensureTargetAvailable(resolved, target);
 
   const loaded = await normalizeImport(import(specifier));
-  return loaded as WorkspaceModule;
+  return loaded as ModuleRouter;
 }
