@@ -1,11 +1,10 @@
-import { BuildScripts } from "../src/cli/commands/build-scripts";
 import { jest } from "@jest/globals";
 
 // We'll mock rollup to capture the input options used by the bundle method and the outputs
 let capturedInput: any = null;
 const capturedOutputs: any[] = [];
 
-import { getPackage } from "../src";
+import { BuildScripts, getPackage } from "../../src";
 
 function knownDeps() {
   const pkg: any = getPackage();
