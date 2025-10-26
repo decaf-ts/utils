@@ -22,7 +22,7 @@
     "flash-forward": "npx npm-check-updates -u && npm run do-install",
     "reset": "rm -rf * && git checkout . && git pull && npm run do-install",
     "add:shebang": "sed -i -e '1i#!/usr/bin/env node\\' ./lib/bin/*.cjs",
-    "build": "tsx ./src/bin/build-scripts.ts  --dev && npm run add:shebang",
+    "build": "tsx ./src/bin/build-scripts.ts --dev && npm run add:shebang",
     "build:prod": "tsx ./src/bin/build-scripts.ts --prod && npm run add:shebang",
     "test": "jest --runInBand --detectOpenHandles",
     "test:unit": "jest --testPathPattern=\"/tests/unit\" --passWithNoTests --detectOpenHandles",

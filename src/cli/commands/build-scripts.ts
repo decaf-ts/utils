@@ -18,7 +18,7 @@ import commonjs from "@rollup/plugin-commonjs";
 import { nodeResolve } from "@rollup/plugin-node-resolve";
 import json from "@rollup/plugin-json";
 import { builtinModules } from "module";
-import { LoggingConfig } from "@decaf-ts/logging";
+import { LoggingConfig, LogLevel } from "@decaf-ts/logging";
 import * as ts from "typescript";
 import { Diagnostic, EmitResult, ModuleKind, SourceFile } from "typescript";
 
@@ -280,18 +280,30 @@ export class BuildScripts extends Command<
     log.verbose(`Module ${name} ${version} patched in ${p}...`);
   }
 
-  private reportDiagnostics(diagnostics: Diagnostic[]): void {
-    diagnostics.forEach((diagnostic) => {
-      let message = "Error";
-      if (diagnostic.file && diagnostic.start) {
-        const { line, character } =
-          diagnostic.file.getLineAndCharacterOfPosition(diagnostic.start);
-        message += ` ${diagnostic.file.fileName} (${line + 1},${character + 1})`;
-      }
-      message +=
-        ": " + ts.flattenDiagnosticMessageText(diagnostic.messageText, "\n");
-      console.log(message);
-    });
+  private reportDiagnostics(
+    diagnostics: Diagnostic[],
+    level: LogLevel = LogLevel.error
+  ): string {
+    const log = this.log;
+    const message = this.formatDiagnostics(diagnostics);
+    log[level](message);
+    return message;
+  }
+  // Format diagnostics into a single string for throwing or logging
+  private formatDiagnostics(diagnostics: Diagnostic[]): string {
+    return diagnostics
+      .map((diagnostic) => {
+        let message = "";
+        if (diagnostic.file && diagnostic.start) {
+          const { line, character } =
+            diagnostic.file.getLineAndCharacterOfPosition(diagnostic.start);
+          message += `${diagnostic.file.fileName} (${line + 1},${character + 1})`;
+        }
+        message +=
+          ": " + ts.flattenDiagnosticMessageText(diagnostic.messageText, "\n");
+        return message;
+      })
+      .join("\n");
   }
 
   private readConfigFile(configFileName: string) {
@@ -317,6 +329,76 @@ export class BuildScripts extends Command<
       throw new Error("Failed to parse tsconfig.json");
     }
     return configParseResult;
+  }
+
+  // Create a TypeScript program for the current tsconfig and fail if there are any error diagnostics.
+  private async checkTsDiagnostics(
+    isDev: boolean,
+    mode: Modes,
+    bundle = false
+  ) {
+    const log = this.log.for(this.checkTsDiagnostics);
+    let tsConfig;
+    try {
+      tsConfig = this.readConfigFile("./tsconfig.json");
+    } catch (e: unknown) {
+      throw new Error(`Failed to parse tsconfig.json: ${e}`);
+    }
+
+    if (bundle) {
+      tsConfig.options.module = ModuleKind.AMD;
+      tsConfig.options.outDir = "dist";
+      tsConfig.options.isolatedModules = false;
+      tsConfig.options.outFile = this.pkgName;
+    } else {
+      tsConfig.options.outDir = `lib${mode === Modes.ESM ? "/esm" : ""}`;
+      tsConfig.options.module =
+        mode === Modes.ESM ? ModuleKind.ES2022 : ModuleKind.CommonJS;
+    }
+
+    if (isDev) {
+      tsConfig.options.inlineSourceMap = true;
+      tsConfig.options.sourceMap = false;
+    } else {
+      tsConfig.options.sourceMap = false;
+    }
+
+    const program = ts.createProgram(tsConfig.fileNames, tsConfig.options);
+
+    const diagnostics = ts.getPreEmitDiagnostics(program);
+    if (diagnostics && diagnostics.length > 0) {
+      const errors = diagnostics.filter(
+        (d) => d.category === ts.DiagnosticCategory.Error
+      );
+      const warnings = diagnostics.filter(
+        (d) => d.category === ts.DiagnosticCategory.Warning
+      );
+      const info = diagnostics.filter(
+        (d) => d.category === ts.DiagnosticCategory.Message
+      );
+      const suggestions = diagnostics.filter(
+        (d) => d.category === ts.DiagnosticCategory.Suggestion
+      );
+
+      if (warnings.length) this.reportDiagnostics(warnings, LogLevel.warn);
+      if (errors.length) {
+        // Log diagnostics to console
+        const formatted = this.reportDiagnostics(
+          diagnostics as Diagnostic[],
+          LogLevel.info
+        );
+        throw new Error(
+          `TypeScript reported ${diagnostics.length} diagnostic(s) during check; aborting.\n${formatted}`
+        );
+      }
+      if (info.length) this.reportDiagnostics(warnings, LogLevel.info);
+
+      if (suggestions.length)
+        this.reportDiagnostics(warnings, LogLevel.verbose);
+    }
+    log.verbose(
+      `TypeScript checks passed (${bundle ? "bundle" : "normal"} mode).`
+    );
   }
 
   private async buildTs(isDev: boolean, mode: Modes, bundle = false) {
@@ -370,6 +452,17 @@ export class BuildScripts extends Command<
       .getPreEmitDiagnostics(program)
       .concat(emitResult.diagnostics);
 
+    // If there are any diagnostics, report them and fail the build when any are errors.
+    if (allDiagnostics && allDiagnostics.length > 0) {
+      // Log diagnostics to console
+      this.reportDiagnostics(allDiagnostics as Diagnostic[]);
+      const formatted = this.formatDiagnostics(allDiagnostics as Diagnostic[]);
+      throw new Error(
+        `TypeScript reported ${allDiagnostics.length} diagnostic(s); aborting build.\n${formatted}`
+      );
+    }
+
+    // Log non-error diagnostics (if any) for visibility. Note: errors already cause a throw above.
     allDiagnostics.forEach((diagnostic) => {
       if (diagnostic.file) {
         const { line, character } =
@@ -385,8 +478,9 @@ export class BuildScripts extends Command<
         log.info(ts.flattenDiagnosticMessageText(diagnostic.messageText, "\n"));
       }
     });
+
     if (emitResult.emitSkipped) {
-      throw new Error("Build failed");
+      throw new Error("Build failed: emit skipped.");
     }
   }
 
@@ -441,6 +535,8 @@ export class BuildScripts extends Command<
       "@decaf-ts/logging",
     ]
   ) {
+    // Run a TypeScript-only diagnostic check for the bundling configuration and fail fast on any errors.
+    await this.checkTsDiagnostics(isDev, mode, true);
     const isEsm = mode === Modes.ESM;
     const pkgName = this.pkgName;
 
@@ -593,36 +689,40 @@ export class BuildScripts extends Command<
     fs.mkdirSync("lib");
     fs.mkdirSync("dist");
 
-    if ([BuildMode.ALL, BuildMode.BUILD].includes(mode)) {
-      await this.build(isDev, Modes.ESM);
-      await this.build(isDev, Modes.CJS);
-      this.patchFiles("lib");
-    }
+    try {
+      if ([BuildMode.ALL, BuildMode.BUILD].includes(mode)) {
+        await this.build(isDev, Modes.ESM);
+        await this.build(isDev, Modes.CJS);
+        this.patchFiles("lib");
+      }
 
-    if ([BuildMode.ALL, BuildMode.BUNDLE].includes(mode)) {
-      await this.bundle(
-        Modes.ESM,
-        isDev,
-        false,
-        "src/index.ts",
-        this.pkgName,
-        externalsArg,
-        includesArg
-      );
-      await this.bundle(
-        Modes.CJS,
-        isDev,
-        false,
-        "src/index.ts",
-        this.pkgName,
-        externalsArg,
-        includesArg
-      );
-      this.patchFiles("dist");
-    }
+      if ([BuildMode.ALL, BuildMode.BUNDLE].includes(mode)) {
+        await this.bundle(
+          Modes.ESM,
+          isDev,
+          false,
+          "src/index.ts",
+          this.pkgName,
+          externalsArg,
+          includesArg
+        );
+        await this.bundle(
+          Modes.CJS,
+          isDev,
+          false,
+          "src/index.ts",
+          this.pkgName,
+          externalsArg,
+          includesArg
+        );
+        this.patchFiles("dist");
+      }
 
-    this.copyAssets(Modes.CJS);
-    this.copyAssets(Modes.ESM);
+      this.copyAssets(Modes.CJS);
+      this.copyAssets(Modes.ESM);
+    } catch (e: unknown) {
+      throw e;
+    }
   }
 
   async buildDev(
@@ -681,14 +781,22 @@ export class BuildScripts extends Command<
   ): Promise<string | void | R> {
     const { dev, prod, docs, buildMode, includes, externals } = answers as any;
 
-    if (dev) {
-      return await this.buildDev(buildMode as BuildMode, includes, externals);
-    }
-    if (prod) {
-      return await this.buildProd(buildMode as BuildMode, includes, externals);
-    }
-    if (docs) {
-      return await this.buildDocs();
+    try {
+      if (dev) {
+        return await this.buildDev(buildMode as BuildMode, includes, externals);
+      }
+      if (prod) {
+        return await this.buildProd(
+          buildMode as BuildMode,
+          includes,
+          externals
+        );
+      }
+      if (docs) {
+        return await this.buildDocs();
+      }
+    } catch (e: unknown) {
+      throw e;
     }
   }
 }
