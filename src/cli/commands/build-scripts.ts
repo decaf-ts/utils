@@ -17,6 +17,7 @@ import typescript from "@rollup/plugin-typescript";
 import commonjs from "@rollup/plugin-commonjs";
 import { nodeResolve } from "@rollup/plugin-node-resolve";
 import json from "@rollup/plugin-json";
+import { builtinModules } from "module";
 import { LoggingConfig } from "@decaf-ts/logging";
 import * as ts from "typescript";
 import { Diagnostic, EmitResult, ModuleKind, SourceFile } from "typescript";
@@ -456,20 +457,37 @@ export class BuildScripts extends Command<
     const ext = Array.from(
       new Set([
         // builtins and always external runtime deps
-        ...[
-          "fs",
-          "path",
-          "process",
-          "rollup",
-          "@rollup/plugin-typescript",
-          "@rollup/plugin-json",
-          "@rollup/plugin-commonjs",
-          "@rollup/plugin-node-resolve",
-          "child_process",
-          "tslib",
-          "util",
-          "https",
-        ],
+        ...(function builtinList(): string[] {
+          try {
+            return (
+              Array.isArray(builtinModules) ? builtinModules : []
+            ) as string[];
+          } catch {
+            // fallback to a reasonable subset if `builtinModules` is unavailable
+            return [
+              "fs",
+              "path",
+              "process",
+              "child_process",
+              "util",
+              "https",
+              "http",
+              "os",
+              "stream",
+              "crypto",
+              "zlib",
+              "net",
+              "tls",
+              "url",
+              "querystring",
+              "assert",
+              "events",
+              "tty",
+              "dns",
+              "querystring",
+            ];
+          }
+        })(),
         ...externalsList,
       ])
     );
@@ -521,7 +539,8 @@ export class BuildScripts extends Command<
 
     // prepare output globals mapping for externals
     const globals: Record<string, string> = {};
-    externalsList.forEach((e) => {
+    // include all externals and builtins (ext) so Rollup won't guess names for builtins
+    ext.forEach((e) => {
       globals[e] = packageToGlobal(e);
     });
 
