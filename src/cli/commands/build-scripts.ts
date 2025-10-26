@@ -280,15 +280,27 @@ export class BuildScripts extends Command<
     log.verbose(`Module ${name} ${version} patched in ${p}...`);
   }
 
-  private reportDiagnostics(
-    diagnostics: Diagnostic[],
-    level: LogLevel = LogLevel.error
-  ): string {
-    const log = this.log;
-    const message = this.formatDiagnostics(diagnostics);
-    log[level](message);
-    return message;
+  private reportDiagnostics(diagnostics: Diagnostic[]): void {
+    diagnostics.forEach((diagnostic) => {
+      let message = "Error";
+      if (diagnostic.file && diagnostic.start) {
+        const { line, character } =
+          diagnostic.file.getLineAndCharacterOfPosition(diagnostic.start);
+        message += ` ${diagnostic.file.fileName} (${line + 1},${character + 1})`;
+      }
+      message +=
+        ": " + ts.flattenDiagnosticMessageText(diagnostic.messageText, "\n");
+      // use the class logger so logs are consistent and can be suppressed upstream
+      try {
+        this.log.error(message);
+      } catch {
+        // fallback to console if logging fails for some reason
+
+        console.error(message);
+      }
+    });
   }
+
   // Format diagnostics into a single string for throwing or logging
   private formatDiagnostics(diagnostics: Diagnostic[]): string {
     return diagnostics
@@ -367,34 +379,14 @@ export class BuildScripts extends Command<
 
     const diagnostics = ts.getPreEmitDiagnostics(program);
     if (diagnostics && diagnostics.length > 0) {
-      const errors = diagnostics.filter(
-        (d) => d.category === ts.DiagnosticCategory.Error
+      // Log diagnostics to console
+      this.reportDiagnostics(diagnostics as Diagnostic[]);
+      const formatted = this.formatDiagnostics(diagnostics as Diagnostic[]);
+      const err = new Error(
+        `TypeScript reported ${diagnostics.length} diagnostic(s) during check; aborting.\n${formatted}`
       );
-      const warnings = diagnostics.filter(
-        (d) => d.category === ts.DiagnosticCategory.Warning
-      );
-      const info = diagnostics.filter(
-        (d) => d.category === ts.DiagnosticCategory.Message
-      );
-      const suggestions = diagnostics.filter(
-        (d) => d.category === ts.DiagnosticCategory.Suggestion
-      );
-
-      if (warnings.length) this.reportDiagnostics(warnings, LogLevel.warn);
-      if (errors.length) {
-        // Log diagnostics to console
-        const formatted = this.reportDiagnostics(
-          diagnostics as Diagnostic[],
-          LogLevel.info
-        );
-        throw new Error(
-          `TypeScript reported ${diagnostics.length} diagnostic(s) during check; aborting.\n${formatted}`
-        );
-      }
-      if (info.length) this.reportDiagnostics(warnings, LogLevel.info);
-
-      if (suggestions.length)
-        this.reportDiagnostics(warnings, LogLevel.verbose);
+      (err as any).logged = true;
+      throw err;
     }
     log.verbose(
       `TypeScript checks passed (${bundle ? "bundle" : "normal"} mode).`
@@ -457,31 +449,14 @@ export class BuildScripts extends Command<
       // Log diagnostics to console
       this.reportDiagnostics(allDiagnostics as Diagnostic[]);
       const formatted = this.formatDiagnostics(allDiagnostics as Diagnostic[]);
-      throw new Error(
+      const err = new Error(
         `TypeScript reported ${allDiagnostics.length} diagnostic(s); aborting build.\n${formatted}`
       );
+      (err as any).logged = true;
+      throw err;
     }
 
-    // Log non-error diagnostics (if any) for visibility. Note: errors already cause a throw above.
-    allDiagnostics.forEach((diagnostic) => {
-      if (diagnostic.file) {
-        const { line, character } =
-          diagnostic.file.getLineAndCharacterOfPosition(diagnostic.start!);
-        const message = ts.flattenDiagnosticMessageText(
-          diagnostic.messageText,
-          "\n"
-        );
-        log.info(
-          `${diagnostic.file.fileName} (${line + 1},${character + 1}): ${message}`
-        );
-      } else {
-        log.info(ts.flattenDiagnosticMessageText(diagnostic.messageText, "\n"));
-      }
-    });
-
-    if (emitResult.emitSkipped) {
-      throw new Error("Build failed: emit skipped.");
-    }
+    // Note: diagnostics were already logged via `reportDiagnostics` above and we threw.
   }
 
   private async build(isDev: boolean, mode: Modes, bundle = false) {
