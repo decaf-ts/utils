@@ -354,7 +354,7 @@ export class BuildScripts extends Command<
       );
       // Log diagnostics to console
 
-      if (warnings.length) this.reportDiagnostics(warnings, LogLevel.info);
+      if (warnings.length) this.reportDiagnostics(warnings, LogLevel.warn);
       if (errors.length) {
         this.reportDiagnostics(diagnostics as Diagnostic[], LogLevel.error);
         throw new Error(
