@@ -58,6 +58,7 @@ export function getPackageDependencies(): string[] {
     const hasDeps =
       pkg &&
       (Object.keys(pkg.dependencies || {}).length > 0 ||
+        Object.keys(pkg.devDependencies || {}).length > 0 ||
         Object.keys(pkg.peerDependencies || {}).length > 0);
     if (!hasDeps) {
       const fallbackDir = path.resolve(__dirname, "../../..");
@@ -73,7 +74,8 @@ export function getPackageDependencies(): string[] {
 
   const deps = Object.keys((pkg && pkg.dependencies) || {});
   const peer = Object.keys((pkg && pkg.peerDependencies) || {});
-  return Array.from(new Set([...deps, ...peer]));
+  const dev = Object.keys((pkg && pkg.devDependencies) || {});
+  return Array.from(new Set([...deps, ...peer, ...dev]));
 }
 
 const VERSION_STRING = "##VERSION##";
