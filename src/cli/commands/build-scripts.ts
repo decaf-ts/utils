@@ -357,9 +357,6 @@ export class BuildScripts extends Command<
       if (warnings.length) this.reportDiagnostics(warnings, LogLevel.info);
       if (errors.length) {
         this.reportDiagnostics(diagnostics as Diagnostic[], LogLevel.error);
-        // this.log.info(
-        //   `TypeScript reported ${diagnostics.length} diagnostic(s) during check; aborting.`
-        // );
         throw new Error(
           `TypeScript reported ${diagnostics.length} diagnostic(s) during check; aborting.`
         );
