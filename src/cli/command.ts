@@ -174,14 +174,6 @@ export abstract class Command<I, R> extends LoggedClass {
     try {
       result = await this.run(env as any);
     } catch (e: unknown) {
-      // If the error was already logged by inner code, don't log it again here.
-      try {
-        if (!(e as any)?.logged) {
-          this.log.error(`Error while running provided cli function: ${e}`);
-        }
-      } catch {
-        // ignore logging failures
-      }
       throw e;
     }
 

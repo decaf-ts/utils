@@ -354,7 +354,7 @@ export class BuildScripts extends Command<
           LogLevel.error
         );
         throw new Error(
-          `TypeScript reported ${diagnostics.length} diagnostic(s) during check; aborting.\n${formatted}`
+          `TypeScript reported ${diagnostics.length} diagnostic(s) during check; aborting.`
         );
       }
       if (suggestions.length)
@@ -753,23 +753,14 @@ export class BuildScripts extends Command<
       typeof DefaultCommandValues & { [k in keyof typeof options]: unknown }
   ): Promise<string | void | R> {
     const { dev, prod, docs, buildMode, includes, externals } = answers as any;
-
-    try {
-      if (dev) {
-        return await this.buildDev(buildMode as BuildMode, includes, externals);
-      }
-      if (prod) {
-        return await this.buildProd(
-          buildMode as BuildMode,
-          includes,
-          externals
-        );
-      }
-      if (docs) {
-        return await this.buildDocs();
-      }
-    } catch (e: unknown) {
-      throw e;
+    if (dev) {
+      return await this.buildDev(buildMode as BuildMode, includes, externals);
+    }
+    if (prod) {
+      return await this.buildProd(buildMode as BuildMode, includes, externals);
+    }
+    if (docs) {
+      return await this.buildDocs();
     }
   }
 }
