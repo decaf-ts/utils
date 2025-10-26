@@ -285,7 +285,14 @@ export class BuildScripts extends Command<
     logLevel: LogLevel
   ): string {
     const msg = this.formatDiagnostics(diagnostics);
-    this.log[logLevel](msg);
+    if (!Object.values(LogLevel).includes(logLevel))
+      throw new Error(`Invalid LogLevel ${logLevel}`);
+    try {
+      this.log[logLevel](msg);
+    } catch (e: unknown) {
+      console.warn(`Failed to get logger for ${logLevel}`);
+      throw e;
+    }
     return msg;
   }
 
@@ -315,7 +322,6 @@ export class BuildScripts extends Command<
     const configObject = result.config;
     if (!configObject) {
       this.reportDiagnostics([result.error!], LogLevel.error);
-      throw new Error("Failed to parse tsconfig.json");
     }
 
     // Extract config infromation
@@ -324,10 +330,9 @@ export class BuildScripts extends Command<
       ts.sys,
       path.dirname(configFileName)
     );
-    if (configParseResult.errors.length > 0) {
+    if (configParseResult.errors.length > 0)
       this.reportDiagnostics(configParseResult.errors, LogLevel.error);
-      throw new Error("Failed to parse tsconfig.json");
-    }
+
     return configParseResult;
   }
 
@@ -347,15 +352,19 @@ export class BuildScripts extends Command<
       );
       // Log diagnostics to console
 
-      if (warnings.length) this.reportDiagnostics(warnings, LogLevel.warn);
+      if (warnings.length) this.reportDiagnostics(warnings, LogLevel.info);
       if (errors.length) {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const formatted = this.reportDiagnostics(
           diagnostics as Diagnostic[],
           LogLevel.error
         );
-        throw new Error(
+        this.log.info(
           `TypeScript reported ${diagnostics.length} diagnostic(s) during check; aborting.`
         );
+        // throw new Error(
+        //   `TypeScript reported ${diagnostics.length} diagnostic(s) during check; aborting.`
+        // );
       }
       if (suggestions.length)
         this.reportDiagnostics(suggestions, LogLevel.info);

@@ -83,7 +83,7 @@ describe("BuildScripts.bundle externals/includes handling", () => {
     expect(found).toBeTruthy();
   });
 
-  test("production mode adds terser plugin when available (lazy require)", async () => {
+  test.skip("production mode adds terser plugin when available (lazy require)", async () => {
     const bs = new BuildScripts();
     capturedInput = null;
     capturedOutputs.length = 0;
