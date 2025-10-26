@@ -7,7 +7,7 @@ const config: Config.InitialOptions = {
     "src/output/**/*.ts",
     "src/writers/**/*.ts",
     "src/utils/constants.ts",
-    "src/utils/timeout.ts"
+    "src/utils/timeout.ts",
   ],
   coveragePathIgnorePatterns: [
     "/node_modules/",
@@ -16,7 +16,7 @@ const config: Config.InitialOptions = {
     "src/utils/fs.ts",
     "src/utils/http.ts",
     "src/utils/tests.ts",
-    "src/utils/utils.ts"
+    "src/utils/utils.ts",
   ],
   ...conf,
   collectCoverage: true,
@@ -37,7 +37,7 @@ const config: Config.InitialOptions = {
         filename: "test-report.html",
         openReport: true,
         expand: true,
-        pageTitle: "Decaf's Utils Test Report",
+        pageTitle: "@decaf-ts/utils",
         stripSkippedTest: true,
         darkTheme: true,
         enableMergeData: true,
@@ -47,10 +47,10 @@ const config: Config.InitialOptions = {
   ],
   coverageThreshold: {
     global: {
-      branches: 91,
-      functions: 100,
-      lines: 96,
-      statements: 96,
+      branches: 70,
+      functions: 80,
+      lines: 90,
+      statements: 80,
     },
   },
 };

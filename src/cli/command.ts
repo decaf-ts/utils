@@ -171,6 +171,7 @@ export abstract class Command<I, R> extends LoggedClass {
       );
 
     let result;
+    // eslint-disable-next-line no-useless-catch
     try {
       result = await this.run(env as any);
     } catch (e: unknown) {
