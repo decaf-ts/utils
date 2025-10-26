@@ -99,7 +99,7 @@ describe("BuildScripts.bundle externals/includes handling", () => {
         const s = String(p);
         if (s && s.toLowerCase().includes("terser")) return true;
       } catch (e) {
-        // ignore
+        console.error(e);
       }
       return false;
     });
