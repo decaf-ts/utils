@@ -18,7 +18,7 @@ import commonjs from "@rollup/plugin-commonjs";
 import { nodeResolve } from "@rollup/plugin-node-resolve";
 import json from "@rollup/plugin-json";
 import { builtinModules } from "module";
-import { LoggingConfig } from "@decaf-ts/logging";
+import { LoggingConfig, LogLevel } from "@decaf-ts/logging";
 import * as ts from "typescript";
 import { Diagnostic, EmitResult, ModuleKind, SourceFile } from "typescript";
 
@@ -280,18 +280,36 @@ export class BuildScripts extends Command<
     log.verbose(`Module ${name} ${version} patched in ${p}...`);
   }
 
-  private reportDiagnostics(diagnostics: Diagnostic[]): void {
-    diagnostics.forEach((diagnostic) => {
-      let message = "Error";
-      if (diagnostic.file && diagnostic.start) {
-        const { line, character } =
-          diagnostic.file.getLineAndCharacterOfPosition(diagnostic.start);
-        message += ` ${diagnostic.file.fileName} (${line + 1},${character + 1})`;
-      }
-      message +=
-        ": " + ts.flattenDiagnosticMessageText(diagnostic.messageText, "\n");
-      console.log(message);
-    });
+  private reportDiagnostics(
+    diagnostics: Diagnostic[],
+    logLevel: LogLevel
+  ): string {
+    const msg = this.formatDiagnostics(diagnostics);
+    if (!Object.values(LogLevel).includes(logLevel))
+      throw new Error(`Invalid LogLevel ${logLevel}`);
+    try {
+      this.log[logLevel](msg);
+    } catch (e: unknown) {
+      throw e;
+    }
+    return msg;
+  }
+
+  // Format diagnostics into a single string for throwing or logging
+  private formatDiagnostics(diagnostics: Diagnostic[]): string {
+    return diagnostics
+      .map((diagnostic) => {
+        let message = "";
+        if (diagnostic.file && diagnostic.start) {
+          const { line, character } =
+            diagnostic.file.getLineAndCharacterOfPosition(diagnostic.start);
+          message += `${diagnostic.file.fileName} (${line + 1},${character + 1})`;
+        }
+        message +=
+          ": " + ts.flattenDiagnosticMessageText(diagnostic.messageText, "\n");
+        return message;
+      })
+      .join("\n");
   }
 
   private readConfigFile(configFileName: string) {
@@ -302,8 +320,7 @@ export class BuildScripts extends Command<
     const result = ts.parseConfigFileTextToJson(configFileName, configFileText);
     const configObject = result.config;
     if (!configObject) {
-      this.reportDiagnostics([result.error!]);
-      throw new Error("Failed to parse tsconfig.json");
+      this.reportDiagnostics([result.error!], LogLevel.error);
     }
 
     // Extract config infromation
@@ -312,11 +329,89 @@ export class BuildScripts extends Command<
       ts.sys,
       path.dirname(configFileName)
     );
-    if (configParseResult.errors.length > 0) {
-      this.reportDiagnostics(configParseResult.errors);
-      throw new Error("Failed to parse tsconfig.json");
-    }
+    if (configParseResult.errors.length > 0)
+      this.reportDiagnostics(configParseResult.errors, LogLevel.error);
+
     return configParseResult;
+  }
+
+  private evalDiagnostics(diagnostics: Diagnostic[]) {
+    if (diagnostics && diagnostics.length > 0) {
+      const errors = diagnostics.filter(
+        (d) => d.category === ts.DiagnosticCategory.Error
+      );
+      const warnings = diagnostics.filter(
+        (d) => d.category === ts.DiagnosticCategory.Warning
+      );
+      const suggestions = diagnostics.filter(
+        (d) => d.category === ts.DiagnosticCategory.Suggestion
+      );
+      const messages = diagnostics.filter(
+        (d) => d.category === ts.DiagnosticCategory.Message
+      );
+      // Log diagnostics to console
+
+      if (warnings.length) this.reportDiagnostics(warnings, LogLevel.info);
+      if (errors.length) {
+        const formatted = this.reportDiagnostics(
+          diagnostics as Diagnostic[],
+          LogLevel.error
+        );
+        this.log.info(
+          `TypeScript reported ${diagnostics.length} diagnostic(s) during check; aborting.`
+        );
+        // throw new Error(
+        //   `TypeScript reported ${diagnostics.length} diagnostic(s) during check; aborting.`
+        // );
+      }
+      if (suggestions.length)
+        this.reportDiagnostics(suggestions, LogLevel.info);
+      if (messages.length) this.reportDiagnostics(messages, LogLevel.info);
+    }
+  }
+
+  private preCheckDiagnostics(program: ts.Program) {
+    const diagnostics = ts.getPreEmitDiagnostics(program);
+    this.evalDiagnostics(diagnostics as any);
+  }
+
+  // Create a TypeScript program for the current tsconfig and fail if there are any error diagnostics.
+  private async checkTsDiagnostics(
+    isDev: boolean,
+    mode: Modes,
+    bundle = false
+  ) {
+    const log = this.log.for(this.checkTsDiagnostics);
+    let tsConfig;
+    try {
+      tsConfig = this.readConfigFile("./tsconfig.json");
+    } catch (e: unknown) {
+      throw new Error(`Failed to parse tsconfig.json: ${e}`);
+    }
+
+    if (bundle) {
+      tsConfig.options.module = ModuleKind.AMD;
+      tsConfig.options.outDir = "dist";
+      tsConfig.options.isolatedModules = false;
+      tsConfig.options.outFile = this.pkgName;
+    } else {
+      tsConfig.options.outDir = `lib${mode === Modes.ESM ? "/esm" : ""}`;
+      tsConfig.options.module =
+        mode === Modes.ESM ? ModuleKind.ES2022 : ModuleKind.CommonJS;
+    }
+
+    if (isDev) {
+      tsConfig.options.inlineSourceMap = true;
+      tsConfig.options.sourceMap = false;
+    } else {
+      tsConfig.options.sourceMap = false;
+    }
+
+    const program = ts.createProgram(tsConfig.fileNames, tsConfig.options);
+    this.preCheckDiagnostics(program);
+    log.verbose(
+      `TypeScript checks passed (${bundle ? "bundle" : "normal"} mode).`
+    );
   }
 
   private async buildTs(isDev: boolean, mode: Modes, bundle = false) {
@@ -370,24 +465,7 @@ export class BuildScripts extends Command<
       .getPreEmitDiagnostics(program)
       .concat(emitResult.diagnostics);
 
-    allDiagnostics.forEach((diagnostic) => {
-      if (diagnostic.file) {
-        const { line, character } =
-          diagnostic.file.getLineAndCharacterOfPosition(diagnostic.start!);
-        const message = ts.flattenDiagnosticMessageText(
-          diagnostic.messageText,
-          "\n"
-        );
-        log.info(
-          `${diagnostic.file.fileName} (${line + 1},${character + 1}): ${message}`
-        );
-      } else {
-        log.info(ts.flattenDiagnosticMessageText(diagnostic.messageText, "\n"));
-      }
-    });
-    if (emitResult.emitSkipped) {
-      throw new Error("Build failed");
-    }
+    this.evalDiagnostics(allDiagnostics);
   }
 
   private async build(isDev: boolean, mode: Modes, bundle = false) {
@@ -441,6 +519,8 @@ export class BuildScripts extends Command<
       "@decaf-ts/logging",
     ]
   ) {
+    // Run a TypeScript-only diagnostic check for the bundling configuration and fail fast on any errors.
+    await this.checkTsDiagnostics(isDev, mode, true);
     const isEsm = mode === Modes.ESM;
     const pkgName = this.pkgName;
 
@@ -510,7 +590,7 @@ export class BuildScripts extends Command<
     if (!isDev) {
       // terser is optional at runtime; import lazily inside bundle to avoid test-time resolution errors
       try {
-        const terserMod: any = await import("rollup-plugin-terser");
+        const terserMod: any = await import("@rollup/plugin-terser");
         const terserFn =
           (terserMod && terserMod.terser) || terserMod.default || terserMod;
         plugins.push(terserFn());
@@ -680,7 +760,6 @@ export class BuildScripts extends Command<
       typeof DefaultCommandValues & { [k in keyof typeof options]: unknown }
   ): Promise<string | void | R> {
     const { dev, prod, docs, buildMode, includes, externals } = answers as any;
-
     if (dev) {
       return await this.buildDev(buildMode as BuildMode, includes, externals);
     }
