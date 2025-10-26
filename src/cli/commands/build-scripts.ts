@@ -290,6 +290,7 @@ export class BuildScripts extends Command<
     try {
       this.log[logLevel](msg);
     } catch (e: unknown) {
+      console.warn(`Failed to get logger for ${logLevel}`);
       throw e;
     }
     return msg;
@@ -353,6 +354,7 @@ export class BuildScripts extends Command<
 
       if (warnings.length) this.reportDiagnostics(warnings, LogLevel.info);
       if (errors.length) {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const formatted = this.reportDiagnostics(
           diagnostics as Diagnostic[],
           LogLevel.error
