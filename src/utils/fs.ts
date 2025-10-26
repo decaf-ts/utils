@@ -3,6 +3,7 @@ import path from "path";
 import { runCommand } from "./utils";
 import { DependencyMap, SimpleDependencyMap } from "./types";
 import { Logging, patchString } from "@decaf-ts/logging";
+import zlib from "zlib";
 
 const logger = Logging.for("fs");
 
@@ -537,4 +538,53 @@ export async function normalizeImport<T>(
 ): Promise<T> {
   // CommonJS's `module.exports` is wrapped as `default` in ESModule.
   return importPromise.then((m: any) => (m.default || m) as T);
+}
+
+// New helper: compute gzipped size of smallest JS file in a directory
+export async function getFileSizeZipped(dir: string): Promise<number> {
+  const log = logger.for(getFileSizeZipped);
+  try {
+    const entries = fs.readdirSync(dir);
+    const candidates = entries
+      .map((e) => path.join(dir, e))
+      .filter((p) => {
+        try {
+          const s = fs.statSync(p);
+          return (
+            s.isFile() &&
+            (p.endsWith(".js") || p.endsWith(".cjs") || p.endsWith(".mjs"))
+          );
+        } catch {
+          return false;
+        }
+      });
+
+    if (candidates.length === 0) {
+      throw new Error(`No JS files found in directory ${dir}`);
+    }
+
+    // choose the smallest by raw file size
+    let smallest = candidates[0];
+    let smallestSize = fs.statSync(smallest).size;
+    for (const c of candidates.slice(1)) {
+      const s = fs.statSync(c).size;
+      if (s < smallestSize) {
+        smallest = c;
+        smallestSize = s;
+      }
+    }
+
+    log.verbose(
+      `Selected smallest bundle: ${smallest} (${smallestSize} bytes)`
+    );
+
+    const buffer = fs.readFileSync(smallest);
+    const gz = zlib.gzipSync(buffer);
+    const sizeKb = Number((gz.length / 1024).toFixed(1));
+    log.verbose(`Gzipped size: ${gz.length} bytes (${sizeKb} KB)`);
+    return sizeKb;
+  } catch (e: unknown) {
+    log.verbose(`Failed to compute gzipped size for ${dir}: ${e}`);
+    throw e as Error;
+  }
 }

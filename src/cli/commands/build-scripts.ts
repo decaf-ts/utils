@@ -9,6 +9,7 @@ import {
   patchFile,
   renameFile,
   runCommand,
+  getFileSizeZipped,
 } from "../../utils";
 import fs from "fs";
 import path from "path";
@@ -85,6 +86,7 @@ export function getPackageDependencies(): string[] {
 
 const VERSION_STRING = "##VERSION##";
 const PACKAGE_STRING = "##PACKAGE##";
+const PACKAGE_SIZE_STRING = "##PACKAGE_SIZE##";
 
 enum Modes {
   CJS = "commonjs",
@@ -684,7 +686,7 @@ export class BuildScripts extends Command<
 
     const outputs: OutputOptions[] = [
       {
-        file: `${isLib ? "bin/" : "dist/"}${nameOverride ? nameOverride : `.bundle.${!isDev ? "min" : ""}`}${isEsm ? ".esm" : ""}.cjs`,
+        file: `${isLib ? "bin/" : "dist/"}${nameOverride ? nameOverride : `.bundle.${!isDev ? "min" : ""}`}${isEsm ? ".js" : ".cjs"}`,
         format: isLib ? "cjs" : isEsm ? "esm" : "umd",
         name: pkgName,
         esModule: isEsm,
@@ -813,6 +815,23 @@ export class BuildScripts extends Command<
       const { src, dest } = f;
       copyFile(src, dest);
     });
+
+    // patch ./README.md file to replace version/package/package size strings
+    try {
+      const sizeKb = await getFileSizeZipped(path.resolve("dist"));
+      this.replacements[PACKAGE_SIZE_STRING] = `${sizeKb} KB`;
+    } catch {
+      // if we couldn't compute size, leave placeholder or set to unknown
+      this.replacements[PACKAGE_SIZE_STRING] = "unknown";
+    }
+
+    // Patch README.md in project root
+    try {
+      patchFile("./README.md", this.replacements);
+    } catch (e: unknown) {
+      const log = this.log.for(this.buildDocs as any);
+      log.verbose(`Failed to patch README.md: ${e}`);
+    }
   }
 
   protected async run<R>(

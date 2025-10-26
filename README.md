@@ -28,6 +28,8 @@ A comprehensive TypeScript utility library providing robust tools for command-li
 
 Documentation available [here](https://decaf-ts.github.io/utils/)
 
+Minimal size: 96.8 KB kb gzipped
+
 ### Description
 
 The Decaf Utils module is a comprehensive TypeScript utility library designed to standardize APIs across repositories and provide a robust foundation for building command-line interface (CLI) applications. The library is organized into several key components:

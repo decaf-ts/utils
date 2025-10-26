@@ -21,3 +21,5 @@
 ![NPM Version](https://img.shields.io/badge/dynamic/json.svg?url=https%3A%2F%2Fraw.githubusercontent.com%2Fbadges%2Fshields%2Fmaster%2Fpackage.json&label=NPM&query=$.engines.npm&colorB=purple)
 
 Documentation available [here](https://decaf-ts.github.io/utils/)
+
+Minimal size: ##PACKAGE_SIZE## kb gzipped
