@@ -397,12 +397,11 @@ export class BuildScripts extends Command<
         mode === Modes.ESM ? ModuleKind.ES2022 : ModuleKind.CommonJS;
     }
 
-    if (isDev) {
-      tsConfig.options.inlineSourceMap = true;
-      tsConfig.options.sourceMap = false;
-    } else {
-      tsConfig.options.sourceMap = false;
-    }
+    // Ensure TypeScript emits inline source maps for both dev and prod (bundlers will control external maps)
+    // Keep comments in TS emit by default; bundling/minification will handle removal where requested.
+    tsConfig.options.inlineSourceMap = true;
+    tsConfig.options.inlineSources = true;
+    tsConfig.options.sourceMap = false;
 
     const program = ts.createProgram(tsConfig.fileNames, tsConfig.options);
     this.preCheckDiagnostics(program);
@@ -434,12 +433,13 @@ export class BuildScripts extends Command<
         mode === Modes.ESM ? ModuleKind.ES2022 : ModuleKind.CommonJS;
     }
 
-    if (isDev) {
-      tsConfig.options.inlineSourceMap = true;
-      tsConfig.options.sourceMap = false;
-    } else {
-      tsConfig.options.sourceMap = false;
-    }
+    // Always emit inline source maps from tsc (bundler will emit external maps for production bundles).
+    tsConfig.options.inlineSourceMap = true;
+    tsConfig.options.inlineSources = true;
+    tsConfig.options.sourceMap = false;
+
+    // For production builds we still keep TypeScript comments (removeComments=false in tsconfig)
+    // Bundler/terser will strip comments for production bundles as requested.
 
     const program = ts.createProgram(tsConfig.fileNames, tsConfig.options);
 
@@ -569,12 +569,20 @@ export class BuildScripts extends Command<
       ])
     );
 
+    // decide rollup sourcemap mode: for dev use inline sourcemap, for prod use external file
+    const rollupSourceMapInput = isDev ? true : true; // always tell plugins rollup will handle maps (plugin expects this)
+    const rollupSourceMapOutput: false | true | "inline" | "hidden" = isDev
+      ? "inline"
+      : true;
+
     const plugins = [
       typescript({
         compilerOptions: {
           module: "esnext",
           declaration: false,
           outDir: isLib ? "bin" : "dist",
+          sourceMap: rollupSourceMapInput,
+          inlineSourceMap: false,
         },
         include: ["src/**/*.ts"],
         exclude: ["node_modules", "**/*.spec.ts"],
@@ -584,50 +592,43 @@ export class BuildScripts extends Command<
     ];
 
     // production minification
-    if (!isDev) {
-      // terser is optional at runtime; import lazily inside bundle to avoid test-time resolution errors
-      try {
-        // @ts-ignore: optional dependency; types may not be installed in all environments
-        const terserMod: any = await import("@rollup/plugin-terser");
-        const terserFn =
-          (terserMod && terserMod.terser) || terserMod.default || terserMod;
-        // aggressive terser options for production builds
-        const terserOptions = {
-          parse: { ecma: 2020 },
-          compress: {
-            ecma: 2020,
-            passes: 3,
-            drop_console: true,
-            drop_debugger: true,
-            pure_funcs: [
-              "console.info",
-              "console.debug",
-              "console.warn",
-              "console.log",
-            ],
-            toplevel: true,
-            module: isEsm,
-            unsafe: true,
-            unsafe_arrows: true,
-            unsafe_comps: true,
-            collapse_vars: true,
-            reduce_funcs: true,
-            reduce_vars: true,
-          },
-          mangle: {
-            toplevel: true,
-          },
-          format: {
-            comments: false, // remove all comments
-            ascii_only: true,
-          },
-          toplevel: true,
-        };
+    try {
+      // @ts-ignore: optional dependency; types may not be installed in all environments
+      const terserMod: any = await import("@rollup/plugin-terser");
+      const terserFn =
+        (terserMod && terserMod.terser) || terserMod.default || terserMod;
 
-        plugins.push(terserFn(terserOptions));
-      } catch {
-        // if terser isn't available, ignore
-      }
+      // base terser options
+      const baseTerserOptions: any = {
+        parse: { ecma: 2020 },
+        compress: {
+          ecma: 2020,
+          passes: isDev ? 1 : 3,
+          drop_console: !isDev,
+          drop_debugger: !isDev,
+          toplevel: true,
+          module: isEsm,
+          unsafe: !isDev,
+          unsafe_arrows: !isDev,
+          unsafe_comps: !isDev,
+          collapse_vars: !isDev,
+          reduce_funcs: !isDev,
+          reduce_vars: !isDev,
+        },
+        mangle: {
+          toplevel: !isDev,
+        },
+        format: {
+          comments: isDev ? false : false, // always strip comments from final bundle
+          ascii_only: true,
+        },
+        toplevel: true,
+      };
+
+      // in dev we still want to strip JSDoc/comments but avoid aggressive mangling
+      plugins.push(terserFn(baseTerserOptions));
+    } catch {
+      // if terser isn't available, ignore
     }
 
     if (isLib) {
@@ -646,7 +647,15 @@ export class BuildScripts extends Command<
       input: entryFile,
       plugins: plugins,
       external: ext,
-    };
+      // ensure rollup knows to generate sourcemaps for plugins that need it
+      // plugin-typescript requires this option to be set when it generates maps
+      // set to true so plugin will create source maps; output options control inline vs external
+      onwarn: undefined,
+      // inform rollup/plugins that sourcemaps should be generated
+      sourcemap: rollupSourceMapInput,
+      // enable tree-shaking for production bundles
+      treeshake: !isDev,
+    } as any;
 
     // prepare output globals mapping for externals
     const globals: Record<string, string> = {};
@@ -661,14 +670,15 @@ export class BuildScripts extends Command<
         format: isLib ? "cjs" : isEsm ? "esm" : "umd",
         name: pkgName,
         esModule: isEsm,
-        sourcemap: isDev ? "inline" : false,
+        // output sourcemap: inline for dev, external for prod
+        sourcemap: rollupSourceMapOutput,
         globals: globals,
         exports: "auto",
       },
     ];
 
     try {
-      const bundle = await rollup(input);
+      const bundle = await rollup(input as any);
       console.log(bundle.watchFiles);
       async function generateOutputs(bundle: RollupBuild) {
         for (const outputOptions of outputs) {
