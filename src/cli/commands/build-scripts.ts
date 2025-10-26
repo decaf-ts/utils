@@ -10,6 +10,7 @@ import {
   renameFile,
   runCommand,
   getFileSizeZipped,
+  listNodeModulesPackages,
 } from "../../utils";
 import fs from "fs";
 import path from "path";
@@ -540,8 +541,17 @@ export class BuildScripts extends Command<
     );
     let externalsList = parseList(externalsArg);
     if (externalsList.length === 0) {
-      // if no externals specified, include package.json dependencies to avoid rollup treating them as resolvable
-      externalsList = getPackageDependencies();
+      // if no externals specified, list top-level packages in node_modules (expand scopes)
+      try {
+        externalsList = listNodeModulesPackages(
+          path.join(process.cwd(), "node_modules")
+        );
+      } catch {
+        // fallback to package.json dependencies if listing fails or yields nothing
+      }
+      if (!externalsList || externalsList.length === 0) {
+        externalsList = getPackageDependencies();
+      }
     }
 
     const ext = Array.from(
@@ -818,7 +828,9 @@ export class BuildScripts extends Command<
 
     // patch ./README.md file to replace version/package/package size strings
     try {
-      const sizeKb = await getFileSizeZipped(path.resolve("dist"));
+      const sizeKb = await getFileSizeZipped(
+        path.resolve(path.join(process.cwd(), "dist"))
+      );
       this.replacements[PACKAGE_SIZE_STRING] = `${sizeKb} KB`;
     } catch {
       // if we couldn't compute size, leave placeholder or set to unknown

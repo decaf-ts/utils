@@ -588,3 +588,65 @@ export async function getFileSizeZipped(dir: string): Promise<number> {
     throw e as Error;
   }
 }
+
+// New helper: list folder entries (names) with optional filter
+export function listFolder(
+  basePath: string = process.cwd(),
+  filter?: (name: string, dirent: fs.Dirent) => boolean
+): string[] {
+  const log = logger.for(listFolder);
+  try {
+    if (!fs.existsSync(basePath)) return [];
+    const entries = fs.readdirSync(basePath, { withFileTypes: true });
+    const names = entries
+      .filter((d) => (filter ? filter(d.name, d) : true))
+      .map((d) => d.name);
+    return names;
+  } catch (e: unknown) {
+    log.verbose(`Failed to list folder ${basePath}: ${e}`);
+    return [];
+  }
+}
+
+// New helper: list node_modules package names, expanding scoped packages
+export function listNodeModulesPackages(
+  basePath: string = path.join(process.cwd(), "node_modules")
+): string[] {
+  const log = logger.for(listNodeModulesPackages);
+  try {
+    if (!fs.existsSync(basePath)) return [];
+    const entries = fs.readdirSync(basePath, { withFileTypes: true });
+    const names: string[] = [];
+
+    for (const e of entries) {
+      try {
+        if (!e.isDirectory()) continue;
+        // ignore hidden folders
+        if (e.name.startsWith(".")) continue;
+        if (e.name.startsWith("@")) {
+          // a scope folder; expand contained packages
+          const scopePath = path.join(basePath, e.name);
+          try {
+            const scoped = fs.readdirSync(scopePath, { withFileTypes: true });
+            for (const s of scoped) {
+              if (s.isDirectory() && !s.name.startsWith(".")) {
+                names.push(`${e.name}/${s.name}`);
+              }
+            }
+          } catch (err) {
+            // ignore scope read errors
+            log.verbose(`Failed to read scope ${scopePath}: ${err}`);
+          }
+        } else {
+          names.push(e.name);
+        }
+      } catch (err) {
+        log.verbose(`Skipping entry ${e.name} due to error: ${err}`);
+      }
+    }
+    return names;
+  } catch (e: unknown) {
+    log.verbose(`Failed to list node_modules packages at ${basePath}: ${e}`);
+    return [];
+  }
+}
