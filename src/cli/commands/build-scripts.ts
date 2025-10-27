@@ -282,7 +282,29 @@ export class BuildScripts extends Command<
       fs.readdirSync(p, { withFileTypes: true, recursive: true })
         .filter((p) => p.isFile())
         .forEach((file) =>
-          patchFile(path.join(file.parentPath, file.name), this.replacements)
+          patchFile(
+            path.join(file.parentPath, file.name),
+            Object.entries(this.replacements).reduce(
+              (acc: Record<string, any>, [key, val]) => {
+                switch (key) {
+                  case VERSION_STRING:
+                    log.debug("Found VERSION string to replace");
+                    acc[`export const VERSION = "${VERSION_STRING}";`] =
+                      `export const VERSION = "${val}";`;
+                    break;
+                  case PACKAGE_STRING:
+                    log.debug("Found PACKAGE_NAME string to replace");
+                    acc[`export const PACKAGE_NAME = "${PACKAGE_STRING}";`] =
+                      `export const PACKAGE_NAME = "${val}";`;
+                    break;
+                  default:
+                    acc[key] = val;
+                }
+                return acc;
+              },
+              {}
+            )
+          )
         );
     log.verbose(`Module ${name} ${version} patched in ${p}...`);
   }

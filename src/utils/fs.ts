@@ -2,10 +2,26 @@ import fs from "fs";
 import path from "path";
 import { runCommand } from "./utils";
 import { DependencyMap, SimpleDependencyMap } from "./types";
-import { Logging, patchString } from "@decaf-ts/logging";
+import { escapeRegExp, Logging } from "@decaf-ts/logging";
 import zlib from "zlib";
 
 const logger = Logging.for("fs");
+
+function patchString(
+  input: string,
+  values: Record<string, number | string>,
+  flags: string = "g",
+  filter?: (str: string) => boolean
+): string {
+  Object.entries(values).forEach(([key, val]) => {
+    const regexp = new RegExp(escapeRegExp(key), flags);
+    input = input.replace(regexp, (subStr: string) => {
+      if (!filter || filter(subStr)) return val as string;
+      return val as string;
+    });
+  });
+  return input;
+}
 
 /**
  * @description Patches a file with given values.
@@ -43,17 +59,18 @@ const logger = Logging.for("fs");
  */
 export function patchFile(
   path: string,
-  values: Record<string, number | string>
+  values: Record<string, number | string>,
+  filter?: (str: string) => boolean
 ) {
   const log = logger.for(patchFile);
   if (!fs.existsSync(path))
     throw new Error(`File not found at path "${path}".`);
   let content = readFile(path);
 
+  log.verbose(`Patching file "${path}"...`);
+  log.debug(`with value: ${JSON.stringify(values)}`);
   try {
-    log.verbose(`Patching file "${path}"...`);
-    log.debug(`with value: ${JSON.stringify(values)}`);
-    content = patchString(content, values);
+    content = patchString(content, values, "g", filter);
   } catch (error: unknown) {
     throw new Error(`Error patching file: ${error}`);
   }
