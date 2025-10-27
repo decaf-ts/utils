@@ -16,7 +16,9 @@ function patchString(
   Object.entries(values).forEach(([key, val]) => {
     const regexp = new RegExp(escapeRegExp(key), flags);
     input = input.replace(regexp, (subStr: string) => {
-      if (!filter || filter(subStr)) return val as string;
+      if (!filter || filter(subStr)) {
+        return val as string;
+      }
       return val as string;
     });
   });
