@@ -289,13 +289,13 @@ export class BuildScripts extends Command<
                 switch (key) {
                   case VERSION_STRING:
                     log.debug("Found VERSION string to replace");
-                    acc[`export const VERSION = "${VERSION_STRING}";`] =
-                      `export const VERSION = "${val}";`;
+                    acc[`VERSION = "${VERSION_STRING}";`] =
+                      `VERSION = "${val}";`;
                     break;
                   case PACKAGE_STRING:
                     log.debug("Found PACKAGE_NAME string to replace");
-                    acc[`export const PACKAGE_NAME = "${PACKAGE_STRING}";`] =
-                      `export const PACKAGE_NAME = "${val}";`;
+                    acc[`PACKAGE_NAME = "${PACKAGE_STRING}";`] =
+                      `PACKAGE_NAME = "${val}";`;
                     break;
                   default:
                     acc[key] = val;
