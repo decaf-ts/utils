@@ -4,8 +4,16 @@
   "description": "module management utils for decaf-ts",
   "type": "module",
   "exports": {
-    "require": "./lib/index.cjs",
-    "import": "./lib/esm/index.js"
+    ".": {
+      "require": "./lib/index.cjs",
+      "import": "./lib/esm/index.js",
+      "types": "./lib/index.d.ts"
+    },
+    "./tests": {
+      "require": "./lib/tests/index.cjs",
+      "import": "./lib/esm/tests/index.js",
+      "types": "./lib/tests/index.d.ts"
+    }
   },
   "types": "lib/index.d.ts",
   "bin": {
