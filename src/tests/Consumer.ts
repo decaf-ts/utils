@@ -183,6 +183,9 @@ export class ConsumerRunner extends LoggedClass {
   private producerResults: LogStore = {};
   private childExitPromises: Array<Promise<void>> = [];
   private completionTriggered = false;
+  private producerCompletion = 0;
+  private consumerCompletion = 0;
+  private expectedIterations = 0;
   private activeHandlers = 0;
 
   constructor(
@@ -204,6 +207,9 @@ export class ConsumerRunner extends LoggedClass {
     this.completionTriggered = false;
     this.childExitPromises = [];
     this.activeHandlers = 0;
+    this.producerCompletion = 0;
+    this.consumerCompletion = 0;
+    this.expectedIterations = 0;
   }
 
   private waitForChildExit(): Promise<void> {
@@ -240,10 +246,15 @@ export class ConsumerRunner extends LoggedClass {
     if (!this.producerResults[identifier]) {
       this.producerResults[identifier] = [];
     }
-    this.producerResults[identifier].push(log);
+    const logs = this.producerResults[identifier];
+    logs.push(log);
+    const totalTimes = times ?? this.expectedIterations;
+    if (totalTimes > 0 && logs.length === totalTimes) {
+      this.producerCompletion += 1;
+    }
   }
 
-  private recordConsumer(identifier: number): void {
+  private recordConsumer(identifier: number, times?: number): void {
     const logParts: Array<string | number> = [
       Date.now(),
       "CONSUMER",
@@ -255,27 +266,20 @@ export class ConsumerRunner extends LoggedClass {
     if (!this.consumerResults[identifier]) {
       this.consumerResults[identifier] = [];
     }
-    this.consumerResults[identifier].push(log);
+    const logs = this.consumerResults[identifier];
+    logs.push(log);
+    const totalTimes = times ?? this.expectedIterations;
+    if (totalTimes > 0 && logs.length === totalTimes) {
+      this.consumerCompletion += 1;
+    }
   }
 
-  private isProducerComplete(count: number, times: number): boolean {
-    const producerKeys = Object.keys(this.producerResults);
-    if (producerKeys.length !== count) {
-      return false;
-    }
-    return producerKeys.every(
-      (key) => this.producerResults[Number(key)]?.length === times
-    );
+  private isProducerComplete(count: number): boolean {
+    return this.producerCompletion >= count;
   }
 
-  private isConsumerComplete(count: number, times: number): boolean {
-    const consumerKeys = Object.keys(this.consumerResults);
-    if (consumerKeys.length !== count) {
-      return false;
-    }
-    return consumerKeys.every(
-      (key) => this.consumerResults[Number(key)]?.length === times
-    );
+  private isConsumerComplete(count: number): boolean {
+    return this.consumerCompletion >= count;
   }
 
   private terminateChildren(forceKill = false): Promise<void> {
@@ -310,6 +314,7 @@ export class ConsumerRunner extends LoggedClass {
     random: boolean | undefined
   ): Promise<ComparerResult> {
     this.reset();
+    this.expectedIterations = times;
     const childPath = join(__dirname, "ProducerChildProcess.cjs");
 
     return new Promise<ComparerResult>((resolve, reject) => {
@@ -341,8 +346,8 @@ export class ConsumerRunner extends LoggedClass {
           return;
         }
         if (
-          !this.isProducerComplete(count, times) ||
-          !this.isConsumerComplete(count, times) ||
+          !this.isProducerComplete(count) ||
+          !this.isConsumerComplete(count) ||
           this.activeHandlers > 0
         ) {
           return;
@@ -414,7 +419,7 @@ export class ConsumerRunner extends LoggedClass {
             const handlerArgs = Array.isArray(args) ? args : [];
             await Promise.resolve(this.handler(childId, ...handlerArgs));
 
-            this.recordConsumer(childId);
+            this.recordConsumer(childId, childTimes ?? times);
             if (process.env.DEBUG_CONSUMER_RUNNER === "1") {
               console.debug("ConsumerRunner message:complete", {
                 childId,
