@@ -16,9 +16,21 @@ type ProducerResponse = {
   result?: string[];
 };
 
-const result: string[] = [];
+let shuttingDown = false;
 
-process.on('message', (args: ParentMessage) => {
+const completeAndExit = (logMessage?: string) => {
+  if (shuttingDown) {
+    return;
+  }
+  shuttingDown = true;
+  if (logMessage) {
+    console.log(logMessage);
+  }
+  setImmediate(() => process.exit(0));
+};
+
+process.on("message", (args: ParentMessage) => {
+  const result: string[] = [];
   const {identifier, action, timeout, times, random, terminate} = args;
 
   const tick = (count: number) => {
@@ -39,12 +51,17 @@ process.on('message', (args: ParentMessage) => {
     }
 
     process.send?.(response);
+    if (response.result) {
+      completeAndExit();
+    } else if (!times) {
+      completeAndExit();
+    }
   };
 
   if (terminate) {
-    const log = [Date.now(), 'PRODUCER', identifier, action, 'Quitting!'].join(' - ');
-    console.log(log);
-    process.exit(0);
+    const log = [Date.now(), "PRODUCER", identifier, action, "Quitting!"].join(" - ");
+    completeAndExit(log);
+    return;
   }
 
   if (!timeout) {

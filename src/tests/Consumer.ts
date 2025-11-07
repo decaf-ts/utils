@@ -181,7 +181,9 @@ export class ConsumerRunner extends LoggedClass {
   private forkedCache: ChildProcess[] | undefined = [];
   private consumerResults: LogStore = {};
   private producerResults: LogStore = {};
+  private childExitPromises: Array<Promise<void>> = [];
   private completionTriggered = false;
+  private activeHandlers = 0;
 
   constructor(
     action: string,
@@ -200,6 +202,17 @@ export class ConsumerRunner extends LoggedClass {
     this.consumerResults = {};
     this.producerResults = {};
     this.completionTriggered = false;
+    this.childExitPromises = [];
+    this.activeHandlers = 0;
+  }
+
+  private waitForChildExit(): Promise<void> {
+    if (!this.childExitPromises?.length) {
+      return Promise.resolve();
+    }
+    const exits = [...this.childExitPromises];
+    this.childExitPromises = [];
+    return Promise.allSettled(exits).then(() => void 0);
   }
 
   private store(
@@ -265,17 +278,29 @@ export class ConsumerRunner extends LoggedClass {
     );
   }
 
-  private terminateChildren(): void {
+  private terminateChildren(forceKill = false): Promise<void> {
     if (!this.forkedCache) {
-      return;
+      return this.waitForChildExit();
     }
-    this.forkedCache.forEach((forked, index) => {
-      forked.send({
-        identifier: index,
-        terminate: true,
-      });
-    });
+    const cached = this.forkedCache;
     this.forkedCache = undefined;
+    cached.forEach((forked, index) => {
+      if (!forked.connected && !forceKill) {
+        return;
+      }
+      try {
+        forked.send({
+          identifier: index,
+          terminate: true,
+        });
+      } catch {
+        // IPC channel already closed; nothing else to do.
+      }
+      if (forceKill && !forked.killed) {
+        forked.kill();
+      }
+    });
+    return this.waitForChildExit();
   }
 
   async run(
@@ -288,13 +313,27 @@ export class ConsumerRunner extends LoggedClass {
     const childPath = join(__dirname, "ProducerChildProcess.cjs");
 
     return new Promise<ComparerResult>((resolve, reject) => {
+      const snapshotState = () => {
+        const summarize = (records: LogStore) =>
+          Object.keys(records).reduce<Record<string, number>>((acc, key) => {
+            acc[key] = records[Number(key)]?.length ?? 0;
+            return acc;
+          }, {});
+        return {
+          producers: summarize(this.producerResults),
+          consumers: summarize(this.consumerResults),
+          activeHandlers: this.activeHandlers,
+        };
+      };
+
       const handleError = (error: unknown) => {
         if (this.completionTriggered) {
           return;
         }
         this.completionTriggered = true;
-        this.terminateChildren();
-        reject(error);
+        Promise.resolve(this.terminateChildren(true)).finally(() =>
+          reject(error)
+        );
       };
 
       const finalizeIfComplete = () => {
@@ -303,38 +342,47 @@ export class ConsumerRunner extends LoggedClass {
         }
         if (
           !this.isProducerComplete(count, times) ||
-          !this.isConsumerComplete(count, times)
+          !this.isConsumerComplete(count, times) ||
+          this.activeHandlers > 0
         ) {
           return;
         }
 
-        this.terminateChildren();
         this.completionTriggered = true;
+        if (process.env.DEBUG_CONSUMER_RUNNER === "1") {
+          console.debug("ConsumerRunner finalize state", snapshotState());
+        }
 
         try {
-          Promise.resolve(
+          const comparisonPromise = Promise.resolve(
             this.comparerHandle(this.consumerResults, this.producerResults)
-          )
-            .then(resolve)
+          );
+          Promise.all([comparisonPromise, this.waitForChildExit()])
+            .then(async ([comparison]) => {
+              await new Promise((resolveDelay) => setImmediate(resolveDelay));
+              resolve(comparison);
+            })
             .catch(reject);
         } catch (error) {
           reject(error);
         }
       };
 
-      const checkProducerCompletion = () => {
-        if (this.isProducerComplete(count, times)) {
-          this.terminateChildren();
-        }
-      };
-
       for (let identifier = 1; identifier < count + 1; identifier += 1) {
         const forked = fork(childPath);
         this.forkedCache?.push(forked);
+        this.childExitPromises?.push(
+          new Promise<void>((resolveChild) => {
+            forked.once("exit", () => resolveChild());
+          })
+        );
 
         forked.on("error", handleError);
 
         forked.on("message", async (message: ProducerMessage) => {
+          if (this.completionTriggered) {
+            return;
+          }
           const {
             identifier: childId,
             args,
@@ -344,6 +392,16 @@ export class ConsumerRunner extends LoggedClass {
             random: childRandom,
           } = message;
 
+          this.activeHandlers += 1;
+          let handlerFailed = false;
+          if (process.env.DEBUG_CONSUMER_RUNNER === "1") {
+            console.debug("ConsumerRunner message:start", {
+              childId,
+              producerCount: this.producerResults[childId]?.length ?? 0,
+              consumerCount: this.consumerResults[childId]?.length ?? 0,
+              activeHandlers: this.activeHandlers,
+            });
+          }
           try {
             this.store(
               childId,
@@ -353,15 +411,26 @@ export class ConsumerRunner extends LoggedClass {
               count,
               childRandom
             );
-            checkProducerCompletion();
-
             const handlerArgs = Array.isArray(args) ? args : [];
             await Promise.resolve(this.handler(childId, ...handlerArgs));
 
             this.recordConsumer(childId);
-            finalizeIfComplete();
+            if (process.env.DEBUG_CONSUMER_RUNNER === "1") {
+              console.debug("ConsumerRunner message:complete", {
+                childId,
+                producerCount: this.producerResults[childId]?.length ?? 0,
+                consumerCount: this.consumerResults[childId]?.length ?? 0,
+                activeHandlers: this.activeHandlers,
+              });
+            }
           } catch (error) {
+            handlerFailed = true;
             handleError(error);
+          } finally {
+            this.activeHandlers = Math.max(0, this.activeHandlers - 1);
+            if (!handlerFailed) {
+              finalizeIfComplete();
+            }
           }
         });
       }
