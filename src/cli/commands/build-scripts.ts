@@ -250,6 +250,14 @@ const cjs2Transformer = (ext = ".cjs") => {
   };
 };
 
+/**
+ * @description A command-line script for building and bundling TypeScript projects.
+ * @summary This class provides a comprehensive build script that handles TypeScript compilation,
+ * bundling with Rollup, and documentation generation. It supports different build modes
+ * (development, production), module formats (CJS, ESM), and can be extended with custom
+ * configurations.
+ * @class BuildScripts
+ */
 export class BuildScripts extends Command<
   CommandOptions<typeof options>,
   void
@@ -273,6 +281,12 @@ export class BuildScripts extends Command<
     this.replacements[PACKAGE_STRING] = name;
   }
 
+  /**
+   * @description Patches files with version and package name.
+   * @summary This method reads all files in a directory, finds placeholders for version
+   * and package name, and replaces them with the actual values from package.json.
+   * @param {string} p - The path to the directory containing the files to patch.
+   */
   patchFiles(p: string) {
     const log = this.log.for(this.patchFiles);
     const { name, version } = getPackage() as any;
@@ -521,6 +535,12 @@ export class BuildScripts extends Command<
     }
   }
 
+  /**
+   * @description Copies assets to the build output directory.
+   * @summary This method checks for the existence of an 'assets' directory in the source
+   * and copies it to the appropriate build output directory (lib or dist).
+   * @param {Modes} mode - The build mode (CJS or ESM).
+   */
   copyAssets(mode: Modes) {
     const log = this.log.for(this.copyAssets);
     let hasAssets = false;
@@ -537,6 +557,19 @@ export class BuildScripts extends Command<
       );
   }
 
+  /**
+   * @description Bundles the project using Rollup.
+   * @summary This method configures and runs Rollup to bundle the project. It handles
+   * different module formats, development and production builds, and external dependencies.
+   * @param {Modes} mode - The module format (CJS or ESM).
+   * @param {boolean} isDev - Whether it's a development build.
+   * @param {boolean} isLib - Whether it's a library build.
+   * @param {string} [entryFile="src/index.ts"] - The entry file for the bundle.
+   * @param {string} [nameOverride=this.pkgName] - The name of the output bundle.
+   * @param {string|string[]} [externalsArg] - A list of external dependencies.
+   * @param {string|string[]} [includeArg] - A list of dependencies to include.
+   * @returns {Promise<void>}
+   */
   async bundle(
     mode: Modes,
     isDev: boolean,
@@ -799,6 +832,14 @@ export class BuildScripts extends Command<
     this.copyAssets(Modes.ESM);
   }
 
+  /**
+   * @description Builds the project for development.
+   * @summary This method runs the build process with development-specific configurations.
+   * @param {BuildMode} [mode=BuildMode.ALL] - The build mode (build, bundle, or all).
+   * @param {string|string[]} [includesArg] - A list of dependencies to include.
+   * @param {string|string[]} [externalsArg] - A list of external dependencies.
+   * @returns {Promise<void>}
+   */
   async buildDev(
     mode: BuildMode = BuildMode.ALL,
     includesArg?: string | string[],
@@ -807,6 +848,15 @@ export class BuildScripts extends Command<
     return this.buildByEnv(true, mode, includesArg, externalsArg);
   }
 
+  /**
+   * @description Builds the project for production.
+   * @summary This method runs the build process with production-specific configurations,
+   * including minification and other optimizations.
+   * @param {BuildMode} [mode=BuildMode.ALL] - The build mode (build, bundle, or all).
+   * @param {string|string[]} [includesArg] - A list of dependencies to include.
+   * @param {string|string[]} [externalsArg] - A list of external dependencies.
+   * @returns {Promise<void>}
+   */
   async buildProd(
     mode: BuildMode = BuildMode.ALL,
     includesArg?: string | string[],
@@ -815,6 +865,12 @@ export class BuildScripts extends Command<
     return this.buildByEnv(false, mode, includesArg, externalsArg);
   }
 
+  /**
+   * @description Generates the project documentation.
+   * @summary This method uses JSDoc and other tools to generate HTML documentation for the project.
+   * It also patches the README.md file with version and package size information.
+   * @returns {Promise<void>}
+   */
   async buildDocs() {
     await runCommand(`npm install better-docs taffydb`).promise;
     await runCommand(`npx markdown-include ./workdocs/readme-md.json`).promise;

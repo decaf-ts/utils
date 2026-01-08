@@ -3,29 +3,77 @@ import { join } from "node:path";
 import { LoggedClass } from "@decaf-ts/logging";
 import { TestReporter } from "./TestReporter";
 
+/**
+ * @description Store for logs indexed by identifier.
+ * @summary A record where keys are identifiers and values are arrays of log strings.
+ * @typedef {Record<number, string[]>} LogStore
+ * @memberOf module:utils
+ */
 type LogStore = Record<number, string[]>;
 
+/**
+ * @description Structure of a parsed log entry.
+ * @summary Contains timestamp, child identifier, and action.
+ * @interface ParsedLog
+ * @property {number} timestamp - The timestamp of the log.
+ * @property {string} child - The child identifier.
+ * @property {string} action - The action performed.
+ * @memberOf module:utils
+ */
 export interface ParsedLog {
   timestamp: number;
   child: string;
   action: string;
 }
 
+/**
+ * @description Result of a comparison between consumer and producer logs.
+ * @summary Contains arrays of parsed logs for both consumer and producer.
+ * @interface ComparerResult
+ * @property {ParsedLog[]} consumer - The parsed consumer logs.
+ * @property {ParsedLog[]} producer - The parsed producer logs.
+ * @memberOf module:utils
+ */
 export interface ComparerResult {
   consumer: ParsedLog[];
   producer: ParsedLog[];
 }
 
+/**
+ * @description Function type for comparing consumer and producer data.
+ * @summary Compares two LogStores and returns a Promise resolving to ComparerResult.
+ * @typedef {function(LogStore, LogStore): Promise<ComparerResult>} Comparer
+ * @memberOf module:utils
+ */
 type Comparer = (
   consumerData: LogStore,
   producerData: LogStore
 ) => Promise<ComparerResult>;
 
+/**
+ * @description Function type for handling consumer actions.
+ * @summary A function that takes an identifier and optional arguments, returning a result.
+ * @typedef {function(number, ...unknown[]): unknown | Promise<unknown>} ConsumerHandler
+ * @memberOf module:utils
+ */
 type ConsumerHandler = (
   identifier: number,
   ...args: unknown[]
 ) => unknown | Promise<unknown>;
 
+/**
+ * @description Message structure sent to the producer child process.
+ * @summary Defines the properties of a message sent to control the producer.
+ * @interface ProducerMessage
+ * @property {number} identifier - The identifier of the producer.
+ * @property {string[]} [result] - Optional result logs.
+ * @property {unknown[]} [args] - Optional arguments.
+ * @property {string} action - The action to perform.
+ * @property {number} [timeout] - Optional timeout.
+ * @property {number} times - Number of times to repeat.
+ * @property {boolean} [random] - Whether to use random timeouts.
+ * @memberOf module:utils
+ */
 interface ProducerMessage {
   identifier: number;
   result?: string[];
@@ -36,6 +84,14 @@ interface ProducerMessage {
   random?: boolean;
 }
 
+/**
+ * @description Parses a log string into a ParsedLog object.
+ * @summary Splits the log string by " - " and extracts timestamp, child, and action.
+ * @param {string} data - The log string to parse.
+ * @return {ParsedLog} The parsed log object.
+ * @function parseData
+ * @memberOf module:utils
+ */
 const parseData = (data: string): ParsedLog => {
   const [timestamp, , child, action] = data.split(" - ");
   return {
@@ -45,6 +101,15 @@ const parseData = (data: string): ParsedLog => {
   };
 };
 
+/**
+ * @description Default comparer function for consumer and producer logs.
+ * @summary Sorts and compares consumer and producer logs to ensure they match.
+ * @param {LogStore} consumerData - The consumer logs.
+ * @param {LogStore} producerData - The producer logs.
+ * @return {Promise<ComparerResult>} The comparison result.
+ * @function defaultComparer
+ * @memberOf module:utils
+ */
 export const defaultComparer: Comparer = async (consumerData, producerData) => {
   const sortedConsumerData = Object.keys(consumerData)
     .reduce<ParsedLog[]>((accum, key) => {
@@ -103,15 +168,42 @@ export const defaultComparer: Comparer = async (consumerData, producerData) => {
   };
 };
 
+/**
+ * @description Options for the reporting comparer.
+ * @summary Configuration options for the reportingComparer function.
+ * @interface ReportingComparerOptions
+ * @property {TestReporter} [reporter] - The test reporter instance.
+ * @property {string} [testCase] - The test case name.
+ * @property {string} [referencePrefix] - The prefix for report references.
+ * @memberOf module:utils
+ */
 export interface ReportingComparerOptions {
   reporter?: TestReporter;
   testCase?: string;
   referencePrefix?: string;
 }
 
+/**
+ * @description Formats a timestamp into an ISO string.
+ * @summary Converts a numeric timestamp to an ISO 8601 string.
+ * @param {number} value - The timestamp to format.
+ * @return {string} The formatted date string.
+ * @function formatTimestamp
+ * @memberOf module:utils
+ */
 const formatTimestamp = (value: number): string =>
   new Date(value).toISOString();
 
+/**
+ * @description Comparer function that reports results using TestReporter.
+ * @summary Compares logs and generates a report with tables and messages.
+ * @param {LogStore} consumerData - The consumer logs.
+ * @param {LogStore} producerData - The producer logs.
+ * @param {ReportingComparerOptions} [options] - Options for reporting.
+ * @return {Promise<ComparerResult>} The comparison result.
+ * @function reportingComparer
+ * @memberOf module:utils
+ */
 export const reportingComparer = async (
   consumerData: LogStore,
   producerData: LogStore,
@@ -174,6 +266,15 @@ export const reportingComparer = async (
   }
 };
 
+/**
+ * @class ConsumerRunner
+ * @description Runs a consumer process and manages producer child processes.
+ * @summary Orchestrates the execution of consumer and producer processes, collects logs, and compares results.
+ * @param {string} action - The action name.
+ * @param {ConsumerHandler} consumerHandler - The handler function for the consumer.
+ * @param {Comparer} [compareHandler] - Optional custom comparer function.
+ * @memberOf module:utils
+ */
 export class ConsumerRunner extends LoggedClass {
   private readonly action: string;
   private readonly handler: ConsumerHandler;
@@ -307,6 +408,40 @@ export class ConsumerRunner extends LoggedClass {
     return this.waitForChildExit();
   }
 
+  /**
+   * @description Runs the consumer and producer processes.
+   * @summary Starts the producer child processes and the consumer handler, then waits for completion and compares results.
+   * @param {number} count - The number of producers.
+   * @param {number} [timeout] - The timeout for producers.
+   * @param {number} times - The number of times to repeat.
+   * @param {boolean} [random] - Whether to use random timeouts.
+   * @return {Promise<ComparerResult>} The comparison result.
+   * @mermaid
+   * sequenceDiagram
+   *   participant Runner as ConsumerRunner
+   *   participant Child as ProducerChild
+   *   participant Handler as ConsumerHandler
+   *   participant Comparer as Comparer
+   *   Runner->>Runner: reset()
+   *   loop For each count
+   *     Runner->>Child: fork()
+   *     Runner->>Runner: Store child process
+   *   end
+   *   Runner->>Child: send(start message)
+   *   loop For each message from Child
+   *     Child->>Runner: message(action)
+   *     Runner->>Runner: store producer log
+   *     Runner->>Handler: call handler
+   *     Handler-->>Runner: return
+   *     Runner->>Runner: record consumer log
+   *     Runner->>Runner: finalizeIfComplete()
+   *   end
+   *   alt Complete
+   *     Runner->>Comparer: compare logs
+   *     Comparer-->>Runner: return result
+   *     Runner-->>Caller: resolve(result)
+   *   end
+   */
   async run(
     count: number,
     timeout: number | undefined,

@@ -1,8 +1,9 @@
 import * as fs from "fs";
 import * as path from "path";
-import { TestReporter } from "../../src/utils/tests";
+import { runAndReport, TestReporter } from "../../src/tests";
 import { MdTableDefinition } from "../../src/utils/md";
 import * as fsUtils from "../../src/utils/fs";
+import { StandardOutputWriter } from "../../src/index";
 
 // Mock dependencies
 jest.mock("fs");
@@ -286,6 +287,37 @@ describe("TestReporter", () => {
       expect(reportSpy).toHaveBeenCalledWith(reference, buffer, "image");
 
       reportSpy.mockRestore();
+    });
+  });
+
+  describe("output command", () => {
+    it("should call report message with command result", async () => {
+      const cmd = runAndReport(
+        'echo "lalala"',
+        {},
+        StandardOutputWriter,
+        reporter
+      );
+
+      await expect(cmd.promise).resolves.toBeDefined();
+
+      expect(TestReporter["addMsgFunction"]).toHaveBeenCalledWith({
+        message: expect.stringMatching(
+          `TestReporter output command should call report message with command result - echo \\"lalala\\".txt`
+        ),
+      });
+    });
+
+    it("should call report message with command error", async () => {
+      const cmd = runAndReport('sdasdasd"', {}, StandardOutputWriter, reporter);
+
+      await expect(cmd.promise).rejects.toThrow();
+
+      expect(TestReporter["addMsgFunction"]).toHaveBeenCalledWith({
+        message: expect.stringMatching(
+          `TestReporter output command should call report message with command error - sdasdasd\\".txt`
+        ),
+      });
     });
   });
 });
