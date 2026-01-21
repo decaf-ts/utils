@@ -33,12 +33,17 @@ export function runAndReport<R = string>(
     };
 
     const rejection = async (reject: any, error: any) => {
-      await reporter.reportData(
-        `${expect.getState().currentTestName || "no test name"} - ${command}`,
-        `${sf(commandPrefix, { cwd: opts.cwd || process.cwd() })}${command}\n${style("FAIL").red.bold}\n${error}`,
-        "text",
-        true
-      );
+      try {
+        await reporter.reportData(
+          `${expect.getState().currentTestName || "no test name"} - ${command}`,
+          `${sf(commandPrefix, { cwd: opts.cwd || process.cwd() })}${command}\n${style("FAIL").red.bold}\n${error}`,
+          "text",
+          true
+        );
+      } catch (e: unknown) {
+        console.log(e);
+      }
+
       reject(error);
     };
 
