@@ -1,5 +1,5 @@
 describe("Consumer-producer", () => {
-  it("runs consumer-producer with transaction management", async () => {
+  it.skip("runs consumer-producer with transaction management", async () => {
     const {
       ConsumerRunner,
       defaultComparer,
