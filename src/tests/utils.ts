@@ -41,7 +41,7 @@ export function runAndReport<R = string>(
           true
         );
       } catch (e: unknown) {
-        console.log(e);
+        console.error(e);
       }
 
       reject(error);
