@@ -129,6 +129,10 @@ const options = {
     type: "boolean",
     default: false,
   },
+  entry: {
+    type: "string",
+    default: "index.ts",
+  },
   banner: {
     type: "boolean",
     default: false,
