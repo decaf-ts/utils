@@ -169,14 +169,41 @@ export class TestReporter {
    * @return {Promise<void>} Promise that resolves when helpers are imported
    */
   private async importHelpers(): Promise<void> {
+    this.ensureJestHtmlReportersTempDirs();
     this.deps = await installIfNotAvailable([dependencies[0]], this.deps);
     // if (!process.env[JestReportersTempPathEnvKey])
     //   process.env[JestReportersTempPathEnvKey] = './workdocs/reports';
-    const { addMsg, addAttach } = await normalizeImport(
-      import(`${dependencies[0]}/helper`)
-    );
+    const helper = await normalizeImport(import(`${dependencies[0]}/helper`));
+    const { addMsg, addAttach } = helper as {
+      addMsg: typeof TestReporter.addMsgFunction;
+      addAttach: typeof TestReporter.addAttachFunction;
+      tempDirPath?: string;
+      dataDirPath?: string;
+      attachDirPath?: string;
+    };
+    this.overrideJestHtmlReportersTempPaths(helper as Record<string, unknown>);
     TestReporter.addMsgFunction = addMsg;
     TestReporter.addAttachFunction = addAttach;
+  }
+
+  private getJestHtmlReportersTempDir(): string {
+    return (
+      process.env[JestReportersTempPathEnvKey] ||
+      path.join(this.basePath, "jest-html-reporters-temp")
+    );
+  }
+
+  private ensureJestHtmlReportersTempDirs() {
+    const tempDir = this.getJestHtmlReportersTempDir();
+    fs.mkdirSync(path.join(tempDir, "data"), { recursive: true });
+    fs.mkdirSync(path.join(tempDir, "images"), { recursive: true });
+  }
+
+  private overrideJestHtmlReportersTempPaths(helper: Record<string, unknown>) {
+    const tempDir = this.getJestHtmlReportersTempDir();
+    helper.tempDirPath = tempDir;
+    helper.dataDirPath = path.join(tempDir, "data");
+    helper.attachDirPath = path.join(tempDir, "images");
   }
 
   /**
