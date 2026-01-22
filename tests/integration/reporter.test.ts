@@ -1,8 +1,5 @@
-import * as fs from "fs";
 import * as path from "path";
 import { runAndReport, TestReporter } from "../../src/tests";
-import { MdTableDefinition } from "../../src/utils/md";
-import * as fsUtils from "../../src/utils/fs";
 import { StandardOutputWriter } from "../../src/index";
 
 process.env.JEST_HTML_REPORTERS_TEMP_DIR_PATH = path.join(
