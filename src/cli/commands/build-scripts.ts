@@ -131,7 +131,7 @@ const options = {
   },
   entry: {
     type: "string",
-    default: "index.ts",
+    default: "./src/index.ts",
   },
   banner: {
     type: "boolean",
@@ -578,7 +578,7 @@ export class BuildScripts extends Command<
     mode: Modes,
     isDev: boolean,
     isLib: boolean,
-    entryFile: string = "src/index.ts",
+    entryFile: string = "./src/index.ts",
     nameOverride: string = this.pkgName,
     externalsArg?: string | string[],
     includeArg: string | string[] = [
@@ -783,6 +783,7 @@ export class BuildScripts extends Command<
   }
 
   private async buildByEnv(
+    entryFile: string = "./src/index.ts",
     isDev: boolean,
     mode: BuildMode = BuildMode.ALL,
     includesArg?: string | string[],
@@ -801,21 +802,21 @@ export class BuildScripts extends Command<
     } catch (e: unknown) {
       // do nothing
     }
-    fs.mkdirSync("lib");
-    fs.mkdirSync("dist");
 
     if ([BuildMode.ALL, BuildMode.BUILD].includes(mode)) {
+      fs.mkdirSync("lib");
       await this.build(isDev, Modes.ESM);
       await this.build(isDev, Modes.CJS);
       this.patchFiles("lib");
     }
 
     if ([BuildMode.ALL, BuildMode.BUNDLE].includes(mode)) {
+      fs.mkdirSync("dist");
       await this.bundle(
         Modes.ESM,
         isDev,
         false,
-        "src/index.ts",
+        entryFile || "./src/index.ts",
         this.pkgName,
         externalsArg,
         includesArg
@@ -824,7 +825,7 @@ export class BuildScripts extends Command<
         Modes.CJS,
         isDev,
         false,
-        "src/index.ts",
+        entryFile || "./src/index.ts",
         this.pkgName,
         externalsArg,
         includesArg
@@ -845,11 +846,12 @@ export class BuildScripts extends Command<
    * @returns {Promise<void>}
    */
   async buildDev(
+    entryFile: string = "./src/index.ts",
     mode: BuildMode = BuildMode.ALL,
     includesArg?: string | string[],
     externalsArg?: string | string[]
   ) {
-    return this.buildByEnv(true, mode, includesArg, externalsArg);
+    return this.buildByEnv(entryFile, true, mode, includesArg, externalsArg);
   }
 
   /**
@@ -862,11 +864,12 @@ export class BuildScripts extends Command<
    * @returns {Promise<void>}
    */
   async buildProd(
+    entryFile: string = "./src/index.ts",
     mode: BuildMode = BuildMode.ALL,
     includesArg?: string | string[],
     externalsArg?: string | string[]
   ) {
-    return this.buildByEnv(false, mode, includesArg, externalsArg);
+    return this.buildByEnv(entryFile, false, mode, includesArg, externalsArg);
   }
 
   /**
@@ -932,12 +935,23 @@ export class BuildScripts extends Command<
     answers: LoggingConfig &
       typeof DefaultCommandValues & { [k in keyof typeof options]: unknown }
   ): Promise<string | void | R> {
-    const { dev, prod, docs, buildMode, includes, externals } = answers as any;
+    const { dev, prod, docs, buildMode, includes, externals, entry } =
+      answers as any;
     if (dev) {
-      return await this.buildDev(buildMode as BuildMode, includes, externals);
+      return await this.buildDev(
+        entry || "./src/index.ts",
+        buildMode as BuildMode,
+        includes,
+        externals
+      );
     }
     if (prod) {
-      return await this.buildProd(buildMode as BuildMode, includes, externals);
+      return await this.buildProd(
+        entry || "./src/index.ts",
+        buildMode as BuildMode,
+        includes,
+        externals
+      );
     }
     if (docs) {
       return await this.buildDocs();
