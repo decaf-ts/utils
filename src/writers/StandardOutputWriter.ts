@@ -4,6 +4,7 @@ import { PromiseExecutor } from "../utils/types";
 import { OutputType } from "./types";
 import { style } from "styled-string-builder";
 import { Logger, Logging } from "@decaf-ts/logging";
+import { parse } from "shell-quote";
 
 /**
  * @description A standard output writer for handling command execution output.
@@ -23,16 +24,16 @@ import { Logger, Logging } from "@decaf-ts/logging";
  * ```typescript
  * import { StandardOutputWriter } from '@decaf-ts/utils';
  * import { PromiseExecutor } from '@decaf-ts/utils';
- * 
+ *
  * // Create a promise executor
  * const executor: PromiseExecutor<string> = {
  *   resolve: (value) => console.log(`Resolved: ${value}`),
  *   reject: (error) => console.error(`Rejected: ${error.message}`)
  * };
- * 
+ *
  * // Create a standard output writer
  * const writer = new StandardOutputWriter('ls -la', executor);
- * 
+ *
  * // Use the writer to handle command output
  * writer.data('File list output...');
  * writer.exit(0, ['Command executed successfully']);
@@ -44,18 +45,18 @@ import { Logger, Logging } from "@decaf-ts/logging";
  *   participant StandardOutputWriter
  *   participant Logger
  *   participant PromiseExecutor
- *   
+ *
  *   Client->>StandardOutputWriter: new StandardOutputWriter(cmd, lock)
  *   StandardOutputWriter->>Logger: Logging.for(cmd)
- *   
+ *
  *   Client->>StandardOutputWriter: data(chunk)
  *   StandardOutputWriter->>StandardOutputWriter: log("stdout", chunk)
  *   StandardOutputWriter->>Logger: logger.info(log)
- *   
+ *
  *   Client->>StandardOutputWriter: error(chunk)
  *   StandardOutputWriter->>StandardOutputWriter: log("stderr", chunk)
  *   StandardOutputWriter->>Logger: logger.info(log)
- *   
+ *
  *   Client->>StandardOutputWriter: exit(code, logs)
  *   StandardOutputWriter->>StandardOutputWriter: log("stdout", exitMessage)
  *   alt code === 0
@@ -148,9 +149,17 @@ export class StandardOutputWriter<R = string> implements OutputWriter {
    * @return A tuple containing the command and its arguments as separate elements.
    */
   parseCommand(command: string | string[]): [string, string[]] {
-    command = typeof command === "string" ? command.split(" ") : command;
-    this.cmd = command.join(" ");
-    return [command[0], command.slice(1)];
+    if (Array.isArray(command)) {
+      this.cmd = command.join(" ");
+      return [command[0], command.slice(1)];
+    }
+
+    const parts = parse(command)
+      .filter((p) => typeof p === "string")
+      .map(String);
+
+    this.cmd = parts.join(" ");
+    return [parts[0], parts.slice(1)];
   }
 
   /**

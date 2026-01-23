@@ -1,11 +1,15 @@
 import * as path from "path";
 import { runAndReport, TestReporter } from "../../src/tests";
-import { StandardOutputWriter } from "../../src/index";
+import { addAttach, addMsg } from "jest-html-reporters/helper";
 
-process.env.JEST_HTML_REPORTERS_TEMP_DIR_PATH = path.join(
-  __dirname,
-  "../../workdocs/reports/evidences"
-);
+import { normalizeImport, StandardOutputWriter } from "../../src/index";
+
+// process.env.JEST_HTML_REPORTERS_TEMP_DIR_PATH = path.join(
+//   __dirname,
+//   "../../workdocs/reports"
+// );
+
+jest.setTimeout(2546548634646865);
 
 describe("TestReporter", () => {
   let reporter: TestReporter;
@@ -21,18 +25,18 @@ describe("TestReporter", () => {
 
   it("reports", async () => {
     const reporter = new TestReporter();
-
     await (reporter as any).importHelpers();
-
     const cmd = runAndReport(
       'echo "laalla"',
       { env: { ...process.env } },
       StandardOutputWriter,
       reporter
-    );
-
-    console.log("test");
-
-    await cmd.promise;
+    ); // will show in report logs (suite-level)
+    const res = await cmd.promise;
+    // await reporter.reportAttachment(
+    //   "test",
+    //   Buffer.from(JSON.stringify(cmd, null, 2), "utf-8")
+    // );
+    console.log(res);
   });
 });
