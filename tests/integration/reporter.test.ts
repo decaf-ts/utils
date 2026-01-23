@@ -1,7 +1,10 @@
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import * as path from "path";
 import { runAndReport, TestReporter } from "../../src/tests";
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { addAttach, addMsg } from "jest-html-reporters/helper";
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { normalizeImport, StandardOutputWriter } from "../../src/index";
 
 // process.env.JEST_HTML_REPORTERS_TEMP_DIR_PATH = path.join(
@@ -9,7 +12,7 @@ import { normalizeImport, StandardOutputWriter } from "../../src/index";
 //   "../../workdocs/reports"
 // );
 
-jest.setTimeout(2546548634646865);
+jest.setTimeout(60000);
 
 describe("TestReporter", () => {
   let reporter: TestReporter;
