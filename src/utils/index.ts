@@ -3,3 +3,4 @@ export * from "./fs";
 export * from "./http";
 export * from "./types";
 export * from "./utils";
+export * from "./performanceRunner";
