@@ -89,14 +89,14 @@ describe("fs utils - real filesystem", () => {
 
   it("patchFile throws when file is missing", () => {
     const missing = path.join(baseDir, "does-not-exist.txt");
-    expect(() => patchFile(missing, { KEY: "value" })).toThrowError(
+    expect(() => patchFile(missing, { KEY: "value" })).toThrow(
       /File not found/
     );
   });
 
   it("readFile propagates fs errors", () => {
     const missing = path.join(baseDir, "missing.txt");
-    expect(() => readFile(missing)).toThrowError(/Error reading file/);
+    expect(() => readFile(missing)).toThrow(/Error reading file/);
   });
 
   it("getAllFiles applies filter when provided", () => {
@@ -116,12 +116,12 @@ describe("fs utils - real filesystem", () => {
   it("copyFile throws when source is missing", () => {
     const src = path.join(baseDir, "missing-src.txt");
     const dest = path.join(baseDir, "unused-dest.txt");
-    expect(() => copyFile(src, dest)).toThrowError(/Source path/);
+    expect(() => copyFile(src, dest)).toThrow(/Source path/);
   });
 
   it("deletePath errors on missing path", () => {
     const missing = path.join(baseDir, "missing-dir");
-    expect(() => deletePath(missing)).toThrowError(/Error Deleting/);
+    expect(() => deletePath(missing)).toThrow(/Error Deleting/);
   });
 
   it("getPackage and setPackageAttribute work on custom path", () => {

@@ -6,8 +6,7 @@ import {
 } from "../../src/utils/performanceRunner";
 import { JestPerformanceRunner } from "../../src/tests/jestPerformanceRunner";
 
-const TARGET_ENDPOINT =
-  process.env.LOAD_TEST_ENDPOINT ?? "http://localhost:10010/_utils";
+const TARGET_ENDPOINT = process.env.LOAD_TEST_ENDPOINT;
 const perfDebugEnabled = process.env.PERF_VERBOSE === "true";
 
 interface EndpointLoadContext {

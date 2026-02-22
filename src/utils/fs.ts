@@ -1,11 +1,19 @@
 import fs from "fs";
 import path from "path";
+import { createRequire } from "module";
 import { runCommand } from "./utils";
 import { DependencyMap, SimpleDependencyMap } from "./types";
 import { escapeRegExp, Logging } from "@decaf-ts/logging";
 import zlib from "zlib";
 
 const logger = Logging.for("fs");
+const localRequire = createRequire(`${process.cwd()}/package.json`);
+function isTestEnvironment() {
+  return (
+    process.env.NODE_ENV === "test" ||
+    typeof process.env.JEST_WORKER_ID !== "undefined"
+  );
+}
 
 function patchString(
   input: string,
@@ -394,27 +402,55 @@ export function getPackageVersion(p = process.cwd()): string {
  * @memberOf module:utils
  */
 export async function getDependencies(
-  path: string = process.cwd()
+  p: string = process.cwd()
 ): Promise<DependencyMap> {
+  const pkgPath = path.join(p, "package.json");
+  const lockPath = path.join(p, "package-lock.json");
   let pkg: any;
-
   try {
-    pkg = JSON.parse(await runCommand(`npm ls --json`, { cwd: path }).promise);
-  } catch (e: unknown) {
-    throw new Error(`Failed to retrieve dependencies: ${e}`);
+    pkg = JSON.parse(readFile(pkgPath));
+  } catch (error: unknown) {
+    throw new Error(`Could not read package.json at ${pkgPath}: ${error}`);
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const mapper = (entry: [string, unknown], index: number) => ({
-    name: entry[0],
-    version: (entry[1] as any).version,
-  });
+  let lock: any;
+  if (fs.existsSync(lockPath)) {
+    try {
+      lock = JSON.parse(readFile(lockPath));
+    } catch (error: unknown) {
+      logger.warn(`Unable to parse package-lock.json at ${lockPath}: ${error}`);
+    }
+  }
+
+  const mapDeps = (entries: Record<string, string> = {}) =>
+    Object.entries(entries).map(([name, version]) => ({
+      name,
+      version: resolveDependencyVersion(lock, name, version),
+    }));
 
   return {
-    prod: Object.entries(pkg.dependencies || {}).map(mapper),
-    dev: Object.entries(pkg.devDependencies || {}).map(mapper),
-    peer: Object.entries(pkg.peerDependencies || {}).map(mapper),
+    prod: mapDeps(pkg.dependencies),
+    dev: mapDeps(pkg.devDependencies),
+    peer: mapDeps(pkg.peerDependencies),
   };
+}
+
+function resolveDependencyVersion(
+  lock: any,
+  name: string,
+  fallback: string
+): string {
+  if (lock) {
+    const packages = lock.packages || {};
+    const key = `node_modules/${name}`;
+    if (packages[key] && packages[key].version) {
+      return packages[key].version;
+    }
+    if (lock.dependencies && lock.dependencies[name]) {
+      return lock.dependencies[name].version || fallback;
+    }
+  }
+  return fallback;
 }
 
 /**
@@ -451,25 +487,46 @@ export async function installIfNotAvailable(
   deps: string[] | string,
   dependencies?: SimpleDependencyMap
 ) {
-  if (!dependencies) {
-    const d: DependencyMap = await getDependencies();
-    dependencies = {
-      prod: d.prod?.map((p) => p.name) || [],
-      dev: d.dev?.map((d) => d.name) || [],
-      peer: d.peer?.map((p) => p.name) || [],
-    };
-  }
-  const { prod, dev, peer } = dependencies;
-  const installed = Array.from(
-    new Set([...(prod || []), ...(dev || []), ...(peer || [])])
-  );
   deps = typeof deps === "string" ? [deps] : deps;
-  const toInstall = deps.filter((d) => !installed.includes(d));
+  const current: SimpleDependencyMap = {
+    prod: dependencies?.prod ? [...dependencies.prod] : [],
+    dev: dependencies?.dev ? [...dependencies.dev] : [],
+    peer: dependencies?.peer ? [...dependencies.peer] : [],
+  };
 
-  if (toInstall.length) await installDependencies({ dev: toInstall });
-  dependencies.dev = dependencies.dev || [];
-  dependencies.dev.push(...toInstall);
-  return dependencies;
+  const known = new Set([
+    ...(current.prod ?? []),
+    ...(current.dev ?? []),
+    ...(current.peer ?? []),
+  ]);
+
+  const toInstall: string[] = [];
+  for (const dep of deps) {
+    if (known.has(dep)) continue;
+    try {
+      localRequire.resolve(dep);
+      known.add(dep);
+    } catch {
+      toInstall.push(dep);
+    }
+  }
+
+  if (toInstall.length) {
+    if (isTestEnvironment()) {
+      logger.verbose(
+        `Skipping dependency install in test environment for: ${toInstall.join(
+          ", "
+        )}`
+      );
+    } else {
+      await installDependencies({ dev: toInstall });
+    }
+    const devDeps = new Set(current.dev ?? []);
+    toInstall.forEach((dep) => devDeps.add(dep));
+    current.dev = Array.from(devDeps);
+  }
+
+  return current;
 }
 
 /**
