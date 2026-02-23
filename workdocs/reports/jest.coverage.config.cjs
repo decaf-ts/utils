@@ -1,7 +1,9 @@
-import { Config } from "@jest/types";
-import conf from "../../jest.config";
+// import { Config } from "@jest/types";
+const base = require("../../jest.config.cjs");
 
-const config: Config.InitialOptions = {
+/** @type {import('@jest/types').Config.InitialOptions} */
+module.exports = {
+  ...base,
   collectCoverageFrom: [
     "src/index.ts",
     "src/output/**/*.ts",
@@ -18,7 +20,7 @@ const config: Config.InitialOptions = {
     "src/utils/tests.ts",
     "src/utils/utils.ts",
   ],
-  ...conf,
+  // ...conf,
   collectCoverage: true,
   coverageDirectory: "./workdocs/reports/coverage",
   reporters: [
@@ -55,4 +57,4 @@ const config: Config.InitialOptions = {
   },
 };
 
-export default config;
+// export default config;
