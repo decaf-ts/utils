@@ -312,6 +312,19 @@ export class PerformanceRunner<TContext = Record<string, unknown>> {
     }
 
     await this.logSummary(results);
+
+    if (this.scenario.failOnError !== false) {
+      const totalFailures = results.reduce(
+        (acc, r) => acc + r.aggregated.failureCount,
+        0
+      );
+      if (totalFailures > 0) {
+        throw new Error(
+          `Scenario "${this.scenario.name}" recorded ${totalFailures} failures across ${results.length} phases`
+        );
+      }
+    }
+
     return results;
   }
 
@@ -361,12 +374,6 @@ export class PerformanceRunner<TContext = Record<string, unknown>> {
 
     if (phase.config.pauseAfterMs) {
       await delay(phase.config.pauseAfterMs);
-    }
-
-    if (aggregated.failureCount > 0 && this.scenario.failOnError !== false) {
-      throw new Error(
-        `Phase ${phase.name} recorded ${aggregated.failureCount} failures`
-      );
     }
 
     return {
@@ -580,6 +587,36 @@ export class PerformanceRunner<TContext = Record<string, unknown>> {
       loadStart,
       loadEnd,
     };
+  }
+
+  protected logPhaseTable(result: PhaseResult<TContext>): void {
+    const headers = [
+      "Phase",
+      "Mode",
+      "Iterations",
+      "Total ms",
+      "Avg ms",
+      "Min ms",
+      "Max ms",
+      "Success",
+      "Failures",
+      "Load range",
+    ];
+    const row = [
+      result.phase.name,
+      result.config.mode,
+      result.config.iterations.toString(),
+      result.aggregated.totalDurationMs.toFixed(2),
+      result.aggregated.averageMs.toFixed(2),
+      result.aggregated.minMs.toFixed(2),
+      result.aggregated.maxMs.toFixed(2),
+      result.aggregated.successCount.toString(),
+      result.aggregated.failureCount.toString(),
+      `${result.aggregated.loadStart.toFixed(2)} → ${result.aggregated.loadEnd.toFixed(2)}`,
+    ];
+    console.log(
+      formatTable(`Phase result: ${result.phase.name}`, headers, [row])
+    );
   }
 
   protected async logSummary(results: PhaseResult<TContext>[]): Promise<void> {
