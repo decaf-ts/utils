@@ -60,6 +60,8 @@ export interface PhaseResult<TContext = Record<string, unknown>> {
   aggregated: AggregatedMetrics;
   context: TContext;
   segmentCount: number;
+  /** Wall-clock elapsed ms for the segment loop (excludes warmup and pauseAfterMs) */
+  wallClockMs: number;
 }
 
 export interface PhaseGeneratorMetadata<TContext = Record<string, unknown>> {
@@ -339,6 +341,8 @@ export class PerformanceRunner<TContext = Record<string, unknown>> {
     );
     const collected: IterationMetric[] = [];
 
+    const phaseStart = Date.now();
+
     for (
       let segmentIndex = 0;
       segmentIndex < segments.length;
@@ -369,6 +373,8 @@ export class PerformanceRunner<TContext = Record<string, unknown>> {
       }
     }
 
+    const wallClockMs = Date.now() - phaseStart;
+
     const sorted = [...collected].sort((a, b) => a.iteration - b.iteration);
     const aggregated = this.aggregateMetrics(sorted);
 
@@ -383,6 +389,7 @@ export class PerformanceRunner<TContext = Record<string, unknown>> {
       aggregated,
       context,
       segmentCount: segments.length,
+      wallClockMs,
     };
   }
 
@@ -594,7 +601,8 @@ export class PerformanceRunner<TContext = Record<string, unknown>> {
       "Phase",
       "Mode",
       "Iterations",
-      "Total ms",
+      "Wall ms",
+      "RPS",
       "Avg ms",
       "Min ms",
       "Max ms",
@@ -602,11 +610,13 @@ export class PerformanceRunner<TContext = Record<string, unknown>> {
       "Failures",
       "Load range",
     ];
+    const rps = (result.config.iterations / (result.wallClockMs / 1000)).toFixed(1);
     const row = [
       result.phase.name,
       result.config.mode,
       result.config.iterations.toString(),
-      result.aggregated.totalDurationMs.toFixed(2),
+      result.wallClockMs.toFixed(0),
+      rps,
       result.aggregated.averageMs.toFixed(2),
       result.aggregated.minMs.toFixed(2),
       result.aggregated.maxMs.toFixed(2),
@@ -628,7 +638,8 @@ export class PerformanceRunner<TContext = Record<string, unknown>> {
       "Phase",
       "Mode",
       "Iterations",
-      "Total ms",
+      "Wall ms",
+      "RPS",
       "Avg ms",
       "Min ms",
       "Max ms",
@@ -637,18 +648,22 @@ export class PerformanceRunner<TContext = Record<string, unknown>> {
       "Load range",
     ];
 
-    const rows = results.map((result) => [
-      result.phase.name,
-      result.config.mode,
-      result.config.iterations.toString(),
-      result.aggregated.totalDurationMs.toFixed(2),
-      result.aggregated.averageMs.toFixed(2),
-      result.aggregated.minMs.toFixed(2),
-      result.aggregated.maxMs.toFixed(2),
-      result.aggregated.successCount.toString(),
-      result.aggregated.failureCount.toString(),
-      `${result.aggregated.loadStart.toFixed(2)} → ${result.aggregated.loadEnd.toFixed(2)}`,
-    ]);
+    const rows = results.map((result) => {
+      const rps = (result.config.iterations / (result.wallClockMs / 1000)).toFixed(1);
+      return [
+        result.phase.name,
+        result.config.mode,
+        result.config.iterations.toString(),
+        result.wallClockMs.toFixed(0),
+        rps,
+        result.aggregated.averageMs.toFixed(2),
+        result.aggregated.minMs.toFixed(2),
+        result.aggregated.maxMs.toFixed(2),
+        result.aggregated.successCount.toString(),
+        result.aggregated.failureCount.toString(),
+        `${result.aggregated.loadStart.toFixed(2)} → ${result.aggregated.loadEnd.toFixed(2)}`,
+      ];
+    });
 
     console.log(
       formatTable(
