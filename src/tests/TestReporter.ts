@@ -351,14 +351,17 @@ export class TestReporter {
    * @param {any} config - Chart.js configuration object
    * @return {Promise<void>} Promise that resolves when graph is reported
    */
-  async reportGraph(reference: string, config: any) {
+  async reportGraph(
+    reference: string,
+    config: any,
+    width = 1200,
+    height = 600
+  ): Promise<Buffer> {
     this.deps = await installIfNotAvailable([dependencies[2]], this.deps);
     const { ChartJSNodeCanvas } = await normalizeImport(
       import(dependencies[2])
     );
 
-    const width = 600; //px
-    const height = 800; //px
     const backgroundColour = "white"; // Uses https://www.w3schools.com/tags/canvas_fillstyle.asp
     const chartJSNodeCanvas = new ChartJSNodeCanvas({
       width,
@@ -367,7 +370,8 @@ export class TestReporter {
     });
 
     const image = await chartJSNodeCanvas.renderToBuffer(config);
-    return await this.reportImage(reference, image);
+    await this.reportImage(reference, image);
+    return image;
   }
   /**
    * @description Reports an image to the test report
