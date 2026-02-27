@@ -336,7 +336,7 @@ export class TestReporter {
     let txt: string;
     try {
       const json2md = await normalizeImport(import(`${dependencies[1]}`));
-      txt = json2md(tableDef);
+      txt = json2md([{ table: tableDef }]);
     } catch (e: unknown) {
       throw new Error(`Could not convert JSON to Markdown - ${e}`);
     }
