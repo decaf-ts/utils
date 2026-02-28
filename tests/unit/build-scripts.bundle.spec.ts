@@ -26,6 +26,7 @@ jest.mock("rollup", () => ({
         capturedOutputs.push(output);
         return { output: [] };
       },
+      close: async () => undefined,
     };
   },
 }));

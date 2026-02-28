@@ -14,7 +14,7 @@ import {
 } from "../../utils";
 import fs from "fs";
 import path from "path";
-import { InputOptions, OutputOptions, rollup, RollupBuild } from "rollup";
+import type { InputOptions, OutputOptions, RollupBuild } from "rollup";
 import typescript from "@rollup/plugin-typescript";
 import commonjs from "@rollup/plugin-commonjs";
 import { nodeResolve } from "@rollup/plugin-node-resolve";
@@ -767,6 +767,7 @@ export class BuildScripts extends Command<
     ];
 
     try {
+      const { rollup } = (await import("rollup")) as typeof import("rollup");
       const bundle = await rollup(input as any);
       // only log watchFiles at verbose level to avoid noisy console output
       log.verbose(bundle.watchFiles);
@@ -776,7 +777,11 @@ export class BuildScripts extends Command<
         }
       }
 
-      await generateOutputs(bundle);
+      try {
+        await generateOutputs(bundle);
+      } finally {
+        await bundle.close();
+      }
     } catch (e: unknown) {
       throw new Error(`Failed to bundle: ${e}`);
     }
