@@ -36,6 +36,12 @@ export interface AddMsgParams {
  */
 export type PayloadType = "json" | "image" | "text" | "md";
 
+export type EvidenceData = {
+  name: string;
+  content: string | Buffer;
+  path: string;
+};
+
 /**
  * @description Environment variable key for Jest HTML reporters temporary directory path
  * @summary Constant defining the environment variable key for Jest HTML reporters
@@ -43,6 +49,22 @@ export type PayloadType = "json" | "image" | "text" | "md";
  * @memberOf module:utils
  */
 export const JestReportersTempPathEnvKey = "JEST_HTML_REPORTERS_TEMP_DIR_PATH";
+
+/**
+ * @description Environment variable key to enable file-based evidence storage
+ * @summary Constant defining the environment variable key for storage enablement
+ * @const TestReporterStorageEnabledEnvKey
+ * @memberOf module:utils
+ */
+export const TestReporterStorageEnabledEnvKey = "TEST_REPORTER_STORAGE_ENABLED";
+
+/**
+ * @description Environment variable key for the base path of evidence storage
+ * @summary Constant defining the environment variable key for storage path
+ * @const TestReporterStoragePathEnvKey
+ * @memberOf module:utils
+ */
+export const TestReporterStoragePathEnvKey = "TEST_REPORTER_STORAGE_PATH";
 
 /**
  * @description Array of dependencies required by the test reporter
@@ -148,19 +170,98 @@ export class TestReporter {
    */
   private deps?: SimpleDependencyMap;
 
+  /**
+   * @description Checks if storage is enabled via environment variables
+   * @summary Static getter for storage enablement status
+   * @type {boolean}
+   */
+  public static get storageEnabled(): boolean {
+    return (
+      process.env[TestReporterStorageEnabledEnvKey] === "true" ||
+      process.env["TEST_REPORTER_STORE_EVIDENCE"] === "true"
+    );
+  }
+
+  /**
+   * @description Gets the base path for evidence storage from environment variables or default
+   * @summary Static getter for evidence storage base path
+   * @type {string}
+   */
+  public static get storagePath(): string {
+    return (
+      process.env[TestReporterStoragePathEnvKey] ||
+      path.join(process.cwd(), "workdocs", "reports", "evidences")
+    );
+  }
+
   constructor(
     protected testCase: string = "tests",
-    protected basePath = path.join(
-      process.cwd(),
-      "workdocs",
-      "reports",
-      "evidences"
-    )
+    protected basePath = TestReporter.storagePath
   ) {
+    const parentPath = basePath;
     this.basePath = path.join(basePath, this.testCase);
     if (!fs.existsSync(this.basePath)) {
-      fs.mkdirSync(basePath, { recursive: true });
+      fs.mkdirSync(parentPath, { recursive: true });
     }
+  }
+
+  /**
+   * @description Retrieves all evidences for a given describe and it name
+   * @summary Searches the storage directory for matching evidences using string inclusion
+   * @param {string} describeName - Name of the describe block to match
+   * @param {string} itName - Name of the it block to match
+   * @return {EvidenceData[]} Array of matching evidences
+   */
+  public static getEvidencesOf(
+    describeName: string,
+    itName: string
+  ): EvidenceData[] {
+    const root = TestReporter.storagePath;
+    if (!fs.existsSync(root)) return [];
+
+    const evidences: {
+      name: string;
+      content: string | Buffer;
+      path: string;
+    }[] = [];
+
+    const normalize = (s: string) => s.toLowerCase().replace(/[- ]/g, "");
+    const nDescribe = normalize(describeName);
+    const nIt = normalize(itName);
+
+    const describeDirs = fs
+      .readdirSync(root)
+      .filter((d) => normalize(d).includes(nDescribe));
+
+    for (const dDir of describeDirs) {
+      const dPath = path.join(root, dDir);
+      if (!fs.statSync(dPath).isDirectory()) continue;
+
+      const itDirs = fs
+        .readdirSync(dPath)
+        .filter((i) => normalize(i).includes(nIt));
+      for (const iDir of itDirs) {
+        const iPath = path.join(dPath, iDir);
+        if (!fs.statSync(iPath).isDirectory()) continue;
+
+        const files = fs.readdirSync(iPath);
+        for (const file of files) {
+          const filePath = path.join(iPath, file);
+          if (fs.statSync(filePath).isFile()) {
+            const content = fs.readFileSync(filePath);
+            const isText = [".json", ".txt", ".md"].some((ext) =>
+              file.endsWith(ext)
+            );
+            evidences.push({
+              name: file,
+              path: filePath,
+              content: isText ? content.toString("utf-8") : content,
+            });
+          }
+        }
+      }
+    }
+    return evidences;
   }
 
   /**
@@ -258,20 +359,23 @@ export class TestReporter {
         | typeof this.reportAttachment = this.reportMessage.bind(this);
       let extension: ".png" | ".txt" | ".md" | ".json" = ".txt";
 
+      let finalData = data;
+
       switch (type) {
         case "image":
-          data = Buffer.from(data as Buffer);
+          finalData = Buffer.from(data as Buffer);
           extension = ".png";
           attachFunction = this.reportAttachment.bind(this);
           break;
         case "json":
           if (trim) {
-            if ((data as { request?: unknown }).request)
-              delete (data as { request?: unknown })["request"];
-            if ((data as { config?: unknown }).config)
-              delete (data as { config?: unknown })["config"];
+            // we clone to avoid modifying the original if it was an object passed by reference
+            const dataToTrim = JSON.parse(JSON.stringify(data));
+            if (dataToTrim.request) delete dataToTrim.request;
+            if (dataToTrim.config) delete dataToTrim.config;
+            finalData = dataToTrim;
           }
-          data = JSON.stringify(data, null, 2);
+          finalData = JSON.stringify(finalData, null, 2);
           extension = ".json";
           break;
         case "md":
@@ -283,13 +387,72 @@ export class TestReporter {
         default:
           console.log(`Unsupported type ${type}. assuming text`);
       }
-      reference = reference.includes("\n")
-        ? reference
-        : `${reference}${extension}`;
-      await attachFunction(reference, data as Buffer | string);
+
+      const refWithExt =
+        reference.includes("\n") || reference.includes(extension)
+          ? reference
+          : `${reference}${extension}`;
+
+      await attachFunction(refWithExt, finalData as Buffer | string);
+
+      if (TestReporter.storageEnabled) {
+        await this.storeEvidence(reference, finalData, type, extension);
+      }
     } catch (e: unknown) {
       throw new Error(
         `Could not store attach artifact ${reference} under to test report ${this.testCase} - ${e}`
+      );
+    }
+  }
+
+  /**
+   * @description Stores evidence to a file in the specified directory structure
+   * @summary Internal method to handle file-based storage of test artifacts
+   * @param {string} reference - Reference identifier for the data
+   * @param {any} data - Data to be stored
+   * @param {PayloadType} type - Type of the payload
+   * @param {string} extension - File extension to use
+   * @return {Promise<void>}
+   */
+  private async storeEvidence(
+    reference: string,
+    data: any,
+    type: PayloadType,
+    extension: string
+  ): Promise<void> {
+    let itName = "unknown-it";
+    try {
+      const state = (global as any).expect?.getState();
+      if (state?.currentTestName) {
+        itName = state.currentTestName;
+        if (itName.startsWith(this.testCase)) {
+          itName = itName.substring(this.testCase.length).trim();
+        }
+      }
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    } catch (e) {
+      // Ignore
+    }
+
+    const sanitizedItName =
+      itName.replace(/[/\\?%*:|"<>]/g, "-") || "unknown-it";
+    const evidenceDir = path.join(this.basePath, sanitizedItName);
+
+    if (!fs.existsSync(evidenceDir)) {
+      fs.mkdirSync(evidenceDir, { recursive: true });
+    }
+
+    const fileName = reference.includes(extension)
+      ? reference
+      : `${reference}${extension}`;
+    const filePath = path.join(evidenceDir, fileName);
+
+    if (type === "image" || Buffer.isBuffer(data)) {
+      fs.writeFileSync(filePath, data);
+    } else {
+      fs.writeFileSync(
+        filePath,
+        typeof data === "string" ? data : JSON.stringify(data, null, 2)
       );
     }
   }

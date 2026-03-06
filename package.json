@@ -99,10 +99,10 @@
   "dependencies": {
     "@decaf-ts/logging": "latest",
     "@eslint/js": "^9.25.1",
-    "@rollup/plugin-commonjs": "^28.0.9",
+    "@rollup/plugin-commonjs": "^29.0.2",
     "@rollup/plugin-json": "^6.1.0",
     "@rollup/plugin-node-resolve": "^16.0.3",
-    "@rollup/plugin-terser": "^0.4.4",
+    "@rollup/plugin-terser": "^1.0.0",
     "@rollup/plugin-typescript": "^12.3.0",
     "@stylistic/eslint-plugin": "^4.2.0",
     "@types/jest": "^30.0.0",
@@ -126,7 +126,7 @@
     "prettier": "3.5.3",
     "prompts": "^2.4.2",
     "rimraf": "^6.0.1",
-    "rollup": "^4.0.0",
+    "rollup": "^4.59.0",
     "shell-quote": "^1.8.3",
     "styled-string-builder": "latest",
     "ts-jest": "^29.4.6",
@@ -136,10 +136,5 @@
     "typed-object-accumulator": "latest",
     "typescript": "^5.8.3",
     "typescript-eslint": "^8.31.0"
-  },
-  "overrides": {
-    "minimatch": "^10.2.2",
-    "test-exclude": "7.0.1",
-    "serialize-javascript": "^7.0.3"
   }
 }
