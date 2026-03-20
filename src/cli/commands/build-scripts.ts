@@ -794,9 +794,12 @@ export class BuildScripts extends Command<
       globals[e] = packageToGlobal(e);
     });
 
+    const outputDir = isLib ? "bin" : "dist";
+    const entryFileName = `${nameOverride ? nameOverride : `.bundle.${!isDev ? "min" : ""}`}${isEsm ? ".js" : ".cjs"}`;
     const outputs: OutputOptions[] = [
       {
-        file: `${isLib ? "bin/" : "dist/"}${nameOverride ? nameOverride : `.bundle.${!isDev ? "min" : ""}`}${isEsm ? ".js" : ".cjs"}`,
+        dir: outputDir,
+        entryFileNames: entryFileName,
         format: isLib ? "cjs" : isEsm ? "esm" : "umd",
         name: pkgName,
         esModule: isEsm,
