@@ -18,7 +18,9 @@
   "types": "lib/index.d.ts",
   "bin": {
     "tag-release": "lib/bin/tag-release.cjs",
-    "build-scripts": "lib/bin/build-scripts.cjs"
+    "build-scripts": "lib/bin/build-scripts.cjs",
+    "release-chain": "lib/bin/release-chain.cjs",
+    "release-chain-dispatch": "lib/bin/release-chain-dispatch.cjs"
   },
   "scripts": {
     "do-install": "NPM_TOKEN=$(cat .npmtoken) npm install",

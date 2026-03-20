@@ -3,6 +3,7 @@ export * from "./input";
 export * from "./output";
 export * from "./utils";
 export * from "./writers";
+export * from "./release-chain";
 
 /**
  * @module utils
