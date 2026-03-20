@@ -221,6 +221,25 @@ const cjs2Transformer = (ext = ".cjs") => {
               undefined
             );
           }
+        } else if (ts.isCallExpression(node)) {
+          const moduleSpecifier = getCallExpressionModuleSpecifier(node);
+          if (
+            moduleSpecifier &&
+            isRelativePathWithoutExtension(moduleSpecifier.text)
+          ) {
+            const resolvedPath = resolvePath(moduleSpecifier.text);
+            const newModuleSpecifier =
+              transformationContext.factory.createStringLiteral(resolvedPath);
+            const updatedArguments = node.arguments.map((arg, index) =>
+              index === 0 ? newModuleSpecifier : arg
+            );
+            return transformationContext.factory.updateCallExpression(
+              node,
+              node.expression,
+              node.typeArguments,
+              transformationContext.factory.createNodeArray(updatedArguments)
+            );
+          }
         }
 
         return ts.visitEachChild(node, visitNode, transformationContext);
@@ -238,15 +257,37 @@ const cjs2Transformer = (ext = ".cjs") => {
         if (node.moduleSpecifier === undefined) return false;
         // only when module specifier is valid
         if (!ts.isStringLiteral(node.moduleSpecifier)) return false;
-        // only when path is relative
+        return isRelativePathWithoutExtension(node.moduleSpecifier.text);
+      }
+
+      function isRelativePathWithoutExtension(rawPath: string) {
+        if (!rawPath.startsWith("./") && !rawPath.startsWith("../")) return false;
+        return path.extname(rawPath) === "";
+      }
+
+      function getCallExpressionModuleSpecifier(
+        node: ts.CallExpression
+      ): ts.StringLiteral | undefined {
         if (
-          !node.moduleSpecifier.text.startsWith("./") &&
-          !node.moduleSpecifier.text.startsWith("../")
-        )
-          return false;
-        // only when module specifier has no extension
-        if (path.extname(node.moduleSpecifier.text) !== "") return false;
-        return true;
+          isDynamicImportCall(node) &&
+          node.arguments.length > 0 &&
+          ts.isStringLiteral(node.arguments[0])
+        ) {
+          return node.arguments[0];
+        }
+        if (
+          ts.isIdentifier(node.expression) &&
+          node.expression.text === "require" &&
+          node.arguments.length > 0 &&
+          ts.isStringLiteral(node.arguments[0])
+        ) {
+          return node.arguments[0];
+        }
+        return undefined;
+      }
+
+      function isDynamicImportCall(node: ts.CallExpression) {
+        return node.expression.kind === ts.SyntaxKind.ImportKeyword;
       }
 
       return ts.visitNode(sourceFile, visitNode) as SourceFile;
