@@ -4,7 +4,7 @@ describe("Consumer-producer", () => {
       ConsumerRunner,
       defaultComparer,
       // eslint-disable-next-line @typescript-eslint/no-require-imports
-    } = require("../../lib/tests/Consumer.cjs");
+    } = require("../../lib/cjs/tests/Consumer.cjs");
 
     const count = 5,
       times = 5;
@@ -66,7 +66,7 @@ describe("Consumer-producer", () => {
       defaultComparer,
       reportingComparer,
       // eslint-disable-next-line @typescript-eslint/no-require-imports
-    } = require("../../lib/tests/Consumer.cjs");
+      } = require("../../lib/cjs/tests/Consumer.cjs");
 
     const count = 2;
     const times = 3;

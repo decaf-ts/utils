@@ -5,7 +5,7 @@
     /* Basic Options */
     // "incremental": true,                         /* Enable incremental compilation */
     "target": "es2022" /* Specify ECMAScript target version: 'ES3' (default), 'ES5', 'ES2015', 'ES2016', 'ES2017', 'ES2018', 'ES2019', 'ES2020', 'ES2021', or 'ESNEXT'. */,
-    "module": "commonjs" /* Specify module code generation: 'none', 'commonjs', 'amd', 'system', 'umd', 'es2015', 'es2020', or 'ESNext'. */,
+    "module": "esnext" /* Build targets override this in build-scripts; keep ESM-friendly defaults for tooling. */,
     "lib": [
       "es2022"
     ] /* Specify library files to be included in the compilation. */,
@@ -21,7 +21,7 @@
     // Build scripts will override to emit inline or external maps as needed.
     "sourceMap": true /* MUST be enabled to allow debugging of code and tests */,
     // "outFile": "./",                             /* Concatenate and emit output to single file. */
-    "outDir": "lib" /* Redirect output structure to the directory. */,
+    "outDir": "lib" /* Build targets override this per output format. */,
     "rootDirs": [
       "src",
       "tests"
@@ -54,7 +54,7 @@
     // "noPropertyAccessFromIndexSignature": true,  /* Require undeclared properties from index signatures to use element accesses. */
 
     /* Module Resolution Options */
-    "moduleResolution": "node" /* Specify module resolution strategy: 'node' (Node.js) or 'classic' (TypeScript pre-1.6). */,
+    "moduleResolution": "bundler" /* Build targets override this when NodeNext validation is required. */,
     // "baseUrl": "./",                             /* Base directory to resolve non-absolute module names. */
     // "paths": {},                                 /* A series of entries which re-map imports to lookup locations relative to the 'baseUrl'. */
     // "rootDirs": [],                              /* List of root folders whose combined content represents the structure of the project at runtime. */

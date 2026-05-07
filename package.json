@@ -5,22 +5,27 @@
   "type": "module",
   "exports": {
     ".": {
-      "require": "./lib/index.cjs",
+      "types": "./lib/types/index.d.ts",
       "import": "./lib/esm/index.js",
-      "types": "./lib/index.d.ts"
+      "require": "./lib/cjs/index.cjs",
+      "default": "./lib/esm/index.js"
     },
     "./tests": {
-      "require": "./lib/tests/index.cjs",
+      "types": "./lib/types/tests/index.d.ts",
       "import": "./lib/esm/tests/index.js",
-      "types": "./lib/tests/index.d.ts"
+      "require": "./lib/cjs/tests/index.cjs",
+      "default": "./lib/esm/tests/index.js"
     }
   },
-  "types": "lib/index.d.ts",
+  "main": "./lib/cjs/index.cjs",
+  "module": "./lib/esm/index.js",
+  "types": "./lib/types/index.d.ts",
+  "sideEffects": false,
   "bin": {
-    "tag-release": "lib/bin/tag-release.cjs",
-    "build-scripts": "lib/bin/build-scripts.cjs",
-    "release-chain": "lib/bin/release-chain.cjs",
-    "release-chain-dispatch": "lib/bin/release-chain-dispatch.cjs"
+    "tag-release": "lib/cjs/bin/tag-release.cjs",
+    "build-scripts": "lib/cjs/bin/build-scripts.cjs",
+    "release-chain": "lib/cjs/bin/release-chain.cjs",
+    "release-chain-dispatch": "lib/cjs/bin/release-chain-dispatch.cjs"
   },
   "scripts": {
     "do-install": "NPM_TOKEN=$(cat .npmtoken) npm install",
@@ -30,7 +35,7 @@
     "set-git-auth": "git config url.\"https://api:$(cat .token)@github.com/\".insteadOf \"https://github.com/\" && git config url.\"https://ssh:$(cat .token)@github.com/\".insteadOf \"ssh://git@github.com/\" && git config url.\"https://git:$(cat .token)@github.com/\".insteadOf \"git@github.com:\"",
     "flash-forward": "npx npm-check-updates -u && npm run do-install",
     "reset": "rm -rf * && git checkout . && git pull && npm run do-install",
-    "add:shebang": "sed -i -e '1i#!/usr/bin/env node\\' ./lib/bin/*.cjs",
+    "add:shebang": "sed -i -e '1i#!/usr/bin/env node\\' ./lib/cjs/bin/*.cjs",
     "build": "tsx ./src/bin/build-scripts.ts --dev && npm run add:shebang",
     "build:prod": "tsx ./src/bin/build-scripts.ts --prod && npm run add:shebang",
     "test": "jest --runInBand --detectOpenHandles",

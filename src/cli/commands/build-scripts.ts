@@ -26,7 +26,13 @@ import { LoggingConfig, LogLevel } from "@decaf-ts/logging";
 declare module "@rollup/plugin-terser";
 
 import * as ts from "typescript";
-import { Diagnostic, EmitResult, ModuleKind, SourceFile } from "typescript";
+import {
+  Diagnostic,
+  EmitResult,
+  ModuleKind,
+  ModuleResolutionKind,
+  SourceFile,
+} from "typescript";
 
 export function parseList(input?: string | string[]): string[] {
   if (!input) return [];
@@ -100,6 +106,14 @@ enum BuildMode {
   ALL = "all",
 }
 
+enum TsBuildTarget {
+  ESM = "esm",
+  CJS = "cjs",
+  TYPES = "types",
+  NODE_NEXT_VALIDATE = "nodenext-validate",
+  BUNDLE = "bundle",
+}
+
 const options = {
   prod: {
     type: "boolean",
@@ -134,6 +148,10 @@ const options = {
     default: "./src/index.ts",
   },
   banner: {
+    type: "boolean",
+    default: false,
+  },
+  validateNodeNext: {
     type: "boolean",
     default: false,
   },
@@ -470,24 +488,15 @@ export class BuildScripts extends Command<
       throw new Error(`Failed to parse tsconfig.json: ${e}`);
     }
 
-    if (bundle) {
-      tsConfig.options.module = ModuleKind.AMD;
-      tsConfig.options.outDir = "dist";
-      tsConfig.options.isolatedModules = false;
-      tsConfig.options.outFile = this.pkgName;
-    } else {
-      tsConfig.options.outDir = `lib${mode === Modes.ESM ? "/esm" : ""}`;
-      tsConfig.options.module =
-        mode === Modes.ESM ? ModuleKind.ES2022 : ModuleKind.CommonJS;
-    }
-
-    // Ensure TypeScript emits inline source maps for both dev and prod (bundlers will control external maps)
-    // Keep comments in TS emit by default; bundling/minification will handle removal where requested.
-    // Emit external source maps from TypeScript so editors/debuggers can find them.
-    // Turn off inline maps/sources so bundlers (Rollup) can control whether maps are inlined or written externally.
-    tsConfig.options.inlineSourceMap = false;
-    tsConfig.options.inlineSources = false;
-    tsConfig.options.sourceMap = true;
+    this.applyTsConfigProfile(
+      tsConfig.options,
+      bundle
+        ? TsBuildTarget.BUNDLE
+        : mode === Modes.ESM
+          ? TsBuildTarget.ESM
+          : TsBuildTarget.CJS,
+      isDev
+    );
 
     const program = ts.createProgram(tsConfig.fileNames, tsConfig.options);
     this.preCheckDiagnostics(program);
@@ -508,29 +517,15 @@ export class BuildScripts extends Command<
       throw new Error(`Failed to parse tsconfig.json: ${e}`);
     }
 
-    if (bundle) {
-      tsConfig.options.module = ModuleKind.AMD;
-      tsConfig.options.outDir = "dist";
-      tsConfig.options.isolatedModules = false;
-      tsConfig.options.outFile = this.pkgName;
-    } else {
-      tsConfig.options.outDir = `lib${mode === Modes.ESM ? "/esm" : ""}`;
-      tsConfig.options.module =
-        mode === Modes.ESM ? ModuleKind.ES2022 : ModuleKind.CommonJS;
-    }
-
-    // Always emit inline source maps from tsc (bundler will emit external maps for production bundles).
-    // For dev builds we want TypeScript to emit inline source maps so no separate .map files are produced.
-    // For production we emit external source maps so the bundler can further transform and emit them.
-    if (isDev) {
-      tsConfig.options.inlineSourceMap = true;
-      tsConfig.options.inlineSources = true;
-      tsConfig.options.sourceMap = false;
-    } else {
-      tsConfig.options.inlineSourceMap = false;
-      tsConfig.options.inlineSources = false;
-      tsConfig.options.sourceMap = true;
-    }
+    this.applyTsConfigProfile(
+      tsConfig.options,
+      bundle
+        ? TsBuildTarget.BUNDLE
+        : mode === Modes.ESM
+          ? TsBuildTarget.ESM
+          : TsBuildTarget.CJS,
+      isDev
+    );
 
     // For production builds we still keep TypeScript comments (removeComments=false in tsconfig)
     // Bundler/terser will strip comments for production bundles as requested.
@@ -578,6 +573,105 @@ export class BuildScripts extends Command<
         await renameFile(file, f);
       }
     }
+  }
+
+  private applyTsConfigProfile(
+    options: ts.CompilerOptions,
+    target: TsBuildTarget,
+    isDev: boolean
+  ) {
+    options.declaration = false;
+    options.emitDeclarationOnly = false;
+    options.noEmit = false;
+    options.outFile = undefined;
+    options.moduleResolution = ModuleResolutionKind.Bundler;
+
+    switch (target) {
+      case TsBuildTarget.ESM:
+        options.module = ModuleKind.ESNext;
+        options.outDir = "lib/esm";
+        break;
+      case TsBuildTarget.CJS:
+        options.module = ModuleKind.CommonJS;
+        options.moduleResolution = ModuleResolutionKind.Node10;
+        options.outDir = "lib/cjs";
+        break;
+      case TsBuildTarget.TYPES:
+        options.module = ModuleKind.ESNext;
+        options.outDir = "lib/types";
+        options.declaration = true;
+        options.emitDeclarationOnly = true;
+        break;
+      case TsBuildTarget.NODE_NEXT_VALIDATE:
+        options.module = ModuleKind.NodeNext;
+        options.moduleResolution = ModuleResolutionKind.NodeNext;
+        options.noEmit = true;
+        break;
+      case TsBuildTarget.BUNDLE:
+        options.module = ModuleKind.AMD;
+        options.moduleResolution = ModuleResolutionKind.Node10;
+        options.outDir = "dist";
+        options.isolatedModules = false;
+        options.outFile = this.pkgName;
+        break;
+    }
+
+    if (target === TsBuildTarget.NODE_NEXT_VALIDATE) {
+      options.inlineSourceMap = false;
+      options.inlineSources = false;
+      options.sourceMap = false;
+      return;
+    }
+
+    if (isDev) {
+      options.inlineSourceMap = true;
+      options.inlineSources = true;
+      options.sourceMap = false;
+    } else {
+      options.inlineSourceMap = false;
+      options.inlineSources = false;
+      options.sourceMap = true;
+    }
+  }
+
+  private async checkNodeNextCompatibility() {
+    const log = this.log.for(this.checkNodeNextCompatibility);
+    let tsConfig;
+    try {
+      tsConfig = this.readConfigFile("./tsconfig.json");
+    } catch (e: unknown) {
+      throw new Error(`Failed to parse tsconfig.json: ${e}`);
+    }
+
+    this.applyTsConfigProfile(
+      tsConfig.options,
+      TsBuildTarget.NODE_NEXT_VALIDATE,
+      false
+    );
+
+    const program = ts.createProgram(tsConfig.fileNames, tsConfig.options);
+    this.preCheckDiagnostics(program);
+    log.verbose("TypeScript NodeNext compatibility check passed.");
+  }
+
+  private async buildTypes(isDev: boolean) {
+    const log = this.log.for(this.buildTypes);
+    log.info(`Building ${this.pkgName} ${this.pkgVersion} declaration files...`);
+    let tsConfig;
+    try {
+      tsConfig = this.readConfigFile("./tsconfig.json");
+    } catch (e: unknown) {
+      throw new Error(`Failed to parse tsconfig.json: ${e}`);
+    }
+
+    this.applyTsConfigProfile(tsConfig.options, TsBuildTarget.TYPES, isDev);
+
+    const program = ts.createProgram(tsConfig.fileNames, tsConfig.options);
+    const emitResult = program.emit();
+    const allDiagnostics = ts
+      .getPreEmitDiagnostics(program)
+      .concat(emitResult.diagnostics);
+    this.evalDiagnostics(allDiagnostics);
   }
 
   /**
@@ -835,9 +929,11 @@ export class BuildScripts extends Command<
     entryFile: string = "./src/index.ts",
     isDev: boolean,
     mode: BuildMode = BuildMode.ALL,
+    validateNodeNext = false,
     includesArg?: string | string[],
     externalsArg?: string | string[]
   ) {
+    if (validateNodeNext) await this.checkNodeNextCompatibility();
     // note: includes and externals will be passed through from run() into this method by callers
     try {
       deletePath("lib");
@@ -853,9 +949,10 @@ export class BuildScripts extends Command<
     }
 
     if ([BuildMode.ALL, BuildMode.BUILD].includes(mode)) {
-      fs.mkdirSync("lib");
+      fs.mkdirSync("lib", { recursive: true });
       await this.build(isDev, Modes.ESM);
       await this.build(isDev, Modes.CJS);
+      await this.buildTypes(isDev);
       this.patchFiles("lib");
     }
 
@@ -897,10 +994,18 @@ export class BuildScripts extends Command<
   async buildDev(
     entryFile: string = "./src/index.ts",
     mode: BuildMode = BuildMode.ALL,
+    validateNodeNext = false,
     includesArg?: string | string[],
     externalsArg?: string | string[]
   ) {
-    return this.buildByEnv(entryFile, true, mode, includesArg, externalsArg);
+    return this.buildByEnv(
+      entryFile,
+      true,
+      mode,
+      validateNodeNext,
+      includesArg,
+      externalsArg
+    );
   }
 
   /**
@@ -915,10 +1020,18 @@ export class BuildScripts extends Command<
   async buildProd(
     entryFile: string = "./src/index.ts",
     mode: BuildMode = BuildMode.ALL,
+    validateNodeNext = false,
     includesArg?: string | string[],
     externalsArg?: string | string[]
   ) {
-    return this.buildByEnv(entryFile, false, mode, includesArg, externalsArg);
+    return this.buildByEnv(
+      entryFile,
+      false,
+      mode,
+      validateNodeNext,
+      includesArg,
+      externalsArg
+    );
   }
 
   /**
@@ -984,12 +1097,22 @@ export class BuildScripts extends Command<
     answers: LoggingConfig &
       typeof DefaultCommandValues & { [k in keyof typeof options]: unknown }
   ): Promise<string | void | R> {
-    const { dev, prod, docs, buildMode, includes, externals, entry } =
+    const {
+      dev,
+      prod,
+      docs,
+      buildMode,
+      includes,
+      externals,
+      entry,
+      validateNodeNext,
+    } =
       answers as any;
     if (dev) {
       return await this.buildDev(
         entry || "./src/index.ts",
         buildMode as BuildMode,
+        !!validateNodeNext,
         includes,
         externals
       );
@@ -998,6 +1121,7 @@ export class BuildScripts extends Command<
       return await this.buildProd(
         entry || "./src/index.ts",
         buildMode as BuildMode,
+        !!validateNodeNext,
         includes,
         externals
       );

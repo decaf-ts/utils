@@ -11,7 +11,7 @@ const DEFAULT_TARGET: ModuleTarget = "src";
 
 const TARGET_SPECIFIERS: Record<ModuleTarget, string> = {
   src: "../src",
-  lib: "../lib/index.cjs",
+  lib: "../lib/cjs/index.cjs",
   dist: "../dist/ts-workspace.cjs",
 };
 
