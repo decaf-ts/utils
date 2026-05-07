@@ -91,6 +91,50 @@ export function getPackageDependencies(): string[] {
   return Array.from(new Set([...deps, ...peer, ...dev]));
 }
 
+function buildExportsTypePathMappings(
+  cwd: string = process.cwd(),
+  deps: string[] = getPackageDependencies()
+): Record<string, string[]> {
+  const mappings: Record<string, string[]> = {};
+
+  for (const dep of deps) {
+    const pkgPath = path.join(cwd, "node_modules", dep, "package.json");
+    if (!fs.existsSync(pkgPath)) continue;
+
+    let pkg: any;
+    try {
+      pkg = JSON.parse(fs.readFileSync(pkgPath, "utf8"));
+    } catch {
+      continue;
+    }
+
+    const exportsField = pkg?.exports;
+    if (!exportsField || typeof exportsField !== "object") continue;
+
+    for (const [subpath, target] of Object.entries(exportsField)) {
+      if (!target || typeof target !== "object") continue;
+      const typesPath = (target as any).types;
+      if (typeof typesPath !== "string" || !typesPath.length) continue;
+
+      const normalizedSubpath = String(subpath).replace(/^\.\//, "");
+      const normalizedSpecifier = subpath === "." ? dep : `${dep}/${normalizedSubpath}`;
+      const normalizedTypesPath = `./node_modules/${dep}/${typesPath.replace(/^\.\//, "")}`;
+      mappings[normalizedSpecifier] = [normalizedTypesPath];
+
+      // Mirror wildcard export mappings so TypeScript can resolve deep import types.
+      if (normalizedSubpath.endsWith("/*") && normalizedTypesPath.endsWith("/*")) {
+        const specifierNoWildcard = normalizedSpecifier.slice(0, -2);
+        const typesNoWildcard = normalizedTypesPath.slice(0, -2);
+        if (specifierNoWildcard && typesNoWildcard) {
+          mappings[specifierNoWildcard] = [typesNoWildcard];
+        }
+      }
+    }
+  }
+
+  return mappings;
+}
+
 const VERSION_STRING = "##VERSION##";
 const PACKAGE_STRING = "##PACKAGE##";
 const PACKAGE_SIZE_STRING = "##PACKAGE_SIZE##";
@@ -616,6 +660,11 @@ export class BuildScripts extends Command<
       case TsBuildTarget.CJS:
         options.module = ModuleKind.CommonJS;
         options.moduleResolution = ModuleResolutionKind.Node10;
+        options.baseUrl = options.baseUrl ?? ".";
+        options.paths = {
+          ...(options.paths || {}),
+          ...buildExportsTypePathMappings(),
+        };
         options.outDir = "lib/cjs";
         break;
       case TsBuildTarget.CJS_CHECK:
