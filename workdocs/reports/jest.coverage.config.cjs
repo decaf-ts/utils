@@ -1,7 +1,6 @@
 // import { Config } from "@jest/types";
 const base = require("../../jest.config.cjs");
 
-/** @type {import('@jest/types').Config.InitialOptions} */
 module.exports = {
   ...base,
   collectCoverageFrom: [

@@ -368,11 +368,13 @@ export class BuildScripts extends Command<
                     log.debug("Found VERSION string to replace");
                     acc[`VERSION = "${VERSION_STRING}";`] =
                       `VERSION = "${val}";`;
+                    acc[VERSION_STRING] = `${val}`;
                     break;
                   case PACKAGE_STRING:
                     log.debug("Found PACKAGE_NAME string to replace");
                     acc[`PACKAGE_NAME = "${PACKAGE_STRING}";`] =
                       `PACKAGE_NAME = "${val}";`;
+                    acc[PACKAGE_STRING] = `${val}`;
                     break;
                   default:
                     acc[key] = val;
