@@ -28,7 +28,7 @@ A comprehensive TypeScript utility library providing robust tools for command-li
 
 Documentation available [here](https://decaf-ts.github.io/utils/)
 
-Minimal size: 17.2 KB kb gzipped
+Minimal size: 17.3 KB kb gzipped
 
 ### Description
 

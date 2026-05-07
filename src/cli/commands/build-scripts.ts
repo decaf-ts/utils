@@ -355,36 +355,55 @@ export class BuildScripts extends Command<
     const { name, version } = getPackage() as any;
     log.info(`Patching ${name} ${version} module in ${p}...`);
     const stat = fs.statSync(p);
+    const patchVersionAndPackage = (content: string) => {
+      let patched = content;
+      // Patch public VERSION assignments without mutating internal VERSION_STRING constants.
+      patched = patched.replace(
+        /((?:^|[\s;,(])(?:const|let|var)\s+VERSION\s*=\s*["'])##VERSION##(["'])/gm,
+        `$1${version}$2`
+      );
+      patched = patched.replace(
+        /((?:^|[\s;,(])(?:exports|module\.exports)\.VERSION\s*=\s*["'])##VERSION##(["'])/gm,
+        `$1${version}$2`
+      );
+      patched = patched.replace(
+        /((?:^|[\s;,(])\w+\.VERSION\s*=\s*["'])##VERSION##(["'])/gm,
+        `$1${version}$2`
+      );
+      patched = patched.replace(
+        /((?:^|[\s;,(])(?:const|let|var)\s+PACKAGE_NAME\s*=\s*["'])##PACKAGE##(["'])/gm,
+        `$1${name}$2`
+      );
+      patched = patched.replace(
+        /((?:^|[\s;,(])(?:exports|module\.exports)\.PACKAGE_NAME\s*=\s*["'])##PACKAGE##(["'])/gm,
+        `$1${name}$2`
+      );
+      patched = patched.replace(
+        /((?:^|[\s;,(])\w+\.PACKAGE_NAME\s*=\s*["'])##PACKAGE##(["'])/gm,
+        `$1${name}$2`
+      );
+      return patched;
+    };
     if (stat.isDirectory())
       fs.readdirSync(p, { withFileTypes: true, recursive: true })
         .filter((p) => p.isFile())
-        .forEach((file) =>
+        .forEach((file) => {
+          const filePath = path.join(file.parentPath, file.name);
+          const content = fs.readFileSync(filePath, "utf8");
+          const patched = patchVersionAndPackage(content);
+          if (patched !== content) fs.writeFileSync(filePath, patched, "utf8");
           patchFile(
-            path.join(file.parentPath, file.name),
+            filePath,
             Object.entries(this.replacements).reduce(
               (acc: Record<string, any>, [key, val]) => {
-                switch (key) {
-                  case VERSION_STRING:
-                    log.debug("Found VERSION string to replace");
-                    acc[`VERSION = "${VERSION_STRING}";`] =
-                      `VERSION = "${val}";`;
-                    acc[VERSION_STRING] = `${val}`;
-                    break;
-                  case PACKAGE_STRING:
-                    log.debug("Found PACKAGE_NAME string to replace");
-                    acc[`PACKAGE_NAME = "${PACKAGE_STRING}";`] =
-                      `PACKAGE_NAME = "${val}";`;
-                    acc[PACKAGE_STRING] = `${val}`;
-                    break;
-                  default:
-                    acc[key] = val;
-                }
+                if ([VERSION_STRING, PACKAGE_STRING].includes(key)) return acc;
+                acc[key] = val;
                 return acc;
               },
               {}
             )
-          )
-        );
+          );
+        });
     log.verbose(`Module ${name} ${version} patched in ${p}...`);
   }
 
