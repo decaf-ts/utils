@@ -109,6 +109,7 @@ enum BuildMode {
 enum TsBuildTarget {
   ESM = "esm",
   CJS = "cjs",
+  CJS_CHECK = "cjs-check",
   TYPES = "types",
   NODE_NEXT_VALIDATE = "nodenext-validate",
   BUNDLE = "bundle",
@@ -515,7 +516,7 @@ export class BuildScripts extends Command<
         ? TsBuildTarget.BUNDLE
         : mode === Modes.ESM
           ? TsBuildTarget.ESM
-          : TsBuildTarget.CJS,
+          : TsBuildTarget.CJS_CHECK,
       isDev
     );
 
@@ -617,6 +618,12 @@ export class BuildScripts extends Command<
         options.moduleResolution = ModuleResolutionKind.Node10;
         options.outDir = "lib/cjs";
         break;
+      case TsBuildTarget.CJS_CHECK:
+        options.module = (ModuleKind as any).Preserve ?? ModuleKind.ESNext;
+        options.moduleResolution = ModuleResolutionKind.Bundler;
+        options.noEmit = true;
+        options.outDir = undefined;
+        break;
       case TsBuildTarget.TYPES:
         options.module = ModuleKind.ESNext;
         options.outDir = "lib/types";
@@ -629,11 +636,11 @@ export class BuildScripts extends Command<
         options.noEmit = true;
         break;
       case TsBuildTarget.BUNDLE:
-        options.module = ModuleKind.AMD;
-        options.moduleResolution = ModuleResolutionKind.Node10;
+        options.module = ModuleKind.ESNext;
+        options.moduleResolution = ModuleResolutionKind.Bundler;
         options.outDir = "dist";
         options.isolatedModules = false;
-        options.outFile = this.pkgName;
+        options.outFile = undefined;
         break;
     }
 
