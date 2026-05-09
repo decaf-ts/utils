@@ -803,6 +803,7 @@ export class BuildScripts extends Command<
       .concat(emitResult.diagnostics);
     this.evalDiagnostics(allDiagnostics);
     this.emitDualDeclarationFiles();
+    this.removeLegacyDeclarationFiles();
     this.updatePackageJsonDualTypeExports();
   }
 
@@ -872,6 +873,26 @@ export class BuildScripts extends Command<
     }
 
     log.verbose(`Generated ${typeFiles.length * 2} dual declaration files.`);
+  }
+
+  private removeLegacyDeclarationFiles() {
+    const log = this.log.for(this.removeLegacyDeclarationFiles);
+    const typesRoot = path.resolve("lib/types");
+    if (!fs.existsSync(typesRoot)) return;
+
+    const legacyFiles = getAllFiles(
+      typesRoot,
+      (file) => file.endsWith(".d.ts") || file.endsWith(".d.ts.map")
+    );
+    for (const legacyFile of legacyFiles) {
+      try {
+        fs.unlinkSync(legacyFile);
+      } catch {
+        // ignore stale or already-removed files
+      }
+    }
+
+    log.verbose(`Removed ${legacyFiles.length} legacy declaration files.`);
   }
 
   private updatePackageJsonDualTypeExports() {
