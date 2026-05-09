@@ -802,6 +802,132 @@ export class BuildScripts extends Command<
       .getPreEmitDiagnostics(program)
       .concat(emitResult.diagnostics);
     this.evalDiagnostics(allDiagnostics);
+    this.emitDualDeclarationFiles();
+    this.updatePackageJsonDualTypeExports();
+  }
+
+  private rewriteRelativeDeclarationSpecifiers(
+    content: string,
+    runtimeExtension: ".js" | ".cjs"
+  ) {
+    const withRuntimeSpecifier = (specifier: string) => {
+      if (
+        !specifier.startsWith("./") &&
+        !specifier.startsWith("../") &&
+        !specifier.startsWith("/")
+      )
+        return specifier;
+      if (/\.(mjs|cjs|js|json)$/i.test(specifier)) return specifier;
+      return `${specifier}${runtimeExtension}`;
+    };
+
+    let updated = content.replace(
+      /(\b(?:import|export)\b[\s\S]*?\bfrom\s*["'])([^"']+)(["'])/gm,
+      (_full, prefix: string, specifier: string, suffix: string) =>
+        `${prefix}${withRuntimeSpecifier(specifier)}${suffix}`
+    );
+    updated = updated.replace(
+      /(\bimport\s*\(\s*["'])([^"']+)(["']\s*\))/gm,
+      (_full, prefix: string, specifier: string, suffix: string) =>
+        `${prefix}${withRuntimeSpecifier(specifier)}${suffix}`
+    );
+    updated = updated.replace(
+      /(\brequire\s*\(\s*["'])([^"']+)(["']\s*\))/gm,
+      (_full, prefix: string, specifier: string, suffix: string) =>
+        `${prefix}${withRuntimeSpecifier(specifier)}${suffix}`
+    );
+    return updated;
+  }
+
+  private emitDualDeclarationFiles() {
+    const log = this.log.for(this.emitDualDeclarationFiles);
+    const typesRoot = path.resolve("lib/types");
+    if (!fs.existsSync(typesRoot)) return;
+
+    const typeFiles = getAllFiles(typesRoot, (file) => file.endsWith(".d.ts"));
+    for (const dtsFile of typeFiles) {
+      const content = fs.readFileSync(dtsFile, "utf8");
+      const dMts = dtsFile.replace(/\.d\.ts$/i, ".d.mts");
+      const dCts = dtsFile.replace(/\.d\.ts$/i, ".d.cts");
+      fs.writeFileSync(
+        dMts,
+        this.rewriteRelativeDeclarationSpecifiers(content, ".js"),
+        "utf8"
+      );
+      fs.writeFileSync(
+        dCts,
+        this.rewriteRelativeDeclarationSpecifiers(content, ".cjs"),
+        "utf8"
+      );
+    }
+
+    log.verbose(`Generated ${typeFiles.length * 2} dual declaration files.`);
+  }
+
+  private updatePackageJsonDualTypeExports() {
+    const log = this.log.for(this.updatePackageJsonDualTypeExports);
+    const packageJsonPath = path.resolve("package.json");
+    if (!fs.existsSync(packageJsonPath)) return;
+
+    const pkg = JSON.parse(fs.readFileSync(packageJsonPath, "utf8"));
+    const exportsField = pkg?.exports;
+    if (!exportsField || typeof exportsField !== "object") return;
+
+    const toDualTypePath = (typesPath: string, ext: ".d.mts" | ".d.cts") =>
+      typesPath.replace(/\.d\.(ts|mts|cts)$/i, ext);
+    const normalize = (value: string | undefined) =>
+      typeof value === "string" ? value : undefined;
+
+    const updatedExports: Record<string, any> = {};
+    for (const [subpath, target] of Object.entries(exportsField)) {
+      if (!target || typeof target !== "object" || Array.isArray(target)) {
+        updatedExports[subpath] = target;
+        continue;
+      }
+
+      const targetObj = target as Record<string, any>;
+      const importEntry = normalize(targetObj.import) || normalize(targetObj.default);
+      const requireEntry = normalize(targetObj.require) || normalize(targetObj.default);
+      const defaultEntry =
+        normalize(targetObj.default) || importEntry || requireEntry;
+      const rootTypes = normalize(targetObj.types);
+      const esmTypes =
+        rootTypes && /\.d\.(ts|mts|cts)$/i.test(rootTypes)
+          ? toDualTypePath(rootTypes, ".d.mts")
+          : undefined;
+      const cjsTypes =
+        rootTypes && /\.d\.(ts|mts|cts)$/i.test(rootTypes)
+          ? toDualTypePath(rootTypes, ".d.cts")
+          : undefined;
+
+      updatedExports[subpath] = {
+        ...(importEntry
+          ? {
+              import: {
+                ...(esmTypes ? { types: esmTypes } : {}),
+                default: importEntry,
+              },
+            }
+          : {}),
+        ...(requireEntry
+          ? {
+              require: {
+                ...(cjsTypes ? { types: cjsTypes } : {}),
+                default: requireEntry,
+              },
+            }
+          : {}),
+        ...(defaultEntry ? { default: defaultEntry } : {}),
+      };
+    }
+
+    pkg.exports = updatedExports;
+    if (typeof pkg.types === "string" && /\.d\.(ts|mts|cts)$/i.test(pkg.types)) {
+      pkg.types = pkg.types.replace(/\.d\.(ts|mts|cts)$/i, ".d.mts");
+    }
+
+    fs.writeFileSync(packageJsonPath, JSON.stringify(pkg, null, 2) + "\n", "utf8");
+    log.verbose("Updated package.json exports with import/require type conditions.");
   }
 
   /**

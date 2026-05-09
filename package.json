@@ -5,21 +5,27 @@
   "type": "module",
   "exports": {
     ".": {
-      "types": "./lib/types/index.d.ts",
-      "import": "./lib/esm/index.js",
-      "require": "./lib/cjs/index.cjs",
+      "import": {
+        "default": "./lib/esm/index.js"
+      },
+      "require": {
+        "default": "./lib/esm/index.js"
+      },
       "default": "./lib/esm/index.js"
     },
     "./tests": {
-      "types": "./lib/types/tests/index.d.ts",
-      "import": "./lib/esm/tests/index.js",
-      "require": "./lib/cjs/tests/index.cjs",
+      "import": {
+        "default": "./lib/esm/tests/index.js"
+      },
+      "require": {
+        "default": "./lib/esm/tests/index.js"
+      },
       "default": "./lib/esm/tests/index.js"
     }
   },
   "main": "./lib/cjs/index.cjs",
   "module": "./lib/esm/index.js",
-  "types": "./lib/types/index.d.ts",
+  "types": "./lib/types/index.d.mts",
   "sideEffects": false,
   "bin": {
     "tag-release": "lib/cjs/bin/tag-release.cjs",
