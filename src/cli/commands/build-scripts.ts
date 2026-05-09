@@ -7,7 +7,6 @@ import {
   getAllFiles,
   getPackage,
   patchFile,
-  renameFile,
   runCommand,
   getFileSizeZipped,
   listNodeModulesPackages,
@@ -91,6 +90,7 @@ export function getPackageDependencies(): string[] {
   return Array.from(new Set([...deps, ...peer, ...dev]));
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function buildExportsTypePathMappings(
   cwd: string = process.cwd(),
   deps: string[] = getPackageDependencies()
@@ -117,12 +117,16 @@ function buildExportsTypePathMappings(
       if (typeof typesPath !== "string" || !typesPath.length) continue;
 
       const normalizedSubpath = String(subpath).replace(/^\.\//, "");
-      const normalizedSpecifier = subpath === "." ? dep : `${dep}/${normalizedSubpath}`;
+      const normalizedSpecifier =
+        subpath === "." ? dep : `${dep}/${normalizedSubpath}`;
       const normalizedTypesPath = `./node_modules/${dep}/${typesPath.replace(/^\.\//, "")}`;
       mappings[normalizedSpecifier] = [normalizedTypesPath];
 
       // Mirror wildcard export mappings so TypeScript can resolve deep import types.
-      if (normalizedSubpath.endsWith("/*") && normalizedTypesPath.endsWith("/*")) {
+      if (
+        normalizedSubpath.endsWith("/*") &&
+        normalizedTypesPath.endsWith("/*")
+      ) {
         const specifierNoWildcard = normalizedSpecifier.slice(0, -2);
         const typesNoWildcard = normalizedTypesPath.slice(0, -2);
         if (specifierNoWildcard && typesNoWildcard) {
@@ -152,7 +156,6 @@ enum BuildMode {
 
 enum TsBuildTarget {
   ESM = "esm",
-  CJS = "cjs",
   CJS_CHECK = "cjs-check",
   TYPES = "types",
   NODE_NEXT_VALIDATE = "nodenext-validate",
@@ -324,7 +327,8 @@ const cjs2Transformer = (ext = ".cjs") => {
       }
 
       function isRelativePathWithoutExtension(rawPath: string) {
-        if (!rawPath.startsWith("./") && !rawPath.startsWith("../")) return false;
+        if (!rawPath.startsWith("./") && !rawPath.startsWith("../"))
+          return false;
         return path.extname(rawPath) === "";
       }
 
@@ -589,7 +593,7 @@ export class BuildScripts extends Command<
         ? TsBuildTarget.BUNDLE
         : mode === Modes.ESM
           ? TsBuildTarget.ESM
-          : TsBuildTarget.CJS,
+          : TsBuildTarget.CJS_CHECK,
       isDev
     );
 
@@ -599,9 +603,7 @@ export class BuildScripts extends Command<
     const program = ts.createProgram(tsConfig.fileNames, tsConfig.options);
 
     const transformations: { before?: any[] } = {};
-    if (mode === Modes.CJS) {
-      transformations.before = [cjs2Transformer(".cjs")];
-    } else if (mode === Modes.ESM) {
+    if (mode === Modes.ESM) {
       transformations.before = [cjs2Transformer(".js")];
     }
 
@@ -627,16 +629,75 @@ export class BuildScripts extends Command<
     log.verbose(
       `Module ${this.pkgName} ${this.pkgVersion} (${mode}) built in ${isDev ? "dev" : "prod"} mode...`
     );
-    if (mode === Modes.CJS && !bundle) {
-      const files = getAllFiles(
-        "lib",
-        (file) => file.endsWith(".js") && !file.includes("/esm/")
-      );
+    if (mode === Modes.CJS && !bundle) await this.buildCjsFromEsm(isDev);
+  }
 
-      for (const file of files) {
-        log.verbose(`Patching ${file}'s cjs imports...`);
-        const f = file.replace(".js", ".cjs");
-        await renameFile(file, f);
+  private rewriteRelativeJsSpecifiersToCjs(content: string) {
+    const replaceSpecifier = (specifier: string) => {
+      if (
+        !specifier.startsWith("./") &&
+        !specifier.startsWith("../") &&
+        !specifier.startsWith("/")
+      )
+        return specifier;
+      if (specifier.endsWith(".cjs")) return specifier;
+      if (specifier.endsWith(".js")) return specifier.replace(/\.js$/, ".cjs");
+      return specifier;
+    };
+
+    const quotedSpecifierRegex = /(["'])(\.{1,2}\/[^"']+?)(\1)/g;
+    return content.replace(
+      quotedSpecifierRegex,
+      (_full, quote: string, specifier: string, endQuote: string) =>
+        `${quote}${replaceSpecifier(specifier)}${endQuote}`
+    );
+  }
+
+  private async buildCjsFromEsm(isDev: boolean) {
+    const log = this.log.for(this.buildCjsFromEsm);
+    log.info(
+      `Building ${this.pkgName} ${this.pkgVersion} module (${Modes.CJS}) from ESM output in ${isDev ? "dev" : "prod"} mode...`
+    );
+
+    const esmRoot = path.resolve("lib/esm");
+    const cjsRoot = path.resolve("lib/cjs");
+    fs.mkdirSync(cjsRoot, { recursive: true });
+
+    const esmJsFiles = getAllFiles(
+      esmRoot,
+      (file) => file.endsWith(".js") && !file.endsWith(".d.js")
+    );
+
+    for (const file of esmJsFiles) {
+      const relative = path.relative(esmRoot, file);
+      const outFile = path.join(cjsRoot, relative).replace(/\.js$/gm, ".cjs");
+      fs.mkdirSync(path.dirname(outFile), { recursive: true });
+
+      const source = fs.readFileSync(file, "utf8");
+      const transpiled = ts.transpileModule(source, {
+        compilerOptions: {
+          module: ModuleKind.CommonJS,
+          target: ts.ScriptTarget.ES2022,
+          sourceMap: !isDev,
+          inlineSourceMap: isDev,
+          inlineSources: isDev,
+          esModuleInterop: true,
+        },
+        fileName: path.basename(file),
+        reportDiagnostics: true,
+      });
+
+      if (transpiled.diagnostics?.length) {
+        this.evalDiagnostics(transpiled.diagnostics as Diagnostic[]);
+      }
+
+      const rewritten = this.rewriteRelativeJsSpecifiersToCjs(
+        transpiled.outputText
+      );
+      fs.writeFileSync(outFile, rewritten, "utf8");
+
+      if (transpiled.sourceMapText) {
+        fs.writeFileSync(`${outFile}.map`, transpiled.sourceMapText, "utf8");
       }
     }
   }
@@ -656,16 +717,6 @@ export class BuildScripts extends Command<
       case TsBuildTarget.ESM:
         options.module = ModuleKind.ESNext;
         options.outDir = "lib/esm";
-        break;
-      case TsBuildTarget.CJS:
-        options.module = ModuleKind.CommonJS;
-        options.moduleResolution = ModuleResolutionKind.Node10;
-        options.baseUrl = options.baseUrl ?? ".";
-        options.paths = {
-          ...(options.paths || {}),
-          ...buildExportsTypePathMappings(),
-        };
-        options.outDir = "lib/cjs";
         break;
       case TsBuildTarget.CJS_CHECK:
         options.module = (ModuleKind as any).Preserve ?? ModuleKind.ESNext;
@@ -733,7 +784,9 @@ export class BuildScripts extends Command<
 
   private async buildTypes(isDev: boolean) {
     const log = this.log.for(this.buildTypes);
-    log.info(`Building ${this.pkgName} ${this.pkgVersion} declaration files...`);
+    log.info(
+      `Building ${this.pkgName} ${this.pkgVersion} declaration files...`
+    );
     let tsConfig;
     try {
       tsConfig = this.readConfigFile("./tsconfig.json");
@@ -1183,8 +1236,7 @@ export class BuildScripts extends Command<
       externals,
       entry,
       validateNodeNext,
-    } =
-      answers as any;
+    } = answers as any;
     if (dev) {
       return await this.buildDev(
         entry || "./src/index.ts",
