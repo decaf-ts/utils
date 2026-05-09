@@ -808,8 +808,10 @@ export class BuildScripts extends Command<
 
   private rewriteRelativeDeclarationSpecifiers(
     content: string,
-    runtimeExtension: ".js" | ".cjs"
+    runtimeExtension: ".js" | ".cjs",
+    sourceFilePath: string
   ) {
+    const sourceDir = path.dirname(sourceFilePath);
     const withRuntimeSpecifier = (specifier: string) => {
       if (
         !specifier.startsWith("./") &&
@@ -818,6 +820,14 @@ export class BuildScripts extends Command<
       )
         return specifier;
       if (/\.(mjs|cjs|js|json)$/i.test(specifier)) return specifier;
+      const resolved = path.resolve(sourceDir, specifier);
+      try {
+        if (fs.existsSync(resolved) && fs.statSync(resolved).isDirectory()) {
+          return `${specifier}/index${runtimeExtension}`;
+        }
+      } catch {
+        // ignore and fallback to file specifier
+      }
       return `${specifier}${runtimeExtension}`;
     };
 
@@ -851,12 +861,12 @@ export class BuildScripts extends Command<
       const dCts = dtsFile.replace(/\.d\.ts$/i, ".d.cts");
       fs.writeFileSync(
         dMts,
-        this.rewriteRelativeDeclarationSpecifiers(content, ".js"),
+        this.rewriteRelativeDeclarationSpecifiers(content, ".js", dtsFile),
         "utf8"
       );
       fs.writeFileSync(
         dCts,
-        this.rewriteRelativeDeclarationSpecifiers(content, ".cjs"),
+        this.rewriteRelativeDeclarationSpecifiers(content, ".cjs", dtsFile),
         "utf8"
       );
     }
