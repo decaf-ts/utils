@@ -6,19 +6,23 @@
   "exports": {
     ".": {
       "import": {
+        "types": "./lib/types/index.d.mts",
         "default": "./lib/esm/index.js"
       },
       "require": {
-        "default": "./lib/esm/index.js"
+        "types": "./lib/types/index.d.cts",
+        "default": "./lib/cjs/index.cjs"
       },
       "default": "./lib/esm/index.js"
     },
     "./tests": {
       "import": {
+        "types": "./lib/types/tests/index.d.mts",
         "default": "./lib/esm/tests/index.js"
       },
       "require": {
-        "default": "./lib/esm/tests/index.js"
+        "types": "./lib/types/tests/index.d.cts",
+        "default": "./lib/cjs/tests/index.cjs"
       },
       "default": "./lib/esm/tests/index.js"
     }

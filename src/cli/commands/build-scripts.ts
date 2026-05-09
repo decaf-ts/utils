@@ -875,8 +875,45 @@ export class BuildScripts extends Command<
 
     const toDualTypePath = (typesPath: string, ext: ".d.mts" | ".d.cts") =>
       typesPath.replace(/\.d\.(ts|mts|cts)$/i, ext);
-    const normalize = (value: string | undefined) =>
-      typeof value === "string" ? value : undefined;
+    const esmToCjsRuntimePath = (runtimePath?: string) => {
+      if (!runtimePath) return undefined;
+      if (runtimePath.includes("/lib/esm/")) {
+        return runtimePath
+          .replace("/lib/esm/", "/lib/cjs/")
+          .replace(/\.js$/i, ".cjs");
+      }
+      return runtimePath;
+    };
+    const esmToTypesPath = (runtimePath?: string, ext: ".d.mts" | ".d.cts" = ".d.mts") => {
+      if (!runtimePath) return undefined;
+      if (runtimePath.includes("/lib/esm/")) {
+        return runtimePath
+          .replace("/lib/esm/", "/lib/types/")
+          .replace(/\.js$/i, ext);
+      }
+      return undefined;
+    };
+    const getDefaultEntry = (value: unknown) => {
+      if (typeof value === "string") return value;
+      if (
+        value &&
+        typeof value === "object" &&
+        typeof (value as Record<string, unknown>).default === "string"
+      ) {
+        return (value as Record<string, string>).default;
+      }
+      return undefined;
+    };
+    const getTypesEntry = (value: unknown) => {
+      if (
+        value &&
+        typeof value === "object" &&
+        typeof (value as Record<string, unknown>).types === "string"
+      ) {
+        return (value as Record<string, string>).types;
+      }
+      return undefined;
+    };
 
     const updatedExports: Record<string, any> = {};
     for (const [subpath, target] of Object.entries(exportsField)) {
@@ -886,19 +923,24 @@ export class BuildScripts extends Command<
       }
 
       const targetObj = target as Record<string, any>;
-      const importEntry = normalize(targetObj.import) || normalize(targetObj.default);
-      const requireEntry = normalize(targetObj.require) || normalize(targetObj.default);
-      const defaultEntry =
-        normalize(targetObj.default) || importEntry || requireEntry;
-      const rootTypes = normalize(targetObj.types);
+      const importEntry = getDefaultEntry(targetObj.import);
+      const requireEntryRaw = getDefaultEntry(targetObj.require);
+      const requireEntry =
+        requireEntryRaw && requireEntryRaw.includes("/lib/esm/")
+          ? esmToCjsRuntimePath(requireEntryRaw)
+          : requireEntryRaw || esmToCjsRuntimePath(importEntry);
+      const defaultEntry = getDefaultEntry(targetObj.default);
+      const rootTypes =
+        (typeof targetObj.types === "string" ? targetObj.types : undefined) ||
+        getTypesEntry(targetObj.import);
       const esmTypes =
         rootTypes && /\.d\.(ts|mts|cts)$/i.test(rootTypes)
           ? toDualTypePath(rootTypes, ".d.mts")
-          : undefined;
+          : getTypesEntry(targetObj.import) || esmToTypesPath(importEntry, ".d.mts");
       const cjsTypes =
         rootTypes && /\.d\.(ts|mts|cts)$/i.test(rootTypes)
           ? toDualTypePath(rootTypes, ".d.cts")
-          : undefined;
+          : getTypesEntry(targetObj.require) || esmToTypesPath(importEntry, ".d.cts");
 
       updatedExports[subpath] = {
         ...(importEntry
@@ -917,7 +959,9 @@ export class BuildScripts extends Command<
               },
             }
           : {}),
-        ...(defaultEntry ? { default: defaultEntry } : {}),
+        ...(defaultEntry || importEntry
+          ? { default: defaultEntry || importEntry }
+          : {}),
       };
     }
 
