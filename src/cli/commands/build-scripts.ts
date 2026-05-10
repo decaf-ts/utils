@@ -809,43 +809,44 @@ export class BuildScripts extends Command<
 
   private rewriteRelativeDeclarationSpecifiers(
     content: string,
-    runtimeExtension: ".js" | ".cjs",
+    declarationExtension: ".d.mts" | ".d.cts",
     sourceFilePath: string
   ) {
     const sourceDir = path.dirname(sourceFilePath);
-    const withRuntimeSpecifier = (specifier: string) => {
+    const withDeclarationSpecifier = (specifier: string) => {
       if (
         !specifier.startsWith("./") &&
         !specifier.startsWith("../") &&
         !specifier.startsWith("/")
       )
         return specifier;
-      if (/\.(mjs|cjs|js|json)$/i.test(specifier)) return specifier;
+      if (/\.(d\.(mts|cts)|mts|cts|ts|json)$/i.test(specifier))
+        return specifier;
       const resolved = path.resolve(sourceDir, specifier);
       try {
         if (fs.existsSync(resolved) && fs.statSync(resolved).isDirectory()) {
-          return `${specifier}/index${runtimeExtension}`;
+          return `${specifier}/index${declarationExtension}`;
         }
       } catch {
         // ignore and fallback to file specifier
       }
-      return `${specifier}${runtimeExtension}`;
+      return `${specifier}${declarationExtension}`;
     };
 
     let updated = content.replace(
       /(\b(?:import|export)\b[\s\S]*?\bfrom\s*["'])([^"']+)(["'])/gm,
       (_full, prefix: string, specifier: string, suffix: string) =>
-        `${prefix}${withRuntimeSpecifier(specifier)}${suffix}`
+        `${prefix}${withDeclarationSpecifier(specifier)}${suffix}`
     );
     updated = updated.replace(
       /(\bimport\s*\(\s*["'])([^"']+)(["']\s*\))/gm,
       (_full, prefix: string, specifier: string, suffix: string) =>
-        `${prefix}${withRuntimeSpecifier(specifier)}${suffix}`
+        `${prefix}${withDeclarationSpecifier(specifier)}${suffix}`
     );
     updated = updated.replace(
       /(\brequire\s*\(\s*["'])([^"']+)(["']\s*\))/gm,
       (_full, prefix: string, specifier: string, suffix: string) =>
-        `${prefix}${withRuntimeSpecifier(specifier)}${suffix}`
+        `${prefix}${withDeclarationSpecifier(specifier)}${suffix}`
     );
     return updated;
   }
@@ -862,12 +863,12 @@ export class BuildScripts extends Command<
       const dCts = dtsFile.replace(/\.d\.ts$/i, ".d.cts");
       fs.writeFileSync(
         dMts,
-        this.rewriteRelativeDeclarationSpecifiers(content, ".js", dtsFile),
+        this.rewriteRelativeDeclarationSpecifiers(content, ".d.mts", dtsFile),
         "utf8"
       );
       fs.writeFileSync(
         dCts,
-        this.rewriteRelativeDeclarationSpecifiers(content, ".cjs", dtsFile),
+        this.rewriteRelativeDeclarationSpecifiers(content, ".d.cts", dtsFile),
         "utf8"
       );
     }
