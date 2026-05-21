@@ -32,6 +32,10 @@
   "types": "./lib/types/index.d.mts",
   "sideEffects": false,
   "bin": {
+    "modules": "lib/cjs/bin/modules.cjs",
+    "run-all": "lib/cjs/bin/run-all.cjs",
+    "npm-link": "lib/cjs/bin/npm-link.cjs",
+    "npm-token": "lib/cjs/bin/npm-token.cjs",
     "tag-release": "lib/cjs/bin/tag-release.cjs",
     "build-scripts": "lib/cjs/bin/build-scripts.cjs",
     "release-chain": "lib/cjs/bin/release-chain.cjs",
