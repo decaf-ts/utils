@@ -4,6 +4,7 @@ import { LoggingConfig } from "@decaf-ts/logging";
 import { Command } from "../command";
 import { DefaultCommandValues } from "../constants";
 import { readGitModulesDeep } from "./modules";
+import { printCommandHelp } from "./help";
 
 const options = {
   maxTraversal: {
@@ -33,6 +34,38 @@ function normalizeList(value: unknown): string[] {
 export class NpmTokenCommand extends Command<typeof options, void> {
   constructor() {
     super("NpmTokenCommand", options);
+  }
+
+  protected override help(): void {
+    printCommandHelp(
+      this.log,
+      "npm-token",
+      "Link token files into every module discovered in .gitmodules.",
+      "npm-token [options]",
+      [
+        {
+          flag: "--max-traversal <depth>",
+          description: "How many nested .gitmodules levels to traverse",
+          defaultValue: "2",
+        },
+        {
+          flag: "--token-files <files...>",
+          description: "Token files to link into each selected module",
+          defaultValue: ".token,.npmtoken",
+        },
+        {
+          flag: "-h, --help",
+          description: "Show this help text and exit",
+        },
+      ],
+      [
+        "The command creates symlinks from each selected module back to the token files in the repository root.",
+      ],
+      [
+        "npm-token",
+        "npm-token --token-files .token .npmtoken secrets/npm.token",
+      ]
+    );
   }
 
   protected async run(

@@ -5,6 +5,7 @@ import { LoggingConfig } from "@decaf-ts/logging";
 import { Command } from "../command";
 import { DefaultCommandValues } from "../constants";
 import { readGitModules } from "./modules";
+import { printCommandHelp } from "./help";
 
 const options = {
   basePath: {
@@ -20,6 +21,37 @@ const options = {
 export class RunAllCommand extends Command<typeof options, void> {
   constructor() {
     super("RunAllCommand", options);
+  }
+
+  protected override help(): void {
+    printCommandHelp(
+      this.log,
+      "run-all",
+      "Run a shell command in every module listed in .gitmodules.",
+      "run-all [options] --command <cmd>",
+      [
+        {
+          flag: "--base-path <path>",
+          description: "Directory to read .gitmodules from",
+          defaultValue: "current working directory",
+        },
+        {
+          flag: "--command <cmd>",
+          description: "Shell command to execute in each module",
+        },
+        {
+          flag: "-h, --help",
+          description: "Show this help text and exit",
+        },
+      ],
+      [
+        "The command fails fast if any module invocation fails.",
+      ],
+      [
+        "run-all --command npm test",
+        "run-all --base-path ../repo --command npm run lint",
+      ]
+    );
   }
 
   protected async run(

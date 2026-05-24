@@ -5,6 +5,7 @@ import { UserInput } from "../../input/input";
 import { Command } from "../command";
 import { DefaultCommandValues } from "../index";
 import { LoggingConfig } from "@decaf-ts/logging";
+import { printCommandHelp } from "./help";
 
 const options = {
   ci: {
@@ -66,14 +67,16 @@ export class ReleaseScript extends Command<typeof options, void> {
     const log = this.log.for(this.prepareVersion);
     tag = this.testVersion((tag as string) || "");
     if (!tag) {
-      log.verbose("No release message provided. Prompting for one:");
+      log.verbose("No release version provided. Prompting for one:");
       log.info(`Listing latest git tags:`);
       await runCommand("git tag --sort=-taggerdate | head -n 5").promise;
       return await UserInput.insistForText(
         "tag",
         "Enter the new tag number (accepts v*.*.*[-...])",
         (val) =>
-          !!val.toString().match(/^v[0-9]+\.[0-9]+.[0-9]+(-[0-9a-zA-Z-]+)?$/)
+          !!val
+            .toString()
+            .match(/^v[0-9]+\.[0-9]+\.[0-9]+(-[0-9a-zA-Z-]+)?$/)
       );
     }
     return tag;
@@ -125,6 +128,43 @@ export class ReleaseScript extends Command<typeof options, void> {
       );
     }
     return message;
+  }
+
+  protected override help(): void {
+    printCommandHelp(
+      this.log,
+      "tag-release",
+      "Prepare, tag, and publish a release from the current repository.",
+      "tag-release [options]",
+      [
+        { flag: "--tag <version>", description: "Release tag to use" },
+        {
+          flag: "--message <text>",
+          description: "Release message or ticket reference",
+        },
+        {
+          flag: "--ci <true|false>",
+          description: "Whether to treat the run as CI",
+          defaultValue: "true",
+        },
+        {
+          flag: "--version",
+          description: "Print the package version and exit",
+        },
+        {
+          flag: "-h, --help",
+          description: "Show this help text and exit",
+        },
+      ],
+      [
+        "If tag or message are omitted, the command prompts interactively.",
+        "A successful run updates the package version, creates a git tag, pushes tags, and optionally publishes to npm.",
+      ],
+      [
+        "tag-release --tag v1.2.3 --message \"Release 1.2.3\"",
+        "tag-release --tag patch --message \"Fix release\"",
+      ]
+    );
   }
 
   /**

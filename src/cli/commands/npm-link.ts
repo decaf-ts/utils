@@ -5,6 +5,7 @@ import { LoggingConfig } from "@decaf-ts/logging";
 import { Command } from "../command";
 import { DefaultCommandValues } from "../constants";
 import { readGitModulesDeep } from "./modules";
+import { printCommandHelp } from "./help";
 
 const options = {
   maxTraversal: {
@@ -70,14 +71,46 @@ export class NpmLinkCommand extends Command<typeof options, void> {
   }
 
   protected override help(): void {
-    this.log.info(
-      "link: create symlinks for decaf-ts dependency outputs inside each matching module"
-    );
-    this.log.info(
-      "unlink: remove symlinked decaf-ts dependencies from each matching module, then reinstall"
-    );
-    this.log.info(
-      "other operations: run the matching npm command inside each selected module"
+    printCommandHelp(
+      this.log,
+      "npm-link",
+      "Link or unlink decaf-ts package outputs across linked modules.",
+      "npm-link [options]",
+      [
+        {
+          flag: "--max-traversal <depth>",
+          description: "How many nested .gitmodules levels to traverse",
+          defaultValue: "2",
+        },
+        {
+          flag: "--excludes <items...>",
+          description: "Dependency names or patterns to ignore",
+          defaultValue: "@decaf-ts/utils,@decaf-ts/logging",
+        },
+        {
+          flag: "--include <items...>",
+          description: "Module names or paths to target explicitly",
+        },
+        {
+          flag: "--operation <name>",
+          description: "Operation to run in each module",
+          defaultValue: "link",
+        },
+        {
+          flag: "-h, --help",
+          description: "Show this help text and exit",
+        },
+      ],
+      [
+        "link creates symlinks for decaf-ts dependencies",
+        "unlink removes those links and reinstalls dependencies",
+        "any other operation is passed through to npm in each selected module",
+      ],
+      [
+        "npm-link --operation link",
+        "npm-link --operation unlink",
+        "npm-link --operation install --include packages/app",
+      ]
     );
   }
 

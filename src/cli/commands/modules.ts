@@ -3,6 +3,7 @@ import path from "node:path";
 import { Command } from "../command";
 import { DefaultCommandValues } from "../constants";
 import { LoggingConfig } from "@decaf-ts/logging";
+import { printCommandHelp } from "./help";
 
 export function readGitModules(basePath: string = process.cwd()): string[] {
   const gitmodulesPath = path.join(basePath, ".gitmodules");
@@ -62,6 +63,28 @@ const options = {
 export class ModulesCommand extends Command<typeof options, void> {
   constructor() {
     super("ModulesCommand", options);
+  }
+
+  protected override help(): void {
+    printCommandHelp(
+      this.log,
+      "modules",
+      "List modules discovered from .gitmodules.",
+      "modules [options]",
+      [
+        {
+          flag: "--base-path <path>",
+          description: "Directory to read .gitmodules from",
+          defaultValue: "current working directory",
+        },
+        {
+          flag: "-h, --help",
+          description: "Show this help text and exit",
+        },
+      ],
+      ["Each discovered module path is printed on its own line."],
+      ["modules", "modules --base-path ../repo"],
+    );
   }
 
   protected async run(

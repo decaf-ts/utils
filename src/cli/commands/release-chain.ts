@@ -8,6 +8,7 @@ import {
 import { getPackage } from "../../utils";
 import { LoggingConfig } from "@decaf-ts/logging";
 import { execSync } from "node:child_process";
+import { printCommandHelp } from "./help";
 
 const releaseChainArgs = {
   meta: {
@@ -77,6 +78,54 @@ export class ReleaseChainCommand extends Command<
     );
   }
 
+  protected override help(): void {
+    printCommandHelp(
+      this.log,
+      "release-chain",
+      "Run the release-chain workflow locally across repositories.",
+      "release-chain [options]",
+      [
+        { flag: "--meta <url>", description: "Meta repository URL" },
+        {
+          flag: "--branch <name>",
+          description: "Branch to update downstream repositories",
+          defaultValue: "main or detected branch",
+        },
+        {
+          flag: "--current <owner/repo>",
+          description: "Current repository slug to resume after in the chain",
+        },
+        {
+          flag: "--package <name>",
+          description: "Override detected package name",
+        },
+        {
+          flag: "--token <token>",
+          description: "GitHub token for cloning and pushing",
+        },
+        {
+          flag: "--submodule-file <file>",
+          description: "Override submodule file name",
+        },
+        {
+          flag: "--submodule-path <path>",
+          description: "Use a local submodule file instead of downloading",
+        },
+        {
+          flag: "--target-base <branch>",
+          description: "Base branch for downstream pull requests",
+        },
+        {
+          flag: "-h, --help",
+          description: "Show this help text and exit",
+        },
+      ],
+      [
+        "Missing meta or branch values are detected from git and environment variables when possible.",
+      ]
+    );
+  }
+
   protected async run(
     options: LoggingConfig &
       typeof DefaultCommandValues &
@@ -118,6 +167,55 @@ export class ReleaseChainDispatchCommand extends Command<
       Object.assign({}, DefaultCommandOptions, releaseChainArgs) as CommandOptions<
         typeof releaseChainArgs
       >,
+    );
+  }
+
+  protected override help(): void {
+    printCommandHelp(
+      this.log,
+      "release-chain-dispatch",
+      "Dispatch the release-chain GitHub Actions workflow.",
+      "release-chain-dispatch [options]",
+      [
+        { flag: "--meta <url>", description: "Meta repository URL" },
+        {
+          flag: "--branch <name>",
+          description: "Branch to evaluate in downstream repositories",
+          defaultValue: "main or detected branch",
+        },
+        {
+          flag: "--current <owner/repo>",
+          description: "Repository slug that triggered the release chain",
+        },
+        {
+          flag: "--workflow <file>",
+          description: "Workflow file name",
+          defaultValue: "release-chain.yaml",
+        },
+        {
+          flag: "--repo <owner/repo>",
+          description: "Target repository slug where the workflow lives",
+        },
+        {
+          flag: "--token <token>",
+          description: "GitHub token for dispatching workflows",
+        },
+        {
+          flag: "--ref <ref>",
+          description: "Git ref to dispatch the workflow on",
+        },
+        {
+          flag: "--target-base <branch>",
+          description: "Base branch for downstream pull requests",
+        },
+        {
+          flag: "-h, --help",
+          description: "Show this help text and exit",
+        },
+      ],
+      [
+        "Missing meta or branch values are detected from git and environment variables when possible.",
+      ]
     );
   }
 

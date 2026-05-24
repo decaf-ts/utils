@@ -6,6 +6,7 @@ import { Command } from "../command";
 import { DefaultCommandValues } from "../constants";
 import { UserInput } from "../../input/input";
 import { NoCIFLag } from "../../utils/constants";
+import { printCommandHelp } from "./help";
 
 const options = {
   public: {
@@ -102,6 +103,66 @@ export class TagReleaseCommand extends Command<typeof options, void> {
 
   private readToken(fileName: string): string {
     return fs.readFileSync(path.join(process.cwd(), fileName), "utf8").trim();
+  }
+
+  protected override help(): void {
+    printCommandHelp(
+      this.log,
+      "tag-release",
+      "Prepare a release, create a git tag, push, and optionally publish to npm.",
+      "tag-release [options] [tag] [message]",
+      [
+        {
+          flag: "--public",
+          description: "Publish to the public npm registry",
+          defaultValue: "false",
+        },
+        {
+          flag: "--private",
+          description: "Publish to the restricted npm registry",
+          defaultValue: "false",
+        },
+        {
+          flag: "--git-token <file>",
+          description: "File containing the token used for authenticated git pushes",
+          defaultValue: ".token",
+        },
+        {
+          flag: "--npm-token <file>",
+          description: "File containing the token used for npm publish",
+          defaultValue: ".npmtoken",
+        },
+        {
+          flag: "--git-user <name>",
+          description: "Git user name embedded in authenticated pushes",
+        },
+        {
+          flag: "--allow-from-branch",
+          description: "Skip the master/main branch guard",
+          defaultValue: "false",
+        },
+        {
+          flag: "--tag <version>",
+          description: "Release tag to create",
+        },
+        {
+          flag: "--message <text>",
+          description: "Release message to use",
+        },
+        {
+          flag: "-h, --help",
+          description: "Show this help text and exit",
+        },
+      ],
+      [
+        "If tag or message are omitted, the command prompts interactively.",
+        "The command uses .token for git pushes and .npmtoken for npm publish unless overridden.",
+      ],
+      [
+        "tag-release --public --tag v1.2.3 --message \"Release 1.2.3\"",
+        "tag-release --private --allow-from-branch --tag v1.2.3",
+      ]
+    );
   }
 
   protected async run(
