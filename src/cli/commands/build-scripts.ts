@@ -18,6 +18,7 @@ import typescript from "@rollup/plugin-typescript";
 import commonjs from "@rollup/plugin-commonjs";
 import { nodeResolve } from "@rollup/plugin-node-resolve";
 import json from "@rollup/plugin-json";
+import { execSync } from "child_process";
 import { builtinModules } from "module";
 import { LoggingConfig, LogLevel } from "@decaf-ts/logging";
 
@@ -140,6 +141,8 @@ function buildExportsTypePathMappings(
 }
 
 const VERSION_STRING = "##VERSION##";
+const COMMIT_STRING = "##COMMIT##";
+const FULL_VERSION_STRING = "##FULL_VERSION##";
 const PACKAGE_STRING = "##PACKAGE##";
 const PACKAGE_SIZE_STRING = "##PACKAGE_SIZE##";
 
@@ -377,6 +380,8 @@ export class BuildScripts extends Command<
   private replacements: Record<string, string> = {};
   private readonly pkgVersion: string;
   private readonly pkgName: string;
+  private readonly commitHash: string;
+  private readonly fullVersion: string;
 
   constructor() {
     super(
@@ -389,14 +394,25 @@ export class BuildScripts extends Command<
     const { name, version } = pkg;
     this.pkgName = name.includes("@") ? name.split("/")[1] : name;
     this.pkgVersion = version;
+    try {
+      this.commitHash = execSync("git rev-parse --short HEAD", {
+        encoding: "utf8",
+      }).trim();
+    } catch {
+      this.commitHash = "unknown";
+    }
+    this.fullVersion = `${this.pkgVersion}-${this.commitHash}`;
     this.replacements[VERSION_STRING] = this.pkgVersion;
+    this.replacements[COMMIT_STRING] = this.commitHash;
+    this.replacements[FULL_VERSION_STRING] = this.fullVersion;
     this.replacements[PACKAGE_STRING] = name;
   }
 
   /**
-   * @description Patches files with version and package name.
-   * @summary This method reads all files in a directory, finds placeholders for version
-   * and package name, and replaces them with the actual values from package.json.
+   * @description Patches files with version, commit, full version, and package name.
+   * @summary This method reads all files in a directory, finds placeholders for version,
+   * commit hash, full version, and package name, and replaces them with the actual values
+   * from package.json and the current git revision.
    * @param {string} p - The path to the directory containing the files to patch.
    */
   patchFiles(p: string) {
@@ -412,12 +428,36 @@ export class BuildScripts extends Command<
         `$1${version}$2`
       );
       patched = patched.replace(
+        /((?:^|[\s;,(])(?:const|let|var)\s+COMMIT\s*=\s*["'])##COMMIT##(["'])/gm,
+        `$1${this.commitHash}$2`
+      );
+      patched = patched.replace(
+        /((?:^|[\s;,(])(?:const|let|var)\s+FULL_VERSION\s*=\s*["'])##FULL_VERSION##(["'])/gm,
+        `$1${this.fullVersion}$2`
+      );
+      patched = patched.replace(
         /((?:^|[\s;,(])(?:exports|module\.exports)\.VERSION\s*=\s*["'])##VERSION##(["'])/gm,
         `$1${version}$2`
       );
       patched = patched.replace(
+        /((?:^|[\s;,(])(?:exports|module\.exports)\.COMMIT\s*=\s*["'])##COMMIT##(["'])/gm,
+        `$1${this.commitHash}$2`
+      );
+      patched = patched.replace(
+        /((?:^|[\s;,(])(?:exports|module\.exports)\.FULL_VERSION\s*=\s*["'])##FULL_VERSION##(["'])/gm,
+        `$1${this.fullVersion}$2`
+      );
+      patched = patched.replace(
         /((?:^|[\s;,(])\w+\.VERSION\s*=\s*["'])##VERSION##(["'])/gm,
         `$1${version}$2`
+      );
+      patched = patched.replace(
+        /((?:^|[\s;,(])\w+\.COMMIT\s*=\s*["'])##COMMIT##(["'])/gm,
+        `$1${this.commitHash}$2`
+      );
+      patched = patched.replace(
+        /((?:^|[\s;,(])\w+\.FULL_VERSION\s*=\s*["'])##FULL_VERSION##(["'])/gm,
+        `$1${this.fullVersion}$2`
       );
       patched = patched.replace(
         /((?:^|[\s;,(])(?:const|let|var)\s+PACKAGE_NAME\s*=\s*["'])##PACKAGE##(["'])/gm,
@@ -445,7 +485,12 @@ export class BuildScripts extends Command<
             filePath,
             Object.entries(this.replacements).reduce(
               (acc: Record<string, any>, [key, val]) => {
-                if ([VERSION_STRING, PACKAGE_STRING].includes(key)) return acc;
+                if (
+                  [VERSION_STRING, COMMIT_STRING, FULL_VERSION_STRING, PACKAGE_STRING].includes(
+                    key
+                  )
+                )
+                  return acc;
                 acc[key] = val;
                 return acc;
               },

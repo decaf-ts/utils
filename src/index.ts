@@ -32,10 +32,28 @@ export * from "./release-chain";
 export const VERSION = "##VERSION##";
 
 /**
+ * @description Represents the current commit hash of the module build.
+ * @summary Stores the current git commit hash for the @decaf-ts/utils package.
+ * The build replaces the placeholder with the actual commit hash at publish time.
+ * @const COMMIT
+ * @memberOf module:utils
+ */
+export const COMMIT = "##COMMIT##";
+
+/**
+ * @description Represents the full version string of the module.
+ * @summary Stores the semver version and commit hash for the @decaf-ts/utils package.
+ * The build replaces the placeholder with the actual `<version>-<commit>` value at publish time.
+ * @const FULL_VERSION
+ * @memberOf module:utils
+ */
+export const FULL_VERSION = "##FULL_VERSION##";
+
+/**
  * @description Represents the current version of the module.
- * @summary Stores the version for the @decaf-ts/utils package. The build replaces
- * the placeholder with the actual version number at publish time.
- * @const VERSION
+ * @summary Stores the package name for the @decaf-ts/utils package. The build replaces
+ * the placeholder with the actual package name at publish time.
+ * @const PACKAGE_NAME
  * @memberOf module:utils
  */
 export const PACKAGE_NAME = "##PACKAGE##";

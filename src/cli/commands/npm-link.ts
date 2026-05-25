@@ -22,6 +22,15 @@ const options = {
     multiple: true,
     default: [],
   },
+  packages: {
+    type: "string",
+    multiple: true,
+    default: [],
+  },
+  mainPackagePath: {
+    type: "string",
+    default: "",
+  },
   operation: {
     type: "string",
     default: "link",
@@ -58,6 +67,14 @@ function normalizeList(value: unknown): string[] {
 }
 
 function matchesPattern(value: string, pattern: string): boolean {
+  if (pattern.includes("*")) {
+    const escaped = pattern
+      .replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
+      .replace(/\\\*/g, ".*");
+    const regex = new RegExp(`^${escaped}$`);
+    return regex.test(value);
+  }
+
   return (
     value === pattern ||
     path.basename(value) === pattern ||
@@ -92,6 +109,15 @@ export class NpmLinkCommand extends Command<typeof options, void> {
           description: "Module names or paths to target explicitly",
         },
         {
+          flag: "--packages <items...>",
+          description: "Additional non-decaf packages to link or unlink",
+        },
+        {
+          flag: "--main-package-path <path>",
+          description:
+            "Path to the package tree that provides the original decaf packages",
+        },
+        {
           flag: "--operation <name>",
           description: "Operation to run in each module",
           defaultValue: "link",
@@ -103,6 +129,8 @@ export class NpmLinkCommand extends Command<typeof options, void> {
       ],
       [
         "link creates symlinks for decaf-ts dependencies",
+        "link can also include extra non-decaf packages passed via --packages",
+        "when --packages is set, --main-package-path is required and is used as the source root",
         "unlink removes those links and reinstalls dependencies",
         "any other operation is passed through to npm in each selected module",
       ],
@@ -110,6 +138,7 @@ export class NpmLinkCommand extends Command<typeof options, void> {
         "npm-link --operation link",
         "npm-link --operation unlink",
         "npm-link --operation install --include packages/app",
+        "npm-link --packages @scope/* --main-package-path ../packages --include packages/app",
       ]
     );
   }
@@ -120,17 +149,32 @@ export class NpmLinkCommand extends Command<typeof options, void> {
         maxTraversal: unknown;
         excludes: unknown;
         include: unknown;
+        packages: unknown;
+        mainPackagePath: unknown;
         operation: unknown;
       }
   ): Promise<void> {
     const maxTraversal = Number.parseInt(`${answers.maxTraversal || "2"}`, 10);
     const include = normalizeList(answers.include);
     const excludes = normalizeList(answers.excludes);
+    const packages = normalizeList(answers.packages);
+    const mainPackagePath = `${answers.mainPackagePath || ""}`.trim();
     const defaultExcludes = ["@decaf-ts/utils", "@decaf-ts/logging"];
     const operation = `${answers.operation || "link"}`.trim() || "link";
+    const sourceBasePath = mainPackagePath
+      ? path.resolve(mainPackagePath)
+      : process.cwd();
+
+    if (packages.length > 0 && !mainPackagePath) {
+      console.log(
+        "--main-package-path is required when --packages includes non-decaf packages"
+      );
+      process.exit(1);
+      return;
+    }
 
     const outerPkg = JSON.parse(
-      fs.readFileSync(path.join(process.cwd(), "package.json"), "utf8")
+      fs.readFileSync(path.join(sourceBasePath, "package.json"), "utf8")
     ) as { name: string };
     const scope = getScope(outerPkg.name);
     const modules = readGitModulesDeep(
@@ -147,6 +191,9 @@ export class NpmLinkCommand extends Command<typeof options, void> {
       (excludes.length > 0 ? excludes : defaultExcludes).some((pattern) =>
         matchesPattern(dependency, pattern)
       );
+    const shouldLinkDependency = (dependency: string) =>
+      dependency.startsWith(scope) ||
+      packages.some((pattern) => matchesPattern(dependency, pattern));
 
     for (const moduleName of selectedModules) {
       const moduleRoot = path.join(process.cwd(), moduleName);
@@ -160,7 +207,7 @@ export class NpmLinkCommand extends Command<typeof options, void> {
       }
 
       const dependencies = getDependencyList(pkg).filter((dep) =>
-        dep.startsWith(scope)
+        shouldLinkDependency(dep)
       );
 
       if (operation === "link") {
@@ -171,18 +218,17 @@ export class NpmLinkCommand extends Command<typeof options, void> {
           const packageName = getPackageName(dependency);
 
           try {
-            const packageRoot = path.join(
-              moduleRoot,
-              "node_modules",
-              scope,
-              packageName
-            );
+            const packageRoot = path.join(moduleRoot, "node_modules", dependency);
             const dependencyTarget = path.join(
               moduleRoot,
               "node_modules",
               dependency
             );
-            const sourcePath = path.join(process.cwd(), packageName, innerCodePath);
+            const sourcePath = path.join(
+              sourceBasePath,
+              packageName,
+              innerCodePath
+            );
             const linkPath = path.join(packageRoot, innerCodePath);
 
             if (!fs.existsSync(sourcePath)) {
