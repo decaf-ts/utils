@@ -2,11 +2,9 @@ name: Trivy Security Scan
 
 on:
   push:
-    branches: [DECAF-807]
+    branches: [DECAF-123]
   pull_request:
-    branches: [DECAF-807]
-  schedule:
-    - cron: '0 6 * * 1'
+    branches: [DECAF-123]
 
 jobs:
   trivy-scan:
