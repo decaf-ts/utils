@@ -21,8 +21,9 @@ jobs:
       - name: Run Trivy
         id: trivy
         run: |
-          trivy fs . --severity CRITICAL,HIGH --format table --output trivy-report.txt || true
-          if grep -qE "^[^|]*\|[^|]*\|[^|]*\|[^|]*\|" trivy-report.txt; then
+          trivy fs . --severity CRITICAL,HIGH --format json --output trivy-report.json || true
+          COUNT=$(jq '[.Results[]?.Vulnerabilities[]?] | length' trivy-report.json)
+          if [ "$COUNT" -gt 0 ]; then
             echo "vulnerabilities=true" >> $GITHUB_OUTPUT
           else
             echo "vulnerabilities=false" >> $GITHUB_OUTPUT
@@ -32,7 +33,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: trivy-report
-          path: trivy-report.txt
+          path: trivy-report.json
 
       - name: Trigger Renovate
         if: steps.trivy.outputs.vulnerabilities == 'true'
