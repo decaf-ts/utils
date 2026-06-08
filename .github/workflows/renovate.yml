@@ -1,7 +1,6 @@
 name: Renovate
 
 on:
-  workflow_dispatch:
   repository_dispatch:
     types: [renovate-trigger]
 
