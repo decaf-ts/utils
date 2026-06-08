@@ -18,3 +18,4 @@ jobs:
         env:
           RENOVATE_TOKEN: ${{ secrets.JIRA_AUTOMATION }}
           RENOVATE_REPOSITORIES: decaf-ts/utils
+          LOG_LEVEL: debug
