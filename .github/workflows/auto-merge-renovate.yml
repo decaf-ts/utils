@@ -1,29 +1,41 @@
-name: Auto Approve and Merge Renovate PRs
-
+name: Trivy Security Scan
 on:
-  pull_request:
-    types: [opened, reopened]
+  workflow_dispatch:
+  push:
     branches: [master]
-
+  pull_request:
+    branches: [master]
 jobs:
-  auto-approve-merge:
-    name: Auto Approve and Merge
+  trivy-scan:
+    name: Trivy Vulnerability Scan
     runs-on: ubuntu-latest
-    if: github.actor == 'renovate[bot]'
     steps:
-      - name: Approve PR
-        env:
-          GH_TOKEN: ${{ secrets.GH_PAT }}
-        run: |
-          gh pr review ${{ github.event.pull_request.number }} \
-            --repo ${{ github.repository }} \
-            --approve
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-      - name: Enable auto-merge
+      - name: Install Trivy
+        run: curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh -s -- -b /usr/local/bin
+
+      - name: Run Trivy
+        id: trivy
+        run: |
+          trivy fs . --severity CRITICAL,HIGH --format table --output trivy-report.txt
+          if grep -q "Total: 0" trivy-report.txt; then
+            echo "vulnerabilities=false" >> $GITHUB_OUTPUT
+          else
+            echo "vulnerabilities=true" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Upload report as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: trivy-report
+          path: trivy-report.txt
+
+      - name: Trigger Renovate
+        if: steps.trivy.outputs.vulnerabilities == 'true'
         env:
           GH_TOKEN: ${{ secrets.GH_PAT }}
         run: |
-          gh pr merge ${{ github.event.pull_request.number }} \
-            --repo ${{ github.repository }} \
-            --squash \
-            --auto
+          gh api repos/${{ github.repository }}/dispatches \
+            -f event_type=renovate-trigger
