@@ -126,7 +126,7 @@
     "@rollup/plugin-node-resolve": "^16.0.3",
     "@rollup/plugin-terser": "^1.0.0",
     "@rollup/plugin-typescript": "^12.3.0",
-    "@stylistic/eslint-plugin": "^4.2.0",
+    "@stylistic/eslint-plugin": "^5.0.0",
     "@types/jest": "30.0.0",
     "@types/prompts": "^2.4.9",
     "@types/shell-quote": "^1.7.5",
