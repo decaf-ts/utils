@@ -21,12 +21,11 @@ jobs:
       - name: Run Trivy
         id: trivy
         run: |
-          set +e
-          trivy fs . --severity CRITICAL,HIGH --format table --output trivy-report.txt
-          if [ $? -eq 0 ]; then
-            echo "vulnerabilities=false" >> $GITHUB_OUTPUT
-          else
+          trivy fs . --severity CRITICAL,HIGH --format table --output trivy-report.txt || true
+          if grep -qE "^[^|]*\|[^|]*\|[^|]*\|[^|]*\|" trivy-report.txt; then
             echo "vulnerabilities=true" >> $GITHUB_OUTPUT
+          else
+            echo "vulnerabilities=false" >> $GITHUB_OUTPUT
           fi
 
       - name: Upload report as artifact
