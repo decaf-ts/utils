@@ -1,7 +1,7 @@
 {
   "name": "@decaf-ts/utils",
   "version": "1.6.18",
-  "packageManager": "npm@11.13.0",
+  "packageManager": "npm@11.17.0",
   "description": "module management utils for decaf-ts",
   "type": "module",
   "exports": {
