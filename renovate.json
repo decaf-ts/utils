@@ -1,6 +1,6 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "extends": ["config:recommended"],
+  "extends": ["security:only-security-updates"],
   "baseBranchPatterns": ["master"],
   "branchPrefix": "security/renovate-",
   "forkProcessing": "enabled",
@@ -14,12 +14,5 @@
   "vulnerabilityAlerts": {
     "enabled": true,
     "labels": ["security"]
-  },
-  "packageRules": [
-    {
-      "matchCategories": ["security"],
-      "automerge": true,
-      "automergeType": "pr"
-    }
-  ]
+  }
 }
