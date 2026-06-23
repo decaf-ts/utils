@@ -365,6 +365,7 @@ const cjs2Transformer = (ext = ".cjs") => {
   };
 };
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function toPosixPath(value: string) {
   return value.split(path.sep).join("/");
 }
@@ -495,9 +496,12 @@ export class BuildScripts extends Command<
             Object.entries(this.replacements).reduce(
               (acc: Record<string, any>, [key, val]) => {
                 if (
-                  [VERSION_STRING, COMMIT_STRING, FULL_VERSION_STRING, PACKAGE_STRING].includes(
-                    key
-                  )
+                  [
+                    VERSION_STRING,
+                    COMMIT_STRING,
+                    FULL_VERSION_STRING,
+                    PACKAGE_STRING,
+                  ].includes(key)
                 )
                   return acc;
                 acc[key] = val;
@@ -724,7 +728,6 @@ export class BuildScripts extends Command<
 
     for (const file of esmJsFiles) {
       const relative = path.relative(esmRoot, file);
-      const relativePosix = toPosixPath(relative);
       const outFile = withExtension(path.join(cjsRoot, relative), ".cjs");
       fs.mkdirSync(path.dirname(outFile), { recursive: true });
 
@@ -738,7 +741,7 @@ export class BuildScripts extends Command<
           inlineSources: isDev,
           esModuleInterop: true,
         },
-        fileName: relativePosix,
+        fileName: relative,
         reportDiagnostics: true,
       });
 
@@ -760,8 +763,8 @@ export class BuildScripts extends Command<
 
       if (transpiled.sourceMapText) {
         const map = JSON.parse(transpiled.sourceMapText);
-        map.file = toPosixPath(withExtension(relativePosix, ".cjs"));
-        map.sources = [relativePosix];
+        map.file = withExtension(relative, ".cjs");
+        map.sources = [relative];
         fs.writeFileSync(`${outFile}.map`, `${JSON.stringify(map)}\n`, "utf8");
       }
     }
@@ -981,7 +984,10 @@ export class BuildScripts extends Command<
       }
       return runtimePath;
     };
-    const esmToTypesPath = (runtimePath?: string, ext: ".d.mts" | ".d.cts" = ".d.mts") => {
+    const esmToTypesPath = (
+      runtimePath?: string,
+      ext: ".d.mts" | ".d.cts" = ".d.mts"
+    ) => {
       if (!runtimePath) return undefined;
       if (runtimePath.includes("/lib/esm/")) {
         return runtimePath
@@ -1033,11 +1039,13 @@ export class BuildScripts extends Command<
       const esmTypes =
         rootTypes && /\.d\.(ts|mts|cts)$/i.test(rootTypes)
           ? toDualTypePath(rootTypes, ".d.mts")
-          : getTypesEntry(targetObj.import) || esmToTypesPath(importEntry, ".d.mts");
+          : getTypesEntry(targetObj.import) ||
+            esmToTypesPath(importEntry, ".d.mts");
       const cjsTypes =
         rootTypes && /\.d\.(ts|mts|cts)$/i.test(rootTypes)
           ? toDualTypePath(rootTypes, ".d.cts")
-          : getTypesEntry(targetObj.require) || esmToTypesPath(importEntry, ".d.cts");
+          : getTypesEntry(targetObj.require) ||
+            esmToTypesPath(importEntry, ".d.cts");
 
       updatedExports[subpath] = {
         ...(importEntry
@@ -1063,12 +1071,21 @@ export class BuildScripts extends Command<
     }
 
     pkg.exports = updatedExports;
-    if (typeof pkg.types === "string" && /\.d\.(ts|mts|cts)$/i.test(pkg.types)) {
+    if (
+      typeof pkg.types === "string" &&
+      /\.d\.(ts|mts|cts)$/i.test(pkg.types)
+    ) {
       pkg.types = pkg.types.replace(/\.d\.(ts|mts|cts)$/i, ".d.mts");
     }
 
-    fs.writeFileSync(packageJsonPath, JSON.stringify(pkg, null, 2) + "\n", "utf8");
-    log.verbose("Updated package.json exports with import/require type conditions.");
+    fs.writeFileSync(
+      packageJsonPath,
+      JSON.stringify(pkg, null, 2) + "\n",
+      "utf8"
+    );
+    log.verbose(
+      "Updated package.json exports with import/require type conditions."
+    );
   }
 
   /**
