@@ -150,12 +150,15 @@
     "rimraf": "^6.0.1",
     "rollup": "^4.59.0",
     "shell-quote": "^1.8.3",
-    "ts-jest": "29.4.11",
+    "ts-jest": "^29.4.11",
     "ts-loader": "^9.5.2",
     "ts-node": "^10.9.2",
     "tsx": "^4.20.6",
     "typed-object-accumulator": "latest",
     "typescript": "^5.8.3",
     "typescript-eslint": "^8.31.0"
+  },
+  "overrides": {
+    "js-yaml": "^4.2.0"
   }
 }

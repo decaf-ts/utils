@@ -365,6 +365,15 @@ const cjs2Transformer = (ext = ".cjs") => {
   };
 };
 
+function toPosixPath(value: string) {
+  return value.split(path.sep).join("/");
+}
+
+function withExtension(filePath: string, extension: string) {
+  const parsed = path.parse(filePath);
+  return path.join(parsed.dir, `${parsed.name}${extension}`);
+}
+
 /**
  * @description A command-line script for building and bundling TypeScript projects.
  * @summary This class provides a comprehensive build script that handles TypeScript compilation,
@@ -715,7 +724,8 @@ export class BuildScripts extends Command<
 
     for (const file of esmJsFiles) {
       const relative = path.relative(esmRoot, file);
-      const outFile = path.join(cjsRoot, relative).replace(/\.js$/gm, ".cjs");
+      const relativePosix = toPosixPath(relative);
+      const outFile = withExtension(path.join(cjsRoot, relative), ".cjs");
       fs.mkdirSync(path.dirname(outFile), { recursive: true });
 
       const source = fs.readFileSync(file, "utf8");
@@ -728,7 +738,7 @@ export class BuildScripts extends Command<
           inlineSources: isDev,
           esModuleInterop: true,
         },
-        fileName: path.basename(file),
+        fileName: relativePosix,
         reportDiagnostics: true,
       });
 
@@ -736,13 +746,23 @@ export class BuildScripts extends Command<
         this.evalDiagnostics(transpiled.diagnostics as Diagnostic[]);
       }
 
-      const rewritten = this.rewriteRelativeJsSpecifiersToCjs(
+      const mapFileName = `${path.basename(outFile)}.map`;
+      let rewritten = this.rewriteRelativeJsSpecifiersToCjs(
         transpiled.outputText
       );
+      if (transpiled.sourceMapText) {
+        rewritten = rewritten.replace(
+          /\/\/# sourceMappingURL=.*$/m,
+          `//# sourceMappingURL=${mapFileName}`
+        );
+      }
       fs.writeFileSync(outFile, rewritten, "utf8");
 
       if (transpiled.sourceMapText) {
-        fs.writeFileSync(`${outFile}.map`, transpiled.sourceMapText, "utf8");
+        const map = JSON.parse(transpiled.sourceMapText);
+        map.file = toPosixPath(withExtension(relativePosix, ".cjs"));
+        map.sources = [relativePosix];
+        fs.writeFileSync(`${outFile}.map`, `${JSON.stringify(map)}\n`, "utf8");
       }
     }
   }
