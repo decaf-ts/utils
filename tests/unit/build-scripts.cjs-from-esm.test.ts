@@ -48,4 +48,52 @@ describe("BuildScripts.buildCjsFromEsm", () => {
       fs.rmSync(tempDir, { recursive: true, force: true });
     }
   });
+
+  it("does not corrupt source files that contain a sourceMappingURL comment mid-file", async () => {
+    const originalCwd = process.cwd();
+    const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "decaf-build-cjs-"));
+    const esmFile = path.join(tempDir, "lib", "esm", "self-referencing.js");
+    const cjsFile = path.join(tempDir, "lib", "cjs", "self-referencing.cjs");
+
+    fs.mkdirSync(path.dirname(esmFile), { recursive: true });
+    // Mimics two real-world cases that must not confuse the trailing-comment
+    // rewrite: a leftover sourceMappingURL comment carried over from the ESM
+    // build, and source code (like buildCjsFromEsm itself) that contains the
+    // literal "//# sourceMappingURL=" text as part of a string/regex.
+    fs.writeFileSync(
+      esmFile,
+      [
+        "export function rewrite(text, mapFileName) {",
+        "  return text.replace(",
+        "    /\\/\\/# sourceMappingURL=.*$/m,",
+        "    `//# sourceMappingURL=${mapFileName}`",
+        "  );",
+        "}",
+        "export const answer = 42;",
+        "//# sourceMappingURL=self-referencing.js.map",
+        "",
+      ].join("\n"),
+      "utf8"
+    );
+
+    try {
+      const scripts = new BuildScripts();
+      process.chdir(tempDir);
+
+      await (scripts as any).buildCjsFromEsm(false);
+
+      const output = fs.readFileSync(cjsFile, "utf8");
+
+      expect(() => new Function(output)).not.toThrow();
+      expect(output).toContain("`//# sourceMappingURL=${mapFileName}`");
+
+      const lines = output.trimEnd().split("\n");
+      expect(lines[lines.length - 1]).toBe(
+        "//# sourceMappingURL=self-referencing.cjs.map"
+      );
+    } finally {
+      process.chdir(originalCwd);
+      fs.rmSync(tempDir, { recursive: true, force: true });
+    }
+  });
 });

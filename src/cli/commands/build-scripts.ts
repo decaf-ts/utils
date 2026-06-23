@@ -365,11 +365,6 @@ const cjs2Transformer = (ext = ".cjs") => {
   };
 };
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-function toPosixPath(value: string) {
-  return value.split(path.sep).join("/");
-}
-
 function withExtension(filePath: string, extension: string) {
   const parsed = path.parse(filePath);
   return path.join(parsed.dir, `${parsed.name}${extension}`);
@@ -755,8 +750,9 @@ export class BuildScripts extends Command<
       );
       if (transpiled.sourceMapText) {
         rewritten = rewritten.replace(
-          /\/\/# sourceMappingURL=.*$/m,
-          `//# sourceMappingURL=${mapFileName}`
+          /\/\/# sourceMappingURL=[^\n]*(\n?)$/,
+          (_match, trailingNewline: string) =>
+            `//# sourceMappingURL=${mapFileName}${trailingNewline}`
         );
       }
       fs.writeFileSync(outFile, rewritten, "utf8");
