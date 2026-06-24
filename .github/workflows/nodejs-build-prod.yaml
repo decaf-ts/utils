@@ -28,7 +28,7 @@ jobs:
             deps-${{ runner.os }}-${{ matrix.node-version }}-
 
       # Install dependencies only
-      - run: npm ci
+      - run: npm ci --ignore-scripts
 
       - name: Cache Build
         id: cache-build

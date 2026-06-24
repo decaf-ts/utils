@@ -12,27 +12,35 @@ jobs:
   trivy-scan:
     name: Trivy Vulnerability Scan
     runs-on: ubuntu-latest
+    if: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository }}
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4.2.2
+        # actions/checkout@v4.2.2
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
 
       - name: Generate Trivy Vulnerability Report
-        uses: aquasecurity/trivy-action@v0.36.0
+        # aquasecurity/trivy-action@v0.36.0
+        uses: aquasecurity/trivy-action@a9c7b0f06e461e9d4b4d1711f154ee024b8d7ab8
         with:
           scan-type: "fs"
           output: trivy-report.json
           format: json
           scan-ref: .
-          exit-code: 0
+          exit-code: 1
+          severity: HIGH,CRITICAL
+          ignore-unfixed: true
 
       - name: Upload Vulnerability Scan Results
-        uses: actions/upload-artifact@v4.6.2
+        if: always()
+        # actions/upload-artifact@v4.6.2
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
           name: trivy-report
           path: trivy-report.json
           retention-days: 30
 
       - name: Check vulnerabilities
+        if: always()
         id: check
         run: |
           COUNT=$(jq '[.Results[]?.Vulnerabilities[]?] | length' trivy-report.json)
@@ -43,7 +51,7 @@ jobs:
           fi
 
       - name: Trigger Renovate
-        if: steps.check.outputs.vulnerabilities == 'true'
+        if: always() && steps.check.outputs.vulnerabilities == 'true'
         env:
           GH_TOKEN: ${{ secrets.GH_PAT }}
         run: |

@@ -45,6 +45,11 @@ describe("TestReporter", () => {
   beforeEach(() => {
     jest.clearAllMocks();
 
+    // Reset static state polluted by other test files (e.g. reporter.test.ts)
+    // that invoke the real importHelpers(), so the virtual mocks below apply.
+    (TestReporter as any).addMsgFunction = undefined;
+    (TestReporter as any).addAttachFunction = undefined;
+
     // Mock path.join to return predictable paths
     (path.join as jest.Mock).mockImplementation((...args) => {
       if (args.includes(mockTestCase)) {

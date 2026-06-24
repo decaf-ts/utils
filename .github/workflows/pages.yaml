@@ -13,6 +13,7 @@ on:
 jobs:
   # Single deploy job no building
   deploy:
+    if: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository }}
     permissions:
       contents: read
       pages: write
@@ -42,7 +43,7 @@ jobs:
             deps-${{ runner.os }}-${{ matrix.node-version }}-
 
       # Install dependencies only if cache missed
-      - run: npm ci
+      - run: npm ci --ignore-scripts
       - run: npm run build:prod  # Replace with your build command  
       - run: npm run coverage
       - run: npm run docs

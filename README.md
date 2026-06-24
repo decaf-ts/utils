@@ -28,7 +28,7 @@ A comprehensive TypeScript utility library providing robust tools for command-li
 
 Documentation available [here](https://decaf-ts.github.io/utils/)
 
-Minimal size: 22.2 KB kb gzipped
+Minimal size: 25.6 KB kb gzipped
 
 ### Description
 
@@ -142,6 +142,135 @@ async function main() {
 }
 
 main().catch(console.error);
+```
+
+#### Managing Secrets with the Credentials Command
+
+The `CredentialsCommand` provides a secure, cross-platform way to manage tokens
+and other secrets used by release scripts, CI pipelines, and local development.
+It replaces the old approach of storing tokens in plaintext files (`.npmtoken`,
+`.token`, `.confluence-token`) with OS keychain storage while preserving
+backwards compatibility.
+
+**Resolution order** (checked in this order for `get` / `resolveSecret()`):
+
+1. **Environment variable** — highest priority; this is what CI uses
+2. **OS keychain** — macOS Keychain, Linux libsecret, Linux Python keyring, Windows Credential Manager
+3. **Legacy plaintext file** — deprecated fallback with a warning
+
+**Built-in secrets:**
+
+| Name       | Env var               | Keychain service        | Account  | Legacy file         |
+|------------|-----------------------|-------------------------|----------|---------------------|
+| `npm`      | `NPM_TOKEN`           | `decaf-ts:npm`          | publish  | `.npmtoken`         |
+| `github`   | `GH_TOKEN`            | `decaf-ts:github`       | git      | `.token`            |
+| `confluence`| `ATLASSIAN_API_TOKEN`| `decaf-ts:confluence`   | api      | `.confluence-token` |
+
+Custom secret names are also supported — the env var defaults to
+`<NAME>_TOKEN`, the service to `decaf-ts:<name>`, and the legacy file to
+`.<name>-token`.
+
+##### CLI usage (standalone)
+
+```sh
+# Resolve the npm publish token (prints to stdout, no trailing newline)
+credentials --action get --name npm
+
+# Resolve the github token using a non-default env var name
+credentials --action get --name github --envVar GH_PAT
+
+# Store a secret in the OS keychain
+credentials --action store --name github --value ghp_xxxxxxxxxxxx
+
+# Store a custom secret with fully overridden metadata
+credentials --action store --name my-api \
+  --envVar MY_API_TOKEN \
+  --service "my-app:api" \
+  --account "ci" \
+  --value "sk_live_xxx"
+
+# Interactive one-time setup (prompts for all built-in secrets, configures git helper)
+credentials --action setup
+
+# Setup and auto-delete legacy plaintext token files (.npmtoken, .token, .confluence-token)
+credentials --action setup --rm
+
+# Configure only the git credential helper (no secret enrollment)
+credentials --action git-helper
+
+# Use in a shell pipeline (e.g., set npm auth for publish)
+npm config set //registry.npmjs.org/:_authToken "$(credentials --action get --name npm)"
+```
+
+##### CLI usage (via decaf CLI)
+
+```sh
+# All subcommands are also available under the decaf CLI
+decaf utils credentials get --name npm
+decaf utils credentials store --name github --value ghp_xxxxxxxxxxxx
+decaf utils credentials setup
+decaf utils credentials setup --rm   # auto-deletes legacy token files
+decaf utils credentials git-helper
+
+# View help for any subcommand
+decaf utils credentials --help
+decaf utils credentials get --help
+```
+
+##### CI usage (GitHub Actions / GitLab CI)
+
+No keychain access is needed in CI — simply set the environment variable as a
+secret and `resolveSecret()` picks it up immediately:
+
+```yaml
+# .github/workflows/release.yml
+- name: Publish to npm
+  env:
+    NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+  run: |
+    npm config set //registry.npmjs.org/:_authToken "$NPM_TOKEN"
+    npm publish
+```
+
+The release scripts (`tag-release`, `npm publish`, `git push`) call
+`resolveSecret("npm")` and `resolveSecret("github")` internally, so they
+automatically prefer env vars in CI and the keychain locally.
+
+##### Programmatic usage (TypeScript)
+
+```typescript
+import { resolveSecret, hasSecret } from '@decaf-ts/utils';
+
+// Resolves using the same order: env var -> keychain -> legacy file
+// Throws if no source provides a value.
+const token = resolveSecret('npm');
+
+// Non-throwing check
+if (hasSecret('github')) {
+  const ghToken = resolveSecret('github');
+}
+
+// Custom secret with overrides
+const apiKey = resolveSecret('my-api', {
+  envVar: 'MY_API_TOKEN',
+  service: 'my-app:api',
+  account: 'ci',
+  legacyFile: '.my-api-token',
+});
+```
+
+##### Local setup walkthrough
+
+```sh
+# 1. Run interactive setup with --rm (enrolls npm, github, confluence in the keychain
+#    and auto-deletes legacy plaintext files)
+credentials --action setup --rm
+
+# 2. Verify resolution works
+credentials --action get --name npm    # should print the token
+credentials --action get --name github # should print the token
+
+# 3. Future release scripts will now use the keychain automatically
 ```
 
 ### Input Module

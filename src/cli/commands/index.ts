@@ -6,3 +6,4 @@ export * from "./npm-link";
 export * from "./npm-token";
 export * from "./run-all";
 export * from "./tag-release-shell";
+export * from "./credentials";

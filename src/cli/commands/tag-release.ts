@@ -6,6 +6,7 @@ import { Command } from "../command";
 import { DefaultCommandValues } from "../index";
 import { LoggingConfig } from "@decaf-ts/logging";
 import { printCommandHelp } from "./help";
+import { resolveSecret } from "./credentials";
 
 const options = {
   ci: {
@@ -229,8 +230,10 @@ export class ReleaseScript extends Command<typeof options, void> {
     ).promise;
     await runCommand("git push --follow-tags").promise;
     if (!ci) {
-      await runCommand("NPM_TOKEN=$(cat .npmtoken) npm publish --access public")
-        .promise;
+      const npmToken = resolveSecret("npm");
+      await runCommand(
+        `NPM_TOKEN=${npmToken} npm publish --ignore-scripts --access public`
+      ).promise;
     }
   }
 }

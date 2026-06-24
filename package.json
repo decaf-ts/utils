@@ -39,6 +39,7 @@
     "npm-token": "lib/cjs/bin/npm-token.cjs",
     "tag-release": "lib/cjs/bin/tag-release.cjs",
     "build-scripts": "lib/cjs/bin/build-scripts.cjs",
+    "credentials": "lib/cjs/bin/credentials.cjs",
     "release-chain": "lib/cjs/bin/release-chain.cjs",
     "release-chain-dispatch": "lib/cjs/bin/release-chain-dispatch.cjs"
   },
