@@ -1367,7 +1367,7 @@ export class BuildScripts extends Command<
     }
 
     if ([BuildMode.ALL, BuildMode.BUNDLE].includes(mode)) {
-      fs.mkdirSync("dist");
+      fs.mkdirSync("dist", { recursive: true });
       await this.bundle(
         Modes.ESM,
         isDev,
