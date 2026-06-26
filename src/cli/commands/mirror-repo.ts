@@ -184,6 +184,10 @@ function mirrorRepoRecursive(
     gitEnv
   );
 
+  // git clone --mirror sets remote.<name>.mirror=true, which forbids explicit refspecs.
+  // Unset it so we can pass a negative refspec to exclude refs/pull/*.
+  spawnTry("git", ["-C", repoDir, "config", "--unset", "remote.target.mirror"]);
+
   log.warn(`Pushing mirror to ${tgtFull}`);
   // --prune removes stale refs on the target (equivalent to --mirror's deletion behaviour).
   // ^refs/pull/* excludes GitHub-internal hidden refs that reject pushes (git 2.29+).
