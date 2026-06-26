@@ -7,3 +7,5 @@ export * from "./npm-token";
 export * from "./run-all";
 export * from "./tag-release-shell";
 export * from "./credentials";
+export * from "./compile-matrix";
+export * from "./mirror-repo";

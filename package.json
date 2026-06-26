@@ -41,7 +41,9 @@
     "build-scripts": "lib/cjs/bin/build-scripts.cjs",
     "credentials": "lib/cjs/bin/credentials.cjs",
     "release-chain": "lib/cjs/bin/release-chain.cjs",
-    "release-chain-dispatch": "lib/cjs/bin/release-chain-dispatch.cjs"
+    "release-chain-dispatch": "lib/cjs/bin/release-chain-dispatch.cjs",
+    "compile-matrix": "lib/cjs/bin/compile-matrix.cjs",
+    "mirror-repo": "lib/cjs/bin/mirror-repo.cjs"
   },
   "scripts": {
     "do-install": "NPM_TOKEN=$(cat .npmtoken) npm install",
