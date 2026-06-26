@@ -184,24 +184,14 @@ function mirrorRepoRecursive(
     gitEnv
   );
 
-  const hiddenRefs = spawnTryCapture("git", [
-    "-C",
-    repoDir,
-    "for-each-ref",
-    "--format=%(refname)",
-    "refs/pull/*",
-  ]);
-  if (hiddenRefs) {
-    let count = 0;
-    for (const ref of hiddenRefs.split("\n").filter(Boolean)) {
-      spawnTry("git", ["-C", repoDir, "update-ref", "-d", ref]);
-      count++;
-    }
-    log.warn(`Removed ${count} GitHub-hidden refs (refs/pull/*).`);
-  }
-
   log.warn(`Pushing mirror to ${tgtFull}`);
-  spawnExec("git", ["-C", repoDir, "push", "--mirror", "target"], gitEnv);
+  // --prune removes stale refs on the target (equivalent to --mirror's deletion behaviour).
+  // ^refs/pull/* excludes GitHub-internal hidden refs that reject pushes (git 2.29+).
+  spawnExec(
+    "git",
+    ["-C", repoDir, "push", "--prune", "target", "+refs/*:refs/*", "^refs/pull/*"],
+    gitEnv
+  );
 
   log.warn(`Completed mirror for ${display}`);
 
