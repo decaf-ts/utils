@@ -7,6 +7,8 @@ import { DefaultCommandValues } from "../constants";
 import { readGitModulesDeep } from "./modules";
 import { printCommandHelp } from "./help";
 
+const DEFAULT_EXCLUDES = ["@decaf-ts/utils", "@decaf-ts/logging"];
+
 const options = {
   maxTraversal: {
     type: "string",
@@ -15,7 +17,6 @@ const options = {
   excludes: {
     type: "string",
     multiple: true,
-    default: ["@decaf-ts/utils", "@decaf-ts/logging"],
   },
   include: {
     type: "string",
@@ -82,6 +83,19 @@ function matchesPattern(value: string, pattern: string): boolean {
   );
 }
 
+function readPackageJson(filePath: string): Record<string, any> | undefined {
+  try {
+    return JSON.parse(fs.readFileSync(filePath, "utf8")) as Record<string, any>;
+  } catch {
+    return undefined;
+  }
+}
+
+function isWithin(parent: string, candidate: string): boolean {
+  const rel = path.relative(parent, candidate);
+  return !rel || (!rel.startsWith("..") && !path.isAbsolute(rel));
+}
+
 export class NpmLinkCommand extends Command<typeof options, void> {
   constructor() {
     super("NpmLinkCommand", options);
@@ -91,17 +105,18 @@ export class NpmLinkCommand extends Command<typeof options, void> {
     printCommandHelp(
       this.log,
       "npm-link",
-      "Link or unlink decaf-ts package outputs across linked modules.",
+      "Link or unlink package outputs across git submodule workspaces.",
       "npm-link [options]",
       [
         {
-          flag: "--max-traversal <depth>",
+          flag: "--maxTraversal <depth>",
           description: "How many nested .gitmodules levels to traverse",
           defaultValue: "2",
         },
         {
           flag: "--excludes <items...>",
-          description: "Dependency names or patterns to ignore",
+          description:
+            "Dependency names or patterns to ignore. Pass an empty string to clear the default excludes",
           defaultValue: "@decaf-ts/utils,@decaf-ts/logging",
         },
         {
@@ -110,12 +125,13 @@ export class NpmLinkCommand extends Command<typeof options, void> {
         },
         {
           flag: "--packages <items...>",
-          description: "Additional non-decaf packages to link or unlink",
+          description:
+            "Additional non-scoped packages to link from --mainPackagePath",
         },
         {
-          flag: "--main-package-path <path>",
+          flag: "--mainPackagePath <path>",
           description:
-            "Path to the package tree that provides the original decaf packages",
+            "Source root for --packages dependencies (e.g. brain/node_modules/@decaf-ts)",
         },
         {
           flag: "--operation <name>",
@@ -128,17 +144,18 @@ export class NpmLinkCommand extends Command<typeof options, void> {
         },
       ],
       [
-        "link creates symlinks for decaf-ts dependencies",
-        "link can also include extra non-decaf packages passed via --packages",
-        "when --packages is set, --main-package-path is required and is used as the source root",
-        "unlink removes those links and reinstalls dependencies",
+        "link symlinks each discovered dependency to its local source",
+        "scoped dependencies are resolved to their git submodule path by matching the package name",
+        "non-scoped dependencies passed via --packages are resolved from --mainPackagePath",
+        "dependencies whose source lives inside the consuming module are skipped (self-reference)",
+        "unlink removes those links and reinstalls dependencies via npm run do-install",
         "any other operation is passed through to npm in each selected module",
       ],
       [
         "npm-link --operation link",
         "npm-link --operation unlink",
-        "npm-link --operation install --include packages/app",
-        "npm-link --packages @scope/* --main-package-path ../packages --include packages/app",
+        "npm-link --packages @decaf-ts/* --mainPackagePath brain/node_modules/@decaf-ts --excludes @pdmfcsa/*",
+        "npm-link --operation install --include modules/core",
       ]
     );
   }
@@ -156,31 +173,50 @@ export class NpmLinkCommand extends Command<typeof options, void> {
   ): Promise<void> {
     const maxTraversal = Number.parseInt(`${answers.maxTraversal || "2"}`, 10);
     const include = normalizeList(answers.include);
-    const excludes = normalizeList(answers.excludes);
     const packages = normalizeList(answers.packages);
     const mainPackagePath = `${answers.mainPackagePath || ""}`.trim();
-    const defaultExcludes = ["@decaf-ts/utils", "@decaf-ts/logging"];
     const operation = `${answers.operation || "link"}`.trim() || "link";
+
+    const excludesRaw = answers.excludes;
+    const excludesProvided =
+      excludesRaw !== undefined && excludesRaw !== null;
+    const excludes = excludesProvided ? normalizeList(excludesRaw) : [];
+    const effectiveExcludes = excludesProvided ? excludes : DEFAULT_EXCLUDES;
+
     const sourceBasePath = mainPackagePath
       ? path.resolve(mainPackagePath)
       : process.cwd();
 
     if (packages.length > 0 && !mainPackagePath) {
       console.log(
-        "--main-package-path is required when --packages includes non-decaf packages"
+        "--main-package-path is required when --packages includes non-scoped packages"
       );
       process.exit(1);
       return;
     }
 
-    const outerPkg = JSON.parse(
-      fs.readFileSync(path.join(sourceBasePath, "package.json"), "utf8")
-    ) as { name: string };
+    const outerPkg = readPackageJson(path.join(process.cwd(), "package.json"));
+    if (!outerPkg || !outerPkg.name) {
+      console.log("Could not determine the workspace package name");
+      process.exit(1);
+      return;
+    }
     const scope = getScope(outerPkg.name);
+
     const modules = readGitModulesDeep(
       process.cwd(),
       Number.isFinite(maxTraversal) ? maxTraversal : 2
     );
+
+    const moduleByName = new Map<string, string>();
+    for (const moduleName of modules) {
+      const moduleRoot = path.join(process.cwd(), moduleName);
+      const mpkg = readPackageJson(path.join(moduleRoot, "package.json"));
+      if (mpkg && mpkg.name) {
+        moduleByName.set(mpkg.name, moduleName);
+      }
+    }
+
     const selectedModules = modules.filter((moduleName) =>
       include.length > 0
         ? include.some((pattern) => matchesPattern(moduleName, pattern))
@@ -188,23 +224,27 @@ export class NpmLinkCommand extends Command<typeof options, void> {
     );
 
     const shouldIgnoreDependency = (dependency: string) =>
-      (excludes.length > 0 ? excludes : defaultExcludes).some((pattern) =>
-        matchesPattern(dependency, pattern)
-      );
+      effectiveExcludes.some((pattern) => matchesPattern(dependency, pattern));
     const shouldLinkDependency = (dependency: string) =>
       dependency.startsWith(scope) ||
       packages.some((pattern) => matchesPattern(dependency, pattern));
 
+    const resolveSource = (dependency: string): string | undefined => {
+      const packageName = getPackageName(dependency);
+      if (dependency.startsWith(scope)) {
+        const modulePath = moduleByName.get(dependency);
+        if (modulePath) {
+          return path.join(process.cwd(), modulePath);
+        }
+        return path.join(sourceBasePath, packageName);
+      }
+      return path.join(sourceBasePath, packageName);
+    };
+
     for (const moduleName of selectedModules) {
       const moduleRoot = path.join(process.cwd(), moduleName);
-      let pkg: Record<string, any>;
-      try {
-        pkg = JSON.parse(
-          fs.readFileSync(path.join(moduleRoot, "package.json"), "utf8")
-        ) as Record<string, any>;
-      } catch {
-        continue;
-      }
+      const pkg = readPackageJson(path.join(moduleRoot, "package.json"));
+      if (!pkg) continue;
 
       const dependencies = getDependencyList(pkg).filter((dep) =>
         shouldLinkDependency(dep)
@@ -214,35 +254,36 @@ export class NpmLinkCommand extends Command<typeof options, void> {
         for (const dependency of dependencies) {
           if (shouldIgnoreDependency(dependency)) continue;
 
-          const innerCodePath = dependency.endsWith("styles") ? "dist" : "lib";
-          const packageName = getPackageName(dependency);
+          const sourcePath = resolveSource(dependency);
+          if (!sourcePath || !fs.existsSync(sourcePath)) {
+            console.log(
+              `Skipping ${dependency} as it does not exist in the local workspace`
+            );
+            continue;
+          }
+
+          if (isWithin(moduleRoot, sourcePath)) {
+            console.log(
+              `Skipping ${dependency} in ${moduleName} - source is the module itself`
+            );
+            continue;
+          }
+
+          const dependencyTarget = path.join(
+            moduleRoot,
+            "node_modules",
+            dependency
+          );
 
           try {
-            const packageRoot = path.join(moduleRoot, "node_modules", dependency);
-            const dependencyTarget = path.join(
-              moduleRoot,
-              "node_modules",
-              dependency
-            );
-            const sourcePath = path.join(
-              sourceBasePath,
-              packageName,
-              innerCodePath
-            );
-            const linkPath = path.join(packageRoot, innerCodePath);
-
-            if (!fs.existsSync(sourcePath)) {
-              console.log(
-                `Skipping ${dependency} as it does not exist in the master repository`
-              );
-              continue;
-            }
-
             console.log(`linking ${dependency} as a dependency of ${moduleName}`);
             fs.rmSync(dependencyTarget, { force: true, recursive: true });
-            fs.mkdirSync(packageRoot, { recursive: true });
-            fs.rmSync(linkPath, { force: true, recursive: true });
-            fs.symlinkSync(path.relative(packageRoot, sourcePath), linkPath, "dir");
+            fs.mkdirSync(path.dirname(dependencyTarget), { recursive: true });
+            fs.symlinkSync(
+              path.relative(path.dirname(dependencyTarget), sourcePath),
+              dependencyTarget,
+              "dir"
+            );
           } catch (error) {
             console.log(
               `Failed to link ${dependency} as a dependency of ${moduleName}: ${error}`
