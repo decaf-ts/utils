@@ -25,6 +25,15 @@ jest.mock("../../src/cli/commands/help", () => ({
   printCommandHelp: jest.fn(),
 }));
 
+function packageLock(packages: string[]): string {
+  return JSON.stringify({
+    lockfileVersion: 3,
+    packages: Object.fromEntries(
+      packages.map((p) => [`node_modules/${p}`, {}])
+    ),
+  });
+}
+
 describe("NpmLinkCommand", () => {
   beforeEach(() => {
     jest.clearAllMocks();
@@ -76,6 +85,9 @@ describe("NpmLinkCommand", () => {
           dependencies: { "@decaf-ts/core": "^1.0.0" },
         });
       }
+      if (filePath === path.join("/repo", "brain", "package-lock.json")) {
+        return packageLock(["@decaf-ts/core"]);
+      }
       if (filePath === path.join("/repo", "backend", "package.json")) {
         return JSON.stringify({
           name: "@pdmfcsa/backend",
@@ -85,6 +97,14 @@ describe("NpmLinkCommand", () => {
             lodash: "^4.0.0",
           },
         });
+      }
+      if (filePath === path.join("/repo", "backend", "package-lock.json")) {
+        return packageLock([
+          "@pdmfcsa/brain",
+          "@decaf-ts/core",
+          "@decaf-ts/decoration",
+          "lodash",
+        ]);
       }
       throw new Error(`Unexpected file read: ${filePath}`);
     });
@@ -102,8 +122,9 @@ describe("NpmLinkCommand", () => {
 
     expect(readGitModulesDeep).toHaveBeenCalledWith("/repo", 2);
     expect(execSync).not.toHaveBeenCalled();
-    // backend links both its scoped and decaf deps; brain skips @decaf-ts/core (self-reference)
-    expect(fs.symlinkSync).toHaveBeenCalledTimes(2);
+    // backend links scoped + declared decaf + transitive decaf from package-lock
+    // brain skips @decaf-ts/core (self-reference)
+    expect(fs.symlinkSync).toHaveBeenCalledTimes(3);
     expect((fs.symlinkSync as jest.Mock).mock.calls).toEqual(
       expect.arrayContaining([
         [
@@ -114,6 +135,11 @@ describe("NpmLinkCommand", () => {
         [
           expect.any(String),
           "/repo/backend/node_modules/@decaf-ts/core",
+          "dir",
+        ],
+        [
+          expect.any(String),
+          "/repo/backend/node_modules/@decaf-ts/decoration",
           "dir",
         ],
       ])
@@ -137,6 +163,53 @@ describe("NpmLinkCommand", () => {
     );
   });
 
+  it("links transitive deps from package-lock.json not declared in package.json", async () => {
+    (readGitModulesDeep as jest.Mock).mockReturnValue(["backend"]);
+    (fs.readFileSync as jest.Mock).mockImplementation((filePath: string) => {
+      if (filePath === path.join("/repo", "package.json")) {
+        return JSON.stringify({ name: "@pdmfcsa/workspace" });
+      }
+      if (filePath === path.join("/repo", "backend", "package.json")) {
+        return JSON.stringify({
+          name: "@pdmfcsa/backend",
+          dependencies: { "@decaf-ts/core": "^1.0.0" },
+        });
+      }
+      if (filePath === path.join("/repo", "backend", "package-lock.json")) {
+        return packageLock([
+          "@decaf-ts/core",
+          "@decaf-ts/decoration",
+          "lodash",
+        ]);
+      }
+      throw new Error(`Unexpected file read: ${filePath}`);
+    });
+    (fs.existsSync as jest.Mock).mockReturnValue(true);
+
+    const command = new NpmLinkCommand();
+    await (command as any).run({
+      maxTraversal: "2",
+      excludes: [],
+      include: [],
+      packages: ["@decaf-ts/*"],
+      mainPackagePath: "/repo/brain/node_modules/@decaf-ts",
+      operation: "link",
+    });
+
+    // @decaf-ts/decoration is not in package.json but IS in package-lock
+    expect(fs.symlinkSync).toHaveBeenCalledTimes(2);
+    expect((fs.symlinkSync as jest.Mock).mock.calls).toEqual(
+      expect.arrayContaining([
+        [expect.any(String), "/repo/backend/node_modules/@decaf-ts/core", "dir"],
+        [
+          expect.any(String),
+          "/repo/backend/node_modules/@decaf-ts/decoration",
+          "dir",
+        ],
+      ])
+    );
+  });
+
   it("uses default excludes when --excludes is not provided", async () => {
     (readGitModulesDeep as jest.Mock).mockReturnValue(["packages/app"]);
     (fs.readFileSync as jest.Mock).mockImplementation((filePath: string) => {
@@ -153,6 +226,16 @@ describe("NpmLinkCommand", () => {
           },
         });
       }
+      if (
+        filePath === path.join("/repo", "packages/app", "package-lock.json")
+      ) {
+        return packageLock([
+          "@decaf-ts/core",
+          "@decaf-ts/utils",
+          "@decaf-ts/logging",
+          "@decaf-ts/decoration",
+        ]);
+      }
       throw new Error(`Unexpected file read: ${filePath}`);
     });
     (fs.existsSync as jest.Mock).mockReturnValue(true);
@@ -167,10 +250,17 @@ describe("NpmLinkCommand", () => {
       operation: "link",
     });
 
-    // @decaf-ts/utils and @decaf-ts/logging are excluded by default
-    expect(fs.symlinkSync).toHaveBeenCalledTimes(1);
-    expect((fs.symlinkSync as jest.Mock).mock.calls[0][1]).toBe(
-      "/repo/packages/app/node_modules/@decaf-ts/core"
+    // @decaf-ts/utils and @decaf-ts/logging are excluded by default;
+    // @decaf-ts/decoration is transitive from package-lock but not excluded
+    expect(fs.symlinkSync).toHaveBeenCalledTimes(2);
+    const targets = (fs.symlinkSync as jest.Mock).mock.calls.map(
+      (call: any[]) => call[1]
+    );
+    expect(targets).toEqual(
+      expect.arrayContaining([
+        "/repo/packages/app/node_modules/@decaf-ts/core",
+        "/repo/packages/app/node_modules/@decaf-ts/decoration",
+      ])
     );
   });
 });

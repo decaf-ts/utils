@@ -91,6 +91,26 @@ function readPackageJson(filePath: string): Record<string, any> | undefined {
   }
 }
 
+function readInstalledPackages(moduleRoot: string): string[] {
+  const lockPath = path.join(moduleRoot, "package-lock.json");
+  let lock: Record<string, any>;
+  try {
+    lock = JSON.parse(fs.readFileSync(lockPath, "utf8")) as Record<string, any>;
+  } catch {
+    return [];
+  }
+  const packages = lock.packages as Record<string, unknown> | undefined;
+  if (!packages) return [];
+  const prefix = "node_modules/";
+  return Object.keys(packages)
+    .filter(
+      (key) =>
+        key.startsWith(prefix) &&
+        !key.slice(prefix.length).includes("/node_modules/")
+    )
+    .map((key) => key.slice(prefix.length));
+}
+
 function isWithin(parent: string, candidate: string): boolean {
   const rel = path.relative(parent, candidate);
   return !rel || (!rel.startsWith("..") && !path.isAbsolute(rel));
@@ -145,6 +165,7 @@ export class NpmLinkCommand extends Command<typeof options, void> {
       ],
       [
         "link symlinks each discovered dependency to its local source",
+        "candidates are gathered from both package.json and package-lock.json (catches transitive deps)",
         "scoped dependencies are resolved to their git submodule path by matching the package name",
         "non-scoped dependencies passed via --packages are resolved from --mainPackagePath",
         "dependencies whose source lives inside the consuming module are skipped (self-reference)",
@@ -246,7 +267,10 @@ export class NpmLinkCommand extends Command<typeof options, void> {
       const pkg = readPackageJson(path.join(moduleRoot, "package.json"));
       if (!pkg) continue;
 
-      const dependencies = getDependencyList(pkg).filter((dep) =>
+      const candidates = Array.from(
+        new Set([...getDependencyList(pkg), ...readInstalledPackages(moduleRoot)])
+      );
+      const dependencies = candidates.filter((dep) =>
         shouldLinkDependency(dep)
       );
 
