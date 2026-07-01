@@ -278,34 +278,50 @@ export class NpmLinkCommand extends Command<typeof options, void> {
         for (const dependency of dependencies) {
           if (shouldIgnoreDependency(dependency)) continue;
 
-          const sourcePath = resolveSource(dependency);
-          if (!sourcePath || !fs.existsSync(sourcePath)) {
+          const innerCodePath = dependency.endsWith("styles")
+            ? "dist"
+            : "lib";
+          const sourceDir = resolveSource(dependency);
+          if (!sourceDir) {
             console.log(
-              `Skipping ${dependency} as it does not exist in the local workspace`
+              `Skipping ${dependency} - could not resolve source`
+            );
+            continue;
+          }
+          const sourcePath = path.join(sourceDir, innerCodePath);
+          if (!fs.existsSync(sourcePath)) {
+            console.log(
+              `Skipping ${dependency} as ${sourcePath} does not exist in the local workspace`
             );
             continue;
           }
 
-          if (isWithin(moduleRoot, sourcePath)) {
+          if (isWithin(moduleRoot, sourceDir)) {
             console.log(
               `Skipping ${dependency} in ${moduleName} - source is the module itself`
             );
             continue;
           }
 
-          const dependencyTarget = path.join(
-            moduleRoot,
-            "node_modules",
-            dependency
-          );
+          const depRoot = path.join(moduleRoot, "node_modules", dependency);
+          const linkPath = path.join(depRoot, innerCodePath);
 
           try {
             console.log(`linking ${dependency} as a dependency of ${moduleName}`);
-            fs.rmSync(dependencyTarget, { force: true, recursive: true });
-            fs.mkdirSync(path.dirname(dependencyTarget), { recursive: true });
+            // If the package root is itself a symlink (e.g. from a previous
+            // whole-directory link), remove it so we restore the installed package
+            try {
+              if (fs.lstatSync(depRoot).isSymbolicLink()) {
+                fs.rmSync(depRoot, { force: true, recursive: true });
+              }
+            } catch {
+              // depRoot doesn't exist — that's fine
+            }
+            fs.mkdirSync(depRoot, { recursive: true });
+            fs.rmSync(linkPath, { force: true, recursive: true });
             fs.symlinkSync(
-              path.relative(path.dirname(dependencyTarget), sourcePath),
-              dependencyTarget,
+              path.relative(path.dirname(linkPath), sourcePath),
+              linkPath,
               "dir"
             );
           } catch (error) {
