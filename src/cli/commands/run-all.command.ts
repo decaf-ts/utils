@@ -4,8 +4,8 @@ import { execSync } from "node:child_process";
 import { LoggingConfig } from "@decaf-ts/logging";
 import { Command } from "../command";
 import { DefaultCommandValues } from "../constants";
-import { readGitModules } from "./modules";
-import { printCommandHelp } from "./help";
+import { readGitModules } from "./modules.command";
+import { printCommandHelp } from "./help.command";
 
 const options = {
   basePath: {

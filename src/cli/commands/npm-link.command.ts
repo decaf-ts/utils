@@ -4,8 +4,8 @@ import { execSync } from "node:child_process";
 import { LoggingConfig } from "@decaf-ts/logging";
 import { Command } from "../command";
 import { DefaultCommandValues } from "../constants";
-import { readGitModulesDeep } from "./modules";
-import { printCommandHelp } from "./help";
+import { readGitModulesDeep } from "./modules.command";
+import { printCommandHelp } from "./help.command";
 
 const DEFAULT_EXCLUDES = ["@decaf-ts/utils", "@decaf-ts/logging"];
 

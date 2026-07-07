@@ -3,8 +3,8 @@ import path from "node:path";
 import { LoggingConfig } from "@decaf-ts/logging";
 import { Command } from "../command";
 import { DefaultCommandValues } from "../constants";
-import { readGitModulesDeep } from "./modules";
-import { printCommandHelp } from "./help";
+import { readGitModulesDeep } from "./modules.command";
+import { printCommandHelp } from "./help.command";
 
 const options = {
   maxTraversal: {

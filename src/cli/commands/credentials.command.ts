@@ -6,7 +6,7 @@ import { LoggingConfig } from "@decaf-ts/logging";
 import { Command } from "../command";
 import { DefaultCommandValues } from "../constants";
 import { UserInput } from "../../input/input";
-import { printCommandHelp } from "./help";
+import { printCommandHelp } from "./help.command";
 
 /**
  * @description Default secret definitions used by the credentials command.

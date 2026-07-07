@@ -4,8 +4,8 @@ import { Command } from "../command";
 import { DefaultCommandValues } from "../constants";
 import { UserInput } from "../../input/input";
 import { NoCIFLag } from "../../utils/constants";
-import { printCommandHelp } from "./help";
-import { resolveSecret, hasSecret } from "./credentials";
+import { printCommandHelp } from "./help.command";
+import { resolveSecret, hasSecret } from "./credentials.command";
 
 const options = {
   public: {

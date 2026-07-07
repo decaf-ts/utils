@@ -5,7 +5,7 @@ import { join } from "node:path";
 import { LoggingConfig, Logger } from "@decaf-ts/logging";
 import { Command } from "../command";
 import { DefaultCommandValues } from "../constants";
-import { printCommandHelp } from "./help";
+import { printCommandHelp } from "./help.command";
 
 type Env = NodeJS.ProcessEnv;
 

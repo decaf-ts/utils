@@ -2,8 +2,8 @@ import fs from "node:fs";
 import path from "node:path";
 import { execSync } from "node:child_process";
 import { Logging } from "@decaf-ts/logging";
-import { NpmLinkCommand } from "../../src/cli/commands/npm-link";
-import { readGitModulesDeep } from "../../src/cli/commands/modules";
+import { NpmLinkCommand } from "../../src/cli/commands/npm-link.command";
+import { readGitModulesDeep } from "../../src/cli/commands/modules.command";
 
 jest.mock("node:fs", () => ({
   readFileSync: jest.fn(),
@@ -18,11 +18,11 @@ jest.mock("node:child_process", () => ({
   execSync: jest.fn(),
 }));
 
-jest.mock("../../src/cli/commands/modules", () => ({
+jest.mock("../../src/cli/commands/modules.command", () => ({
   readGitModulesDeep: jest.fn(),
 }));
 
-jest.mock("../../src/cli/commands/help", () => ({
+jest.mock("../../src/cli/commands/help.command", () => ({
   printCommandHelp: jest.fn(),
 }));
 

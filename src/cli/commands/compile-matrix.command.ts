@@ -1,7 +1,7 @@
 import { LoggingConfig } from "@decaf-ts/logging";
 import { Command } from "../command";
 import { DefaultCommandValues } from "../constants";
-import { printCommandHelp } from "./help";
+import { printCommandHelp } from "./help.command";
 
 export interface RepoEntry {
   source_url: string;

@@ -8,7 +8,7 @@ import {
 import { getPackage } from "../../utils";
 import { LoggingConfig } from "@decaf-ts/logging";
 import { execSync } from "node:child_process";
-import { printCommandHelp } from "./help";
+import { printCommandHelp } from "./help.command";
 
 const releaseChainArgs = {
   meta: {

@@ -3,7 +3,7 @@ import path from "node:path";
 import { Command } from "../command";
 import { DefaultCommandValues } from "../constants";
 import { LoggingConfig } from "@decaf-ts/logging";
-import { printCommandHelp } from "./help";
+import { printCommandHelp } from "./help.command";
 
 export function readGitModules(basePath: string = process.cwd()): string[] {
   const gitmodulesPath = path.join(basePath, ".gitmodules");

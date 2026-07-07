@@ -332,7 +332,7 @@ const cjs2Transformer = (ext = ".cjs") => {
       function isRelativePathWithoutExtension(rawPath: string) {
         if (!rawPath.startsWith("./") && !rawPath.startsWith("../"))
           return false;
-        return path.extname(rawPath) === "";
+        return !hasKnownFileExtension(rawPath);
       }
 
       function getCallExpressionModuleSpecifier(
@@ -368,6 +368,56 @@ const cjs2Transformer = (ext = ".cjs") => {
 function withExtension(filePath: string, extension: string) {
   const parsed = path.parse(filePath);
   return path.join(parsed.dir, `${parsed.name}${extension}`);
+}
+
+const KNOWN_FILE_EXTENSION_PATTERN =
+  /\.(?:d\.(?:mts|cts|ts)|mts|cts|tsx|ts|mjs|cjs|jsx|js|json)$/i;
+
+function hasKnownFileExtension(rawPath: string) {
+  return KNOWN_FILE_EXTENSION_PATTERN.test(path.basename(rawPath));
+}
+
+function resolveRelativeSourceCandidate(
+  source: string,
+  importer: string
+): string | null {
+  if (!source.startsWith("./") && !source.startsWith("../")) return null;
+
+  const importerDir = path.dirname(importer);
+  const absolute = path.resolve(importerDir, source);
+  const candidates = hasKnownFileExtension(source)
+    ? [absolute]
+    : [
+        absolute,
+        `${absolute}.ts`,
+        `${absolute}.tsx`,
+        `${absolute}.mts`,
+        `${absolute}.cts`,
+        `${absolute}.js`,
+        `${absolute}.mjs`,
+        `${absolute}.cjs`,
+        `${absolute}.json`,
+        path.join(absolute, "index.ts"),
+        path.join(absolute, "index.tsx"),
+        path.join(absolute, "index.mts"),
+        path.join(absolute, "index.cts"),
+        path.join(absolute, "index.js"),
+        path.join(absolute, "index.mjs"),
+        path.join(absolute, "index.cjs"),
+        path.join(absolute, "index.json"),
+      ];
+
+  for (const candidate of candidates) {
+    try {
+      if (fs.existsSync(candidate) && fs.statSync(candidate).isFile()) {
+        return candidate;
+      }
+    } catch {
+      // ignore and continue probing other candidates
+    }
+  }
+
+  return null;
 }
 
 /**
@@ -1205,6 +1255,13 @@ export class BuildScripts extends Command<
       : true;
 
     const plugins = [
+      {
+        name: "resolve-dotted-relative-imports",
+        resolveId(source: string, importer?: string) {
+          if (!importer) return null;
+          return resolveRelativeSourceCandidate(source, importer);
+        },
+      },
       typescript({
         compilerOptions: {
           module: "esnext",
@@ -1230,6 +1287,16 @@ export class BuildScripts extends Command<
           exclude: externalsList,
         }),
         nodeResolve({
+          extensions: [
+            ".mjs",
+            ".js",
+            ".json",
+            ".node",
+            ".ts",
+            ".mts",
+            ".cts",
+            ".tsx",
+          ],
           resolveOnly: include,
         })
       );

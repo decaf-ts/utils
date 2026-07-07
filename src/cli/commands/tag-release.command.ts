@@ -5,8 +5,8 @@ import { UserInput } from "../../input/input";
 import { Command } from "../command";
 import { DefaultCommandValues } from "../index";
 import { LoggingConfig } from "@decaf-ts/logging";
-import { printCommandHelp } from "./help";
-import { resolveSecret } from "./credentials";
+import { printCommandHelp } from "./help.command";
+import { resolveSecret } from "./credentials.command";
 
 const options = {
   ci: {
