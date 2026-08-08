@@ -206,6 +206,10 @@ const options = {
     type: "boolean",
     default: false,
   },
+  includeTests: {
+    type: "boolean",
+    default: false,
+  },
 };
 
 const cjs2Transformer = (ext = ".cjs") => {
@@ -375,6 +379,16 @@ const KNOWN_FILE_EXTENSION_PATTERN =
 
 function hasKnownFileExtension(rawPath: string) {
   return KNOWN_FILE_EXTENSION_PATTERN.test(path.basename(rawPath));
+}
+
+function isSourceFile(fileName: string) {
+  const relative = path.relative(process.cwd(), fileName);
+  const normalized = relative.split(path.sep).join("/");
+  return normalized === "src" || normalized.startsWith("src/");
+}
+
+function selectTsFileNames(fileNames: string[], includeTests: boolean) {
+  return includeTests ? fileNames : fileNames.filter(isSourceFile);
 }
 
 function resolveRelativeSourceCandidate(
@@ -651,7 +665,8 @@ export class BuildScripts extends Command<
   private async checkTsDiagnostics(
     isDev: boolean,
     mode: Modes,
-    bundle = false
+    bundle = false,
+    includeTests = false
   ) {
     const log = this.log.for(this.checkTsDiagnostics);
     let tsConfig;
@@ -668,8 +683,10 @@ export class BuildScripts extends Command<
         : mode === Modes.ESM
           ? TsBuildTarget.ESM
           : TsBuildTarget.CJS_CHECK,
-      isDev
+      isDev,
+      includeTests
     );
+    tsConfig.fileNames = selectTsFileNames(tsConfig.fileNames, includeTests);
 
     const program = ts.createProgram(tsConfig.fileNames, tsConfig.options);
     this.preCheckDiagnostics(program);
@@ -678,7 +695,12 @@ export class BuildScripts extends Command<
     );
   }
 
-  private async buildTs(isDev: boolean, mode: Modes, bundle = false) {
+  private async buildTs(
+    isDev: boolean,
+    mode: Modes,
+    bundle = false,
+    includeTests = false
+  ) {
     const log = this.log.for(this.buildTs);
     log.info(
       `Building ${this.pkgName} ${this.pkgVersion} module (${mode}) in ${isDev ? "dev" : "prod"} mode...`
@@ -697,8 +719,10 @@ export class BuildScripts extends Command<
         : mode === Modes.ESM
           ? TsBuildTarget.ESM
           : TsBuildTarget.CJS_CHECK,
-      isDev
+      isDev,
+      includeTests
     );
+    tsConfig.fileNames = selectTsFileNames(tsConfig.fileNames, includeTests);
 
     // For production builds we still keep TypeScript comments (removeComments=false in tsconfig)
     // Bundler/terser will strip comments for production bundles as requested.
@@ -725,9 +749,14 @@ export class BuildScripts extends Command<
     this.evalDiagnostics(allDiagnostics);
   }
 
-  private async build(isDev: boolean, mode: Modes, bundle = false) {
+  private async build(
+    isDev: boolean,
+    mode: Modes,
+    bundle = false,
+    includeTests = false
+  ) {
     const log = this.log.for(this.build);
-    await this.buildTs(isDev, mode, bundle);
+    await this.buildTs(isDev, mode, bundle, includeTests);
 
     log.verbose(
       `Module ${this.pkgName} ${this.pkgVersion} (${mode}) built in ${isDev ? "dev" : "prod"} mode...`
@@ -819,7 +848,8 @@ export class BuildScripts extends Command<
   private applyTsConfigProfile(
     options: ts.CompilerOptions,
     target: TsBuildTarget,
-    isDev: boolean
+    isDev: boolean,
+    includeTests = false
   ) {
     options.declaration = false;
     options.emitDeclarationOnly = false;
@@ -831,23 +861,27 @@ export class BuildScripts extends Command<
       case TsBuildTarget.ESM:
         options.module = ModuleKind.ESNext;
         options.outDir = "lib/esm";
+        options.rootDir = includeTests ? "." : path.resolve("./src");
         break;
       case TsBuildTarget.CJS_CHECK:
         options.module = (ModuleKind as any).Preserve ?? ModuleKind.ESNext;
         options.moduleResolution = ModuleResolutionKind.Bundler;
         options.noEmit = true;
         options.outDir = undefined;
+        options.rootDir = includeTests ? "." : path.resolve("./src");
         break;
       case TsBuildTarget.TYPES:
         options.module = ModuleKind.ESNext;
         options.outDir = "lib/types";
         options.declaration = true;
         options.emitDeclarationOnly = true;
+        options.rootDir = includeTests ? "." : path.resolve("./src");
         break;
       case TsBuildTarget.NODE_NEXT_VALIDATE:
         options.module = ModuleKind.NodeNext;
         options.moduleResolution = ModuleResolutionKind.NodeNext;
         options.noEmit = true;
+        options.rootDir = includeTests ? "." : path.resolve("./src");
         break;
       case TsBuildTarget.BUNDLE:
         options.module = ModuleKind.ESNext;
@@ -855,6 +889,7 @@ export class BuildScripts extends Command<
         options.outDir = "dist";
         options.isolatedModules = false;
         options.outFile = undefined;
+        options.rootDir = includeTests ? "." : path.resolve("./src");
         break;
     }
 
@@ -876,7 +911,7 @@ export class BuildScripts extends Command<
     }
   }
 
-  private async checkNodeNextCompatibility() {
+  private async checkNodeNextCompatibility(includeTests = false) {
     const log = this.log.for(this.checkNodeNextCompatibility);
     let tsConfig;
     try {
@@ -888,15 +923,17 @@ export class BuildScripts extends Command<
     this.applyTsConfigProfile(
       tsConfig.options,
       TsBuildTarget.NODE_NEXT_VALIDATE,
-      false
+      false,
+      includeTests
     );
+    tsConfig.fileNames = selectTsFileNames(tsConfig.fileNames, includeTests);
 
     const program = ts.createProgram(tsConfig.fileNames, tsConfig.options);
     this.preCheckDiagnostics(program);
     log.verbose("TypeScript NodeNext compatibility check passed.");
   }
 
-  private async buildTypes(isDev: boolean) {
+  private async buildTypes(isDev: boolean, includeTests = false) {
     const log = this.log.for(this.buildTypes);
     log.info(
       `Building ${this.pkgName} ${this.pkgVersion} declaration files...`
@@ -908,7 +945,13 @@ export class BuildScripts extends Command<
       throw new Error(`Failed to parse tsconfig.json: ${e}`);
     }
 
-    this.applyTsConfigProfile(tsConfig.options, TsBuildTarget.TYPES, isDev);
+    this.applyTsConfigProfile(
+      tsConfig.options,
+      TsBuildTarget.TYPES,
+      isDev,
+      includeTests
+    );
+    tsConfig.fileNames = selectTsFileNames(tsConfig.fileNames, includeTests);
 
     const program = ts.createProgram(tsConfig.fileNames, tsConfig.options);
     const emitResult = program.emit();
@@ -1408,9 +1451,10 @@ export class BuildScripts extends Command<
     mode: BuildMode = BuildMode.ALL,
     validateNodeNext = false,
     includesArg?: string | string[],
-    externalsArg?: string | string[]
+    externalsArg?: string | string[],
+    includeTests = false
   ) {
-    if (validateNodeNext) await this.checkNodeNextCompatibility();
+    if (validateNodeNext) await this.checkNodeNextCompatibility(includeTests);
     // note: includes and externals will be passed through from run() into this method by callers
     try {
       deletePath("lib");
@@ -1427,9 +1471,9 @@ export class BuildScripts extends Command<
 
     if ([BuildMode.ALL, BuildMode.BUILD].includes(mode)) {
       fs.mkdirSync("lib", { recursive: true });
-      await this.build(isDev, Modes.ESM);
-      await this.build(isDev, Modes.CJS);
-      await this.buildTypes(isDev);
+      await this.build(isDev, Modes.ESM, false, includeTests);
+      await this.build(isDev, Modes.CJS, false, includeTests);
+      await this.buildTypes(isDev, includeTests);
       this.patchFiles("lib");
     }
 
@@ -1473,7 +1517,8 @@ export class BuildScripts extends Command<
     mode: BuildMode = BuildMode.ALL,
     validateNodeNext = false,
     includesArg?: string | string[],
-    externalsArg?: string | string[]
+    externalsArg?: string | string[],
+    includeTests = false
   ) {
     return this.buildByEnv(
       entryFile,
@@ -1481,7 +1526,8 @@ export class BuildScripts extends Command<
       mode,
       validateNodeNext,
       includesArg,
-      externalsArg
+      externalsArg,
+      includeTests
     );
   }
 
@@ -1499,7 +1545,8 @@ export class BuildScripts extends Command<
     mode: BuildMode = BuildMode.ALL,
     validateNodeNext = false,
     includesArg?: string | string[],
-    externalsArg?: string | string[]
+    externalsArg?: string | string[],
+    includeTests = false
   ) {
     return this.buildByEnv(
       entryFile,
@@ -1507,7 +1554,8 @@ export class BuildScripts extends Command<
       mode,
       validateNodeNext,
       includesArg,
-      externalsArg
+      externalsArg,
+      includeTests
     );
   }
 
@@ -1583,6 +1631,7 @@ export class BuildScripts extends Command<
       externals,
       entry,
       validateNodeNext,
+      includeTests,
     } = answers as any;
     if (dev) {
       return await this.buildDev(
@@ -1590,7 +1639,8 @@ export class BuildScripts extends Command<
         buildMode as BuildMode,
         !!validateNodeNext,
         includes,
-        externals
+        externals,
+        !!includeTests
       );
     }
     if (prod) {
@@ -1599,7 +1649,8 @@ export class BuildScripts extends Command<
         buildMode as BuildMode,
         !!validateNodeNext,
         includes,
-        externals
+        externals,
+        !!includeTests
       );
     }
     if (docs) {
