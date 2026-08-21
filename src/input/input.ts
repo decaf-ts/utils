@@ -864,6 +864,7 @@ export class UserInput<R extends string = string> implements PromptObject<R> {
     const args: ParseArgsConfig = {
       args: process.argv.slice(2),
       options: options,
+      allowPositionals: true,
     };
     log.debug(`Parsing arguments: ${JSON.stringify(args, null, 2)}`);
     try {
