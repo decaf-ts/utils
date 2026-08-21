@@ -61,6 +61,7 @@
     "test:integration": "jest --testPathPatterns=\"/tests/(integration)\" --passWithNoTests --detectOpenHandles",
     "test:all": "jest --testPathPatterns=\"/tests\" --passWithNoTests",
     "test:circular": "dpdm -T --no-warning --no-tree ./src/index.ts",
+    "prepare-it-tests": "echo \"prepare-it-tests: no infra to boot\"",
     "coverage": "rimraf ./workdocs/reports/data/*.json && npm run test:all -- --coverage --config=./workdocs/reports/jest.coverage.config.cjs",
     "lint": "eslint .",
     "lint-fix": "eslint --fix .",

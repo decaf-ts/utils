@@ -1,22 +1,29 @@
-name: Renovate
+name: "Renovate"
 
 on:
   repository_dispatch:
-    types: [renovate-trigger]
+    types: [renovate-trigger, renovate-dep-trigger]
+  workflow_dispatch:
 
 jobs:
-  renovate:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        # actions/checkout@v4.2.2
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+  # renovate-trigger (vuln found on PR): open security-update PRs by bumping
+  # the dependency that brings in the offending library.
+  renovate-security:
+    name: Renovate security updates
+    if: github.event.action != 'renovate-dep-trigger'
+    uses: decaf-ts/reusable-actions/.github/workflows/renovate.yml@main
+    with:
+      pr-strategy: bump-dependents
+      clear-stale-overrides: false
+    secrets: inherit
 
-      - name: Run Renovate
-        # renovatebot/github-action@v46.1.15
-        uses: renovatebot/github-action@8217b3fc286df088d7c27f3255fe8414463bc0fd
-        with:
-          configurationFile: renovate.json
-        env:
-          RENOVATE_TOKEN: ${{ secrets.RENOVATE_TOKEN }}
-          RENOVATE_REPOSITORIES: ${{ github.repository }}
+  # renovate-dep-trigger (weekly dep pass): apply both remediation strategies
+  # and clear overrides that no longer map to a known vulnerability.
+  renovate-dep:
+    name: Renovate weekly dep pass
+    if: github.event.action == 'renovate-dep-trigger'
+    uses: decaf-ts/reusable-actions/.github/workflows/renovate.yml@main
+    with:
+      pr-strategy: both
+      clear-stale-overrides: true
+    secrets: inherit

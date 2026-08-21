@@ -1,59 +1,32 @@
-name: Trivy Security Scan
+name: "Trivy Security Scan"
+
 on:
   workflow_dispatch:
   schedule:
     - cron: '0 9 * * 1'
-  push:
-    branches: [master]
   pull_request:
     branches: [master]
 
 jobs:
-  trivy-scan:
-    name: Trivy Vulnerability Scan
-    runs-on: ubuntu-latest
-    if: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository }}
-    steps:
-      - name: Checkout code
-        # actions/checkout@v4.2.2
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+  # On PR (and manual dispatch): vulnerabilities only. Fail the job when
+  # HIGH/CRITICAL vulnerabilities with a known fix are found, and dispatch
+  # renovate to open security-update PRs.
+  trivy-vuln:
+    name: Trivy vuln scan (PR)
+    if: github.event_name != 'schedule' && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository)
+    uses: decaf-ts/reusable-actions/.github/workflows/trivy-scan.yml@main
+    with:
+      scan-type: vuln
+      severity: HIGH,CRITICAL
+      exit-code: "1"
+    secrets: inherit
 
-      - name: Generate Trivy Vulnerability Report
-        # aquasecurity/trivy-action@v0.36.0
-        uses: aquasecurity/trivy-action@a9c7b0f06e461e9d4b4d1711f154ee024b8d7ab8
-        with:
-          scan-type: "fs"
-          output: trivy-report.json
-          format: json
-          scan-ref: .
-          exit-code: 1
-          severity: HIGH,CRITICAL
-          ignore-unfixed: true
-
-      - name: Upload Vulnerability Scan Results
-        if: always()
-        # actions/upload-artifact@v4.6.2
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
-        with:
-          name: trivy-report
-          path: trivy-report.json
-          retention-days: 30
-
-      - name: Check vulnerabilities
-        if: always()
-        id: check
-        run: |
-          COUNT=$(jq '[.Results[]?.Vulnerabilities[]?] | length' trivy-report.json)
-          if [ "$COUNT" -gt 0 ]; then
-            echo "vulnerabilities=true" >> $GITHUB_OUTPUT
-          else
-            echo "vulnerabilities=false" >> $GITHUB_OUTPUT
-          fi
-
-      - name: Trigger Renovate
-        if: always() && steps.check.outputs.vulnerabilities == 'true'
-        env:
-          GH_TOKEN: ${{ secrets.GH_PAT }}
-        run: |
-          gh api repos/${{ github.repository }}/dispatches \
-            -f event_type=renovate-trigger
+  # Weekly schedule: dependency-update pass. Never fails; dispatches the weekly
+  # renovate dep run that also clears no-longer-offending overrides.
+  trivy-dep:
+    name: Trivy dep pass (weekly)
+    if: github.event_name == 'schedule'
+    uses: decaf-ts/reusable-actions/.github/workflows/trivy-scan.yml@main
+    with:
+      scan-type: dep
+    secrets: inherit
