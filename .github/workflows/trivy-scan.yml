@@ -14,7 +14,7 @@ jobs:
   trivy-vuln:
     name: Trivy vuln scan (PR)
     if: github.event_name != 'schedule' && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository)
-    uses: decaf-ts/reusable-actions/.github/workflows/trivy-scan.yml@main
+    uses: decaf-ts/reusable-actions/.github/workflows/trivy-scan.yml@master
     with:
       scan-type: vuln
       severity: HIGH,CRITICAL
@@ -26,7 +26,7 @@ jobs:
   trivy-dep:
     name: Trivy dep pass (weekly)
     if: github.event_name == 'schedule'
-    uses: decaf-ts/reusable-actions/.github/workflows/trivy-scan.yml@main
+    uses: decaf-ts/reusable-actions/.github/workflows/trivy-scan.yml@master
     with:
       scan-type: dep
     secrets: inherit

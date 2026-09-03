@@ -10,5 +10,5 @@ on:
 
 jobs:
   deploy:
-    uses: decaf-ts/reusable-actions/.github/workflows/release-on-tag.yaml@main
+    uses: decaf-ts/reusable-actions/.github/workflows/release-on-tag.yaml@master
     secrets: inherit

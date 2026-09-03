@@ -16,5 +16,5 @@ permissions:
 
 jobs:
   security:
-    uses: decaf-ts/reusable-actions/.github/workflows/snyk-analysis.yaml@main
+    uses: decaf-ts/reusable-actions/.github/workflows/snyk-analysis.yaml@master
     secrets: inherit

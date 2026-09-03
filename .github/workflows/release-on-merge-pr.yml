@@ -8,5 +8,5 @@ on:
 jobs:
   merge:
     if: github.event.pull_request.merged == true
-    uses: decaf-ts/reusable-actions/.github/workflows/release-on-merge-pr.yml@main
+    uses: decaf-ts/reusable-actions/.github/workflows/release-on-merge-pr.yml@master
     secrets: inherit
