@@ -8,5 +8,5 @@ on:
 
 jobs:
   coverage:
-    uses: decaf-ts/reusable-actions/.github/workflows/jest-coverage.yaml@main
+    uses: decaf-ts/reusable-actions/.github/workflows/jest-coverage.yaml@master
     secrets: inherit

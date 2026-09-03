@@ -8,5 +8,5 @@ on:
 
 jobs:
   build:
-    uses: decaf-ts/reusable-actions/.github/workflows/publish-on-release.yaml@main
+    uses: decaf-ts/reusable-actions/.github/workflows/publish-on-release.yaml@master
     secrets: inherit
