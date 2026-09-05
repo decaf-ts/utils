@@ -124,6 +124,7 @@
   "homepage": "https://github.com/decaf-ts/utils#readme",
   "dependencies": {
     "@decaf-ts/logging": "latest",
+    "@decaf-ts/db-decorators": "latest",
     "@eslint/js": "^9.25.1",
     "@rollup/plugin-commonjs": "^29.0.2",
     "@rollup/plugin-json": "^6.1.0",
