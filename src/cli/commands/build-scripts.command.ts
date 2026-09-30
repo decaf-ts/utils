@@ -1566,12 +1566,21 @@ export class BuildScripts extends Command<
    * @returns {Promise<void>}
    */
   async buildDocs() {
-    await runCommand(`npm install better-docs taffydb`).promise;
+    // `--no-save` keeps the transient jsdoc tooling out of package.json /
+    // package-lock.json; `--include=dev` prevents npm from pruning
+    // devDependencies under NODE_ENV=production (which would break tsc).
+    // Both flags apply to the uninstall too, so the reconciliation never
+    // rewrites the manifest or the lockfile (SAA-751 finding 2).
+    await runCommand(
+      `npm install --no-save --include=dev better-docs taffydb`
+    ).promise;
     await runCommand(`npx markdown-include ./workdocs/readme-md.json`).promise;
     await runCommand(
       `npx jsdoc -c ./workdocs/jsdocs.json -t ./node_modules/better-docs`
     ).promise;
-    await runCommand(`npm remove better-docs taffydb`).promise;
+    await runCommand(
+      `npm remove --no-save --include=dev better-docs taffydb`
+    ).promise;
     [
       {
         src: "workdocs/assets",

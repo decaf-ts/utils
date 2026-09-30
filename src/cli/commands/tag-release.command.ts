@@ -1,6 +1,7 @@
 /* istanbul ignore file */
 import { execSync } from "node:child_process";
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
+import { isAbsolute, join } from "node:path";
 import {
   SemVersion,
   SemVersionRegex,
@@ -53,6 +54,14 @@ const options = {
     type: "string",
     default: undefined,
   },
+  "jsr-token": {
+    type: "string",
+    default: "jsr",
+  },
+  "dry-run": {
+    type: "boolean",
+    default: false,
+  },
 };
 
 /**
@@ -91,6 +100,11 @@ const options = {
  * positional is the tag, everything after it is joined (unquoted) into the message —
  * `tag-release patch fix a critical login bug` needs no quoting. Positionals only fill
  * in whichever of --tag/--message was not passed as a flag.
+ *
+ * Local (skip-CI) publish authentication is controlled by `NPM_PUBLISH_INTERACTIVE`:
+ * when it is not exactly "0", the publish runs without injecting `NPM_TOKEN` so the
+ * ambient npm authentication (credentials resolver / keychain / `.npmrc`) is used;
+ * when it is exactly "0", the resolved npm secret is injected as before.
  */
 /**
  * @description Inputs a {@link PublishStrategy} needs to run the local npm publish step.
@@ -99,6 +113,7 @@ const options = {
  * @property {"public" | "restricted"} accessValue - npm `--access` value
  * @property {boolean} isPrerelease - Whether the bump was a prerelease (needs `--tag prerelease`)
  * @property {string} cwd - Repository root
+ * @property {boolean} interactivePublish - When `true`, publish without injecting `NPM_TOKEN` so npm's ambient authentication (keychain/`.npmrc`) is used; set from `NPM_PUBLISH_INTERACTIVE` (enabled unless it is exactly `0`)
  * @memberOf module:utils
  */
 export interface PublishContext {
@@ -106,6 +121,14 @@ export interface PublishContext {
   accessValue: "public" | "restricted";
   isPrerelease: boolean;
   cwd: string;
+  interactivePublish: boolean;
+  // When set, every target appends its own dry-run flag (npm/pnpm `--dry-run`,
+  // JSR `npx jsr publish --dry-run`) so a release can be rehearsed end-to-end
+  // without contacting a registry.
+  dryRun?: boolean;
+  // Optional JSR token, injected as JSR_TOKEN only when present; JSR publish also
+  // supports OIDC/ambient auth, so an absent token is not an error.
+  jsrToken?: string;
 }
 
 /**
@@ -122,19 +145,253 @@ export interface PublishStrategy {
   publish(ctx: PublishContext): void;
 }
 
+// A single registry publishing target (npm, pnpm, JSR/deno). One target runs
+// exactly one publish command; a PublishStrategy owns the location (repo root vs a
+// build subdirectory) and runs an ordered list of these targets.
+export interface PublishTarget {
+  readonly name: string;
+  publish(ctx: PublishContext): void;
+}
+
+// Per-package JSR (deno) publish configuration. JSR publishes from the
+// directory holding `jsr.json`/`deno.json`; when `dir` is omitted the location
+// strategy's own directory is used. `enabled` forces JSR on/off regardless of
+// config-file discovery.
+export interface JsrPublishConfig {
+  enabled?: boolean;
+  dir?: string;
+  configFile?: string;
+  dryRun?: boolean;
+}
+
+// Default registry set: npm (as today) plus pnpm (same npm registry) and JSR.
+export const DEFAULT_PUBLISH_TARGETS: string[] = ["npm", "pnpm", "jsr"];
+
+// Config files JSR itself resolves, in its own precedence order.
+export const JSR_CONFIG_FILES: string[] = [
+  "jsr.json",
+  "jsr.jsonc",
+  "deno.json",
+  "deno.jsonc",
+];
+
+// Normalizes a publish directory so npm never parses a bare relative path
+// (e.g. "dist/lib") as a `<github-user>/<repo>` spec.
+export function normalizePublishDir(dir: string): string {
+  return dir.startsWith(".") || dir.startsWith("/") ? dir : `./${dir}`;
+}
+
+// Rejects any value that could break out of the double-quoted shell argument it is
+// interpolated into. This is the CWE-78 guard for the publish commands.
+function assertShellSafe(value: string, label: string): string {
+  if (/[\0\n\r"`$\\]/.test(value)) {
+    throw new Error(
+      `${label} contains characters that are unsafe to interpolate into a shell command: ${JSON.stringify(value)}`
+    );
+  }
+  return value;
+}
+
+function accessFlag(ctx: PublishContext): string {
+  if (ctx.accessValue !== "public" && ctx.accessValue !== "restricted") {
+    throw new Error(
+      `Invalid publish access value: ${JSON.stringify(ctx.accessValue)}`
+    );
+  }
+  return `--access "${ctx.accessValue}"`;
+}
+
+function publishDirArg(dir: string): string {
+  if (!dir || dir === ".") return "";
+  return ` "${assertShellSafe(normalizePublishDir(dir), "publish directory")}"`;
+}
+
+// npm/pnpm take the token through the child environment, never through the shell
+// command string, so a token value can never be interpreted by the shell.
+function npmPublishEnv(ctx: PublishContext): NodeJS.ProcessEnv {
+  return ctx.interactivePublish || !ctx.npmToken
+    ? { ...process.env }
+    : { ...process.env, NPM_TOKEN: assertShellSafe(ctx.npmToken, "npm token") };
+}
+
+function jsrPublishEnv(ctx: PublishContext): NodeJS.ProcessEnv {
+  return ctx.jsrToken
+    ? { ...process.env, JSR_TOKEN: assertShellSafe(ctx.jsrToken, "JSR token") }
+    : { ...process.env };
+}
+
+function dryRunFlag(ctx: PublishContext, targetDryRun?: boolean): string {
+  return ctx.dryRun || targetDryRun ? " --dry-run" : "";
+}
+
+// npm registry target: `npm publish` from the configured directory. Injects
+// `NPM_TOKEN` through the child environment unless `ctx.interactivePublish` is
+// set, in which case npm's ambient authentication (keychain/`.npmrc`) is used.
+// Appends `--dry-run` when `ctx.dryRun` is set.
+export class NpmPublishTarget implements PublishTarget {
+  readonly name = "npm";
+
+  constructor(private readonly dir: string = ".") {}
+
+  publish(ctx: PublishContext): void {
+    const tagFlag = ctx.isPrerelease ? " --tag prerelease" : "";
+    const command = `npm publish${publishDirArg(this.dir)} --ignore-scripts ${accessFlag(ctx)}${tagFlag}${dryRunFlag(ctx)}`;
+    execSync(command, {
+      cwd: ctx.cwd,
+      stdio: "inherit",
+      env: npmPublishEnv(ctx),
+    });
+  }
+}
+
+// pnpm registry target: `pnpm publish` against the same npm registry. Reuses
+// the npm auth path (`NPM_TOKEN` via the child environment, or ambient auth when
+// `ctx.interactivePublish` is set) and disables pnpm's own git checks with
+// `--no-git-checks`, since the release script owns the git state.
+export class PnpmPublishTarget implements PublishTarget {
+  readonly name = "pnpm";
+
+  constructor(private readonly dir: string = ".") {}
+
+  publish(ctx: PublishContext): void {
+    const tagFlag = ctx.isPrerelease ? " --tag prerelease" : "";
+    const command = `pnpm publish${publishDirArg(this.dir)} --no-git-checks ${accessFlag(ctx)}${tagFlag}${dryRunFlag(ctx)}`;
+    execSync(command, {
+      cwd: ctx.cwd,
+      stdio: "inherit",
+      env: npmPublishEnv(ctx),
+    });
+  }
+}
+
+// JSR (deno) target: `npx jsr publish`, no global deno required. Resolves
+// the package's JSR config from `jsr.json`/`deno.json` (or a package.json
+// `jsr`/`publishConfig` field); when no JSR config is discoverable the target
+// is skipped rather than failing an npm-only release. `ctx.dryRun` (or the
+// target's own `dryRun`) appends `--dry-run`.
+export class JsrPublishTarget implements PublishTarget {
+  readonly name = "jsr";
+
+  constructor(
+    private readonly dir: string = ".",
+    private readonly config: JsrPublishConfig = {}
+  ) {}
+
+  publish(ctx: PublishContext): void {
+    if (this.config.enabled === false) return;
+    const dir = this.config.dir || this.dir;
+    const cwd =
+      dir === "." ? ctx.cwd : isAbsolute(dir) ? dir : join(ctx.cwd, dir);
+    const configFile = resolveJsrConfigFile(cwd, this.config.configFile);
+    if (!configFile && this.config.enabled !== true) {
+      return;
+    }
+    const command = `npx jsr publish${dryRunFlag(ctx, this.config.dryRun)}`;
+    execSync(command, {
+      cwd,
+      stdio: "inherit",
+      env: jsrPublishEnv(ctx),
+    });
+  }
+}
+
+// Resolves the JSR config file for a package directory, mirroring JSR's own
+// discovery order: `jsr.json`, then `deno.json`/`deno.jsonc`; falls back to a
+// package.json carrying a `jsr` field or a `publishConfig.jsr`/JSR registry
+// declaration. Returns `undefined` when the directory has no JSR configuration,
+// which lets npm-only repos opt out.
+export function resolveJsrConfigFile(
+  dir: string,
+  configFile?: string
+): string | undefined {
+  if (configFile) {
+    const explicit = isAbsolute(configFile) ? configFile : join(dir, configFile);
+    return existsSync(explicit) ? explicit : undefined;
+  }
+  for (const name of JSR_CONFIG_FILES) {
+    const candidate = join(dir, name);
+    if (existsSync(candidate)) return candidate;
+  }
+  try {
+    const pkg = JSON.parse(readFileSync(join(dir, "package.json"), "utf8"));
+    if (pkg && typeof pkg === "object") {
+      if (pkg.jsr) return join(dir, "package.json");
+      const publishConfig = pkg.publishConfig;
+      if (publishConfig && typeof publishConfig === "object") {
+        if (publishConfig.jsr) return join(dir, "package.json");
+        if (
+          typeof publishConfig.registry === "string" &&
+          publishConfig.registry.includes("jsr")
+        ) {
+          return join(dir, "package.json");
+        }
+      }
+    }
+  } catch {
+    // no package.json / unparseable -> not JSR configured
+  }
+  return undefined;
+}
+
+// Registry of publish target factories, keyed by target name.
+// `resolvePublishTargets` maps a `tagRelease.targets` list (default: all of
+// DEFAULT_PUBLISH_TARGETS) onto these factories; "deno" is an alias of "jsr".
+export const PUBLISH_TARGETS: Record<
+  string,
+  (config: TagReleaseConfig, dir: string) => PublishTarget
+> = {
+  npm: (_config, dir) => new NpmPublishTarget(dir),
+  pnpm: (_config, dir) => new PnpmPublishTarget(dir),
+  jsr: (config, dir) => new JsrPublishTarget(dir, config.jsr),
+  deno: (config, dir) => new JsrPublishTarget(dir, config.jsr),
+};
+
+// Resolves the ordered publish targets from a repo's tagRelease config.
+// Missing/empty `targets` defaults to DEFAULT_PUBLISH_TARGETS; unknown names are
+// ignored. Target order is preserved so npm always publishes first.
+export function resolvePublishTargets(
+  config: TagReleaseConfig = {},
+  dir: string = "."
+): PublishTarget[] {
+  const names =
+    Array.isArray(config.targets) && config.targets.length > 0
+      ? config.targets
+      : DEFAULT_PUBLISH_TARGETS;
+  const targets: PublishTarget[] = [];
+  for (const name of names) {
+    const factory = PUBLISH_TARGETS[name];
+    if (factory) targets.push(factory(config, dir));
+  }
+  return targets;
+}
+
+// Default targets for a location strategy that was constructed without an explicit
+// config: npm, pnpm and JSR, all publishing from the given directory.
+function defaultPublishTargets(dir: string): PublishTarget[] {
+  return [
+    new NpmPublishTarget(dir),
+    new PnpmPublishTarget(dir),
+    new JsrPublishTarget(dir),
+  ];
+}
+
 /**
  * @description Default publish strategy: `npm publish` from the repository root.
+ * @summary Lets the local (skip-CI) publish run either with an injected
+ * `NPM_TOKEN` (non-interactive, token passed via the command environment) or,
+ * when `ctx.interactivePublish` is set, without any token so npm's ambient
+ * authentication (keychain/`.npmrc`) is used.
  * @class RootPublishStrategy
  * @implements {PublishStrategy}
  * @memberOf module:utils
  */
 export class RootPublishStrategy implements PublishStrategy {
+  constructor(
+    private readonly targets: PublishTarget[] = defaultPublishTargets(".")
+  ) {}
+
   publish(ctx: PublishContext): void {
-    const tagFlag = ctx.isPrerelease ? " --tag prerelease" : "";
-    execSync(
-      `NPM_TOKEN="${ctx.npmToken}" npm publish --ignore-scripts --access "${ctx.accessValue}"${tagFlag}`,
-      { cwd: ctx.cwd, stdio: "inherit" }
-    );
+    for (const target of this.targets) target.publish(ctx);
   }
 }
 
@@ -142,6 +399,9 @@ export class RootPublishStrategy implements PublishStrategy {
  * @description Publishes a subdirectory's own package.json, optionally building it first.
  * @summary For repos whose publishable output lives in a subdirectory with its own
  * package.json -- e.g. `dist/lib` from ng-packagr -- rather than the repo root.
+ * Like {@link RootPublishStrategy}, it injects `NPM_TOKEN` unless
+ * `ctx.interactivePublish` is set, in which case npm's ambient authentication
+ * is used.
  * @class SubdirectoryPublishStrategy
  * @implements {PublishStrategy}
  * @param {string} dir - Directory (relative to the repo root) to publish
@@ -151,7 +411,8 @@ export class RootPublishStrategy implements PublishStrategy {
 export class SubdirectoryPublishStrategy implements PublishStrategy {
   constructor(
     private readonly dir: string,
-    private readonly prePublishScript?: string
+    private readonly prePublishScript?: string,
+    private readonly targets?: PublishTarget[]
   ) {}
 
   publish(ctx: PublishContext): void {
@@ -161,17 +422,8 @@ export class SubdirectoryPublishStrategy implements PublishStrategy {
         stdio: "inherit",
       });
     }
-    // A bare relative path (e.g. "dist/lib") is ambiguous to npm -- it can be parsed
-    // as a <github-user>/<repo> spec instead of a local folder. "./" disambiguates it.
-    const dir =
-      this.dir.startsWith(".") || this.dir.startsWith("/")
-        ? this.dir
-        : `./${this.dir}`;
-    const tagFlag = ctx.isPrerelease ? " --tag prerelease" : "";
-    execSync(
-      `NPM_TOKEN="${ctx.npmToken}" npm publish "${dir}" --ignore-scripts --access "${ctx.accessValue}"${tagFlag}`,
-      { cwd: ctx.cwd, stdio: "inherit" }
-    );
+    const targets = this.targets ?? defaultPublishTargets(this.dir);
+    for (const target of targets) target.publish(ctx);
   }
 }
 
@@ -192,6 +444,9 @@ export interface TagReleaseConfig {
   strategy?: string;
   publishDir?: string;
   prePublishScript?: string;
+  targets?: string[];
+  dryRun?: boolean;
+  jsr?: JsrPublishConfig;
 }
 
 /**
@@ -206,11 +461,12 @@ export const PUBLISH_STRATEGIES: Record<
   string,
   (config: TagReleaseConfig) => PublishStrategy
 > = {
-  root: () => new RootPublishStrategy(),
+  root: (config) => new RootPublishStrategy(resolvePublishTargets(config, ".")),
   subdirectory: (config) =>
     new SubdirectoryPublishStrategy(
       config.publishDir || ".",
-      config.prePublishScript
+      config.prePublishScript,
+      resolvePublishTargets(config, config.publishDir || ".")
     ),
 };
 
@@ -408,7 +664,7 @@ export class ReleaseScript extends Command<typeof options, void> {
         {
           flag: "--no-ci",
           description:
-            "Append [skip ci] to the release message (unless it already ends with -no-ci or a GitHub skip-CI keyword) and publish to npm locally instead of waiting for CI.",
+            "Append [skip ci] to the release message (unless it already ends with -no-ci or a GitHub skip-CI keyword) and publish locally (npm, pnpm and JSR) instead of waiting for CI.",
           defaultValue: "false",
         },
         {
@@ -426,6 +682,18 @@ export class ReleaseScript extends Command<typeof options, void> {
           description: "Git user name embedded in authenticated pushes",
         },
         {
+          flag: "--jsr-token <name>",
+          description:
+            "Secret name for the JSR (deno) publish token (optional; JSR also supports ambient/OIDC auth)",
+          defaultValue: "jsr",
+        },
+        {
+          flag: "--dry-run",
+          description:
+            "Rehearse publishing to npm, pnpm and JSR without contacting any registry",
+          defaultValue: "false",
+        },
+        {
           flag: "--version",
           description: "Print the package version and exit",
         },
@@ -436,7 +704,7 @@ export class ReleaseScript extends Command<typeof options, void> {
       ],
       [
         "If tag or message are omitted (via flag or positional), the command prompts interactively.",
-        "A successful run updates the package version, creates a git tag, pushes tags, and optionally publishes to npm.",
+        "A successful run updates the package version, creates a git tag, pushes tags, and optionally publishes to npm, pnpm and JSR (deno).",
         "Tokens are resolved via the credentials command (env var → OS keychain → legacy .token/.npmtoken file).",
         "A message word starting with '-' (e.g. the -bug/-fix/-breaking/-prerelease suffix) needs a leading -- so it isn't parsed as a flag, e.g. tag-release -- fix login crash -bug",
       ],
@@ -468,6 +736,9 @@ export class ReleaseScript extends Command<typeof options, void> {
     const publishAccessValue = args.private === true ? "restricted" : "public";
     const gitTokenName = `${args["git-token"] || "github"}`;
     const npmTokenName = `${args["npm-token"] || "npm"}`;
+    const jsrTokenName = `${args["jsr-token"] || "jsr"}`;
+    const dryRun =
+      args["dry-run"] === true || this.readTagReleaseConfig().dryRun === true;
 
     // Mirrors bin/tag-release.sh's positional convention, but only consumes the
     // leading positional as the tag when it actually validates as one; otherwise
@@ -537,6 +808,7 @@ export class ReleaseScript extends Command<typeof options, void> {
       cwd: process.cwd(),
       encoding: "utf8",
     }).trim();
+    const interactivePublish = process.env.NPM_PUBLISH_INTERACTIVE !== "0";
 
     if (hasSecret(gitTokenName)) {
       const currentBranch = execSync("git rev-parse --abbrev-ref HEAD", {
@@ -586,22 +858,33 @@ export class ReleaseScript extends Command<typeof options, void> {
     }
 
     if (hasSkipCiSuffix(message)) {
-      if (hasSecret(npmTokenName)) {
-        const npmToken = resolveSecret(npmTokenName);
-        const strategy = this.resolvePublishStrategy();
-        strategy.publish({
-          npmToken,
-          accessValue: publishAccessValue as "public" | "restricted",
-          isPrerelease: tag === SemVersion.PRERELEASE,
-          cwd: process.cwd(),
-        });
+      const strategy = this.resolvePublishStrategy();
+      const context: PublishContext = {
+        npmToken: "",
+        accessValue: publishAccessValue as "public" | "restricted",
+        isPrerelease: tag === SemVersion.PRERELEASE,
+        cwd: process.cwd(),
+        interactivePublish,
+        dryRun,
+      };
+
+      if (dryRun) {
+        // A dry-run never contacts a registry, so no token is required.
+        strategy.publish({ ...context, interactivePublish: true });
+      } else if (interactivePublish) {
+        strategy.publish({ ...context, interactivePublish: true });
+      } else if (hasSecret(npmTokenName)) {
+        context.npmToken = resolveSecret(npmTokenName);
+        context.interactivePublish = false;
+        if (hasSecret(jsrTokenName)) context.jsrToken = resolveSecret(jsrTokenName);
+        strategy.publish(context);
       } else {
         log.warn(
           `Release message ends with a skip-CI flag, so CI will skip publishing too, but no npm token was found (checked secret '${npmTokenName}') — this release will not be published anywhere. Publish it manually or configure the token.`
         );
       }
     } else {
-      log.info("Skipping local npm publish; CI will publish this release.");
+      log.info("Skipping local publish; CI will publish this release.");
     }
   }
 }

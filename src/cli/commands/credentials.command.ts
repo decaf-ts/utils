@@ -1,4 +1,4 @@
-import { execSync } from "node:child_process";
+import { execFileSync, spawnSync } from "node:child_process";
 import { existsSync, readFileSync, unlinkSync } from "node:fs";
 import os from "node:os";
 import path from "node:path";
@@ -88,20 +88,38 @@ const options = {
   },
 };
 
+/**
+ * @description Checks whether a binary is available on `PATH`.
+ * @summary Spawns `which <bin>` in array form with output suppressed; a missing
+ * binary or spawn failure returns `false` instead of throwing.
+ * @param {string} bin - Binary name to look up (never interpolated into a shell string).
+ * @return {boolean} `true` when the binary resolves with exit status `0`.
+ * @function which
+ * @memberOf module:utils
+ */
 function which(bin: string): boolean {
   try {
-    execSync(`command -v ${bin}`, { stdio: "ignore" });
-    return true;
+    return spawnSync("which", [bin], { stdio: "ignore" }).status === 0;
   } catch {
     return false;
   }
 }
 
+/**
+ * @description Probes whether the Python `keyring` backend can be imported.
+ * @summary Runs `python3 -c "import keyring; import keyring.backends"` in array
+ * form; any spawn or import failure returns `false` instead of throwing.
+ * @return {boolean} `true` when the keyring module imports successfully.
+ * @function pythonKeyringAvailable
+ * @memberOf module:utils
+ */
 function pythonKeyringAvailable(): boolean {
   try {
-    execSync('python3 -c "import keyring; import keyring.backends"', {
-      stdio: "ignore",
-    });
+    execFileSync(
+      "python3",
+      ["-c", "import keyring; import keyring.backends"],
+      { stdio: "ignore" }
+    );
     return true;
   } catch {
     return false;
@@ -119,6 +137,19 @@ function detectBackend(): KeychainBackend {
   return null;
 }
 
+/**
+ * @description Stores a secret value in the detected OS keychain backend.
+ * @summary Every backend command is spawned in array form (`execFileSync` with a
+ * program name plus argv, or `input` for stdin) so the service, account, and
+ * secret value are passed as single literal elements — never interpolated into a
+ * shell string (CWE-78 hardening).
+ * @param {KeychainBackend} backend - Detected backend (`keychain`, `libsecret`, or `keyring`).
+ * @param {SecretSpec} spec - Resolved service/account metadata for the secret.
+ * @param {string} value - Secret value to store.
+ * @return {boolean} `true` when the secret was stored; `false` for an unsupported or non-matching platform.
+ * @function storeInBackend
+ * @memberOf module:utils
+ */
 function storeInBackend(
   backend: KeychainBackend,
   spec: SecretSpec,
@@ -126,8 +157,18 @@ function storeInBackend(
 ): boolean {
   if (backend === "keychain") {
     if (os.platform() === "darwin") {
-      execSync(
-        `security add-generic-password -a "${spec.account}" -s "${spec.service}" -w "${value}" -U`,
+      execFileSync(
+        "security",
+        [
+          "add-generic-password",
+          "-a",
+          spec.account,
+          "-s",
+          spec.service,
+          "-w",
+          value,
+          "-U",
+        ],
         { stdio: "ignore" }
       );
       return true;
@@ -135,41 +176,65 @@ function storeInBackend(
     return false;
   }
   if (backend === "libsecret") {
-    execSync(
-      `secret-tool store --label='${spec.service}' service '${spec.service}' account '${spec.account}' <<< '${value}'`,
-      { stdio: "ignore" }
+    execFileSync(
+      "secret-tool",
+      ["store", "--label", spec.service, "service", spec.service, "account", spec.account],
+      { stdio: "ignore", input: `${value}\n` }
     );
     return true;
   }
   if (backend === "keyring") {
-    execSync(
-      `python3 -c "import keyring; keyring.set_password('${spec.service}', '${spec.account}', '${value}')"`
-    );
+    execFileSync("python3", [
+      "-c",
+      "import keyring, sys; keyring.set_password(sys.argv[1], sys.argv[2], sys.argv[3])",
+      spec.service,
+      spec.account,
+      value,
+    ]);
     return true;
   }
   return false;
 }
 
+/**
+ * @description Reads a secret value back from the detected OS keychain backend.
+ * @summary Like {@link storeInBackend}, all backend commands are spawned in
+ * array form with the service and account as single literal argv elements —
+ * never interpolated into a shell string (CWE-78 hardening).
+ * @param {KeychainBackend} backend - Detected backend (`keychain`, `libsecret`, or `keyring`).
+ * @param {SecretSpec} spec - Resolved service/account metadata for the secret.
+ * @return {string | null} The stored secret (trimmed), or `null` when the backend lookup fails or the backend is unsupported.
+ * @function readFromBackend
+ * @memberOf module:utils
+ */
 function readFromBackend(
   backend: KeychainBackend,
   spec: SecretSpec
 ): string | null {
   try {
     if (backend === "keychain" && os.platform() === "darwin") {
-      return execSync(
-        `security find-generic-password -a "${spec.account}" -s "${spec.service}" -w`,
+      return execFileSync(
+        "security",
+        ["find-generic-password", "-a", spec.account, "-s", spec.service, "-w"],
         { encoding: "utf8" }
       ).trim();
     }
     if (backend === "libsecret") {
-      return execSync(
-        `secret-tool lookup service '${spec.service}' account '${spec.account}'`,
+      return execFileSync(
+        "secret-tool",
+        ["lookup", "service", spec.service, "account", spec.account],
         { encoding: "utf8" }
       ).trim();
     }
     if (backend === "keyring") {
-      return execSync(
-        `python3 -c "import keyring; print(keyring.get_password('${spec.service}', '${spec.account}'), end='')"`,
+      return execFileSync(
+        "python3",
+        [
+          "-c",
+          "import keyring, sys; print(keyring.get_password(sys.argv[1], sys.argv[2]), end='')",
+          spec.service,
+          spec.account,
+        ],
         { encoding: "utf8" }
       ).trim();
     }
@@ -518,6 +583,15 @@ export class CredentialsCommand extends Command<typeof options, void> {
     return deleted;
   }
 
+  /**
+   * @description Configures the OS-native git credential helper.
+   * @summary Detects the best helper per platform (osxkeychain on macOS; the
+   * libsecret helper binary, `libsecret`, or the plaintext `store` fallback on
+   * Linux; `manager` on Windows) and runs `git config --global credential.helper`
+   * in array form — the helper name is passed as a single argv element, never
+   * interpolated into a shell string (CWE-78 hardening).
+   * @return {void}
+   */
   private configureGitHelper(): void {
     const log = this.log.for(this.configureGitHelper);
     const platform = os.platform();
@@ -546,7 +620,7 @@ export class CredentialsCommand extends Command<typeof options, void> {
     } else {
       helper = "store";
     }
-    execSync(`git config --global credential.helper '${helper}'`, {
+    execFileSync("git", ["config", "--global", "credential.helper", helper], {
       stdio: "inherit",
     });
     log.info(`Git credential helper set to "${helper}".`);

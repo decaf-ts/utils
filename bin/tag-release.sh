@@ -205,7 +205,81 @@ if [[ "$TAG" == "prerelease" ]]; then
   NPM_PUBLISH_TAG_ARGS=(--tag prerelease)
 fi
 
+# Reads a package.json field with node (always present in an npm project), so the
+# script has no jq dependency for the target resolution below.
+function package_field(){
+    node -p "require('./package.json').$1" 2>/dev/null
+}
+
+# pnpm publishes to the same registry as npm. A release can only create a version
+# once, so the pnpm step runs only when the npm step above did not already publish
+# it (e.g. npm was skipped), and otherwise records a clean no-op instead of failing
+# the release with a duplicate-version error.
+function npm_registry_has_version(){
+    local name="$1"
+    local version="$2"
+    npm view "${name}@${version}" version >/dev/null 2>&1
+}
+
+# Sync the JSR config's version from package.json, the release's source of truth,
+# so a JSR publish never drifts from the npm version.
+function sync_jsr_version(){
+    local config="$1"
+    node -e '
+      const fs = require("fs");
+      const pkg = require("./package.json");
+      const path = process.argv[1];
+      const cfg = JSON.parse(fs.readFileSync(path, "utf8"));
+      cfg.version = pkg.version;
+      fs.writeFileSync(path, JSON.stringify(cfg, null, 2) + "\n");
+    ' "$config"
+}
+
 if message_has_skip_ci "$MESSAGE"; then
-  # Use .npmtoken for publishing; respect chosen access level and dist-tag
+  # The local (skip-CI) release publishes to every supported target: npm, then
+  # pnpm, then deno/JSR -- mirroring the reusable-actions publish workflow.
+
+  # npm registry, npm client. Use .npmtoken for publishing; respect chosen access
+  # level and dist-tag.
   NPM_TOKEN=$(cat .npmtoken) npm publish --access "$NPM_ACCESS_VALUE" "${NPM_PUBLISH_TAG_ARGS[@]}"
+
+  # npm registry, pnpm client. pnpm does not expand ${NPM_TOKEN} from a committed
+  # project .npmrc, so pass the token as an explicit config value (never echoed);
+  # without a .npmtoken it falls back to ambient credentials.
+  PACKAGE_NAME=$(package_field name)
+  PACKAGE_VERSION=$(package_field version)
+  if npm_registry_has_version "$PACKAGE_NAME" "$PACKAGE_VERSION"; then
+    echo "${PACKAGE_NAME}@${PACKAGE_VERSION} is already published to the npm registry; skipping pnpm publish (same registry as npm)."
+  else
+    PNPM_BIN="pnpm"
+    if ! command -v pnpm >/dev/null 2>&1; then
+      PNPM_BIN="npx --yes pnpm"
+    fi
+    PNPM_AUTH_ARGS=()
+    if [[ -s .npmtoken ]]; then
+      PNPM_AUTH_ARGS=(--config.//registry.npmjs.org/:_authToken="$(cat .npmtoken)")
+    fi
+    $PNPM_BIN publish --no-git-checks --access "$NPM_ACCESS_VALUE" "${NPM_PUBLISH_TAG_ARGS[@]}" "${PNPM_AUTH_ARGS[@]}"
+  fi
+
+  # JSR (deno) registry. Opt-in per package: repos without a JSR config skip
+  # cleanly. The package version is the source of truth, so sync it into the JSR
+  # config first; --token from .jsrtoken when present, otherwise ambient/OIDC auth.
+  JSR_CONFIG=""
+  for candidate in jsr.json jsr.jsonc deno.json deno.jsonc; do
+    if [[ -f "$candidate" ]]; then
+      JSR_CONFIG="$candidate"
+      break
+    fi
+  done
+  if [[ -n "$JSR_CONFIG" ]]; then
+    sync_jsr_version "$JSR_CONFIG"
+    JSR_AUTH_ARGS=()
+    if [[ -s .jsrtoken ]]; then
+      JSR_AUTH_ARGS=(--token "$(cat .jsrtoken)")
+    fi
+    npx --yes jsr publish "${JSR_AUTH_ARGS[@]}" --allow-dirty
+  else
+    echo "No JSR config (jsr.json/deno.json) found; skipping deno/JSR publish."
+  fi
 fi

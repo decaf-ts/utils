@@ -33,17 +33,19 @@
   "types": "./lib/types/index.d.mts",
   "sideEffects": false,
   "bin": {
+    "build-docs": "lib/cjs/bin/build-docs.cjs",
+    "build-scripts": "lib/cjs/bin/build-scripts.cjs",
+    "bundle": "lib/cjs/bin/bundle.cjs",
+    "compile-matrix": "lib/cjs/bin/compile-matrix.cjs",
+    "credentials": "lib/cjs/bin/credentials.cjs",
+    "mirror-repo": "lib/cjs/bin/mirror-repo.cjs",
     "modules": "lib/cjs/bin/modules.cjs",
-    "run-all": "lib/cjs/bin/run-all.cjs",
     "npm-link": "lib/cjs/bin/npm-link.cjs",
     "npm-token": "lib/cjs/bin/npm-token.cjs",
-    "tag-release": "lib/cjs/bin/tag-release.cjs",
-    "build-scripts": "lib/cjs/bin/build-scripts.cjs",
-    "credentials": "lib/cjs/bin/credentials.cjs",
     "release-chain": "lib/cjs/bin/release-chain.cjs",
     "release-chain-dispatch": "lib/cjs/bin/release-chain-dispatch.cjs",
-    "compile-matrix": "lib/cjs/bin/compile-matrix.cjs",
-    "mirror-repo": "lib/cjs/bin/mirror-repo.cjs"
+    "run-all": "lib/cjs/bin/run-all.cjs",
+    "tag-release": "lib/cjs/bin/tag-release.cjs"
   },
   "scripts": {
     "do-install": "NPM_TOKEN=$(cat .npmtoken) npm install",
@@ -135,6 +137,7 @@
     "@types/jest": "30.0.0",
     "@types/prompts": "^2.4.9",
     "@types/shell-quote": "^1.7.5",
+    "chokidar": "^4.0.3",
     "clean-publish": "^7.0.0",
     "dpdm": "^3.14.0",
     "eslint": "^10.8.0",
