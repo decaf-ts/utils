@@ -8,6 +8,7 @@ import { readGitModulesDeep } from "./modules.command";
 import { printCommandHelp } from "./help.command";
 
 const DEFAULT_EXCLUDES = ["@decaf-ts/utils", "@decaf-ts/logging"];
+const DECAF_SCOPE = "@decaf-ts/";
 
 const options = {
   maxTraversal: {
@@ -23,12 +24,25 @@ const options = {
     multiple: true,
     default: [],
   },
+  onlyModules: {
+    type: "string",
+    multiple: true,
+    default: [],
+  },
   packages: {
     type: "string",
     multiple: true,
     default: [],
   },
   mainPackagePath: {
+    type: "string",
+    default: "",
+  },
+  decafSourcePath: {
+    type: "string",
+    default: "",
+  },
+  hub: {
     type: "string",
     default: "",
   },
@@ -116,6 +130,10 @@ function isWithin(parent: string, candidate: string): boolean {
   return !rel || (!rel.startsWith("..") && !path.isAbsolute(rel));
 }
 
+function isDecafDependency(dependency: string): boolean {
+  return dependency.startsWith(DECAF_SCOPE);
+}
+
 export class NpmLinkCommand extends Command<typeof options, void> {
   constructor() {
     super("NpmLinkCommand", options);
@@ -144,14 +162,29 @@ export class NpmLinkCommand extends Command<typeof options, void> {
           description: "Module names or paths to target explicitly",
         },
         {
+          flag: "--onlyModules <items...>",
+          description:
+            "Isolate the run to these modules: only they are processed and only their sources may be linked. Any other dependency keeps its installed registry version",
+        },
+        {
           flag: "--packages <items...>",
           description:
-            "Additional non-scoped packages to link from --mainPackagePath",
+            "Additional non-scoped packages to link from --mainPackagePath or --decafSourcePath",
         },
         {
           flag: "--mainPackagePath <path>",
           description:
             "Source root for --packages dependencies (e.g. brain/node_modules/@decaf-ts)",
+        },
+        {
+          flag: "--decafSourcePath <path>",
+          description:
+            "Path to a decaf source checkout; @decaf-ts/* links point at the source itself",
+        },
+        {
+          flag: "--hub <module>",
+          description:
+            "Module that centers the linked dependencies; every other module resolves them through the hub's node_modules",
         },
         {
           flag: "--operation <name>",
@@ -167,7 +200,10 @@ export class NpmLinkCommand extends Command<typeof options, void> {
         "link symlinks each discovered dependency to its local source",
         "candidates are gathered from both package.json and package-lock.json (catches transitive deps)",
         "scoped dependencies are resolved to their git submodule path by matching the package name",
-        "non-scoped dependencies passed via --packages are resolved from --mainPackagePath",
+        "non-scoped dependencies passed via --packages are resolved from --mainPackagePath or --decafSourcePath",
+        "@decaf-ts/* dependencies are resolved to the decaf source itself when --decafSourcePath is set",
+        "--hub centers every linked dependency in one module so all dependents share a single instance",
+        "--onlyModules confines processing and link sources to the listed modules; unlisted sources keep their registry version",
         "dependencies whose source lives inside the consuming module are skipped (self-reference)",
         "unlink removes those links and reinstalls dependencies via npm run do-install",
         "any other operation is passed through to npm in each selected module",
@@ -176,6 +212,9 @@ export class NpmLinkCommand extends Command<typeof options, void> {
         "npm-link --operation link",
         "npm-link --operation unlink",
         "npm-link --packages @decaf-ts/* --mainPackagePath brain/node_modules/@decaf-ts --excludes @pdmfcsa/*",
+        "npm-link --packages @decaf-ts/* --decafSourcePath ../decaf-ts",
+        "npm-link --hub utils",
+        "npm-link --onlyModules core,for-typeorm",
         "npm-link --operation install --include modules/core",
       ]
     );
@@ -187,15 +226,21 @@ export class NpmLinkCommand extends Command<typeof options, void> {
         maxTraversal: unknown;
         excludes: unknown;
         include: unknown;
+        onlyModules: unknown;
         packages: unknown;
         mainPackagePath: unknown;
+        decafSourcePath: unknown;
+        hub: unknown;
         operation: unknown;
       }
   ): Promise<void> {
     const maxTraversal = Number.parseInt(`${answers.maxTraversal || "2"}`, 10);
     const include = normalizeList(answers.include);
+    const onlyModules = normalizeList(answers.onlyModules);
     const packages = normalizeList(answers.packages);
     const mainPackagePath = `${answers.mainPackagePath || ""}`.trim();
+    const decafSourcePath = `${answers.decafSourcePath || ""}`.trim();
+    const hub = `${answers.hub || ""}`.trim();
     const operation = `${answers.operation || "link"}`.trim() || "link";
 
     const excludesRaw = answers.excludes;
@@ -207,11 +252,20 @@ export class NpmLinkCommand extends Command<typeof options, void> {
     const sourceBasePath = mainPackagePath
       ? path.resolve(mainPackagePath)
       : process.cwd();
+    const decafSourceBase = decafSourcePath
+      ? path.resolve(decafSourcePath)
+      : "";
 
-    if (packages.length > 0 && !mainPackagePath) {
+    if (packages.length > 0 && !mainPackagePath && !decafSourcePath) {
       console.log(
-        "--main-package-path is required when --packages includes non-scoped packages"
+        "--mainPackagePath or --decafSourcePath is required when --packages is provided"
       );
+      process.exit(1);
+      return;
+    }
+
+    if (decafSourceBase && !fs.existsSync(decafSourceBase)) {
+      console.log(`--decafSourcePath ${decafSourceBase} does not exist`);
       process.exit(1);
       return;
     }
@@ -238,20 +292,85 @@ export class NpmLinkCommand extends Command<typeof options, void> {
       }
     }
 
-    const selectedModules = modules.filter((moduleName) =>
-      include.length > 0
-        ? include.some((pattern) => matchesPattern(moduleName, pattern))
-        : true
+    const matchesAny = (value: string, patterns: string[]) =>
+      patterns.some((pattern) => matchesPattern(value, pattern));
+
+    let hubModule: string | undefined;
+    if (hub) {
+      hubModule =
+        moduleByName.get(hub) ||
+        modules.find(
+          (moduleName) => moduleName === hub || path.basename(moduleName) === hub
+        );
+      if (!hubModule && fs.existsSync(path.join(process.cwd(), hub))) {
+        hubModule = hub;
+      }
+      if (!hubModule) {
+        console.log(`--hub module ${hub} was not found in the workspace`);
+        process.exit(1);
+        return;
+      }
+    }
+
+    const selectedModules = modules.filter(
+      (moduleName) =>
+        (include.length === 0 || matchesAny(moduleName, include)) &&
+        (onlyModules.length === 0 || matchesAny(moduleName, onlyModules))
     );
+
+    if (hubModule && !selectedModules.includes(hubModule)) {
+      selectedModules.unshift(hubModule);
+    }
+
+    const eligibleSourceModules = new Set(
+      onlyModules.length > 0
+        ? modules.filter((moduleName) => matchesAny(moduleName, onlyModules))
+        : modules
+    );
+
+    // The hub is always processed, so its scoped dependencies must stay
+    // linkable to their real sources even when --onlyModules omits them.
+    // This exemption is scoped to the hub's own dependency set.
+    if (hubModule) {
+      const hubRoot = path.join(process.cwd(), hubModule);
+      const hubPkg = readPackageJson(path.join(hubRoot, "package.json"));
+      const hubCandidates = hubPkg
+        ? Array.from(
+            new Set([
+              ...getDependencyList(hubPkg),
+              ...readInstalledPackages(hubRoot),
+            ])
+          )
+        : [];
+      for (const dependency of hubCandidates) {
+        const sourceModule = moduleByName.get(dependency);
+        if (sourceModule) eligibleSourceModules.add(sourceModule);
+      }
+    }
 
     const shouldIgnoreDependency = (dependency: string) =>
       effectiveExcludes.some((pattern) => matchesPattern(dependency, pattern));
     const shouldLinkDependency = (dependency: string) =>
       dependency.startsWith(scope) ||
       packages.some((pattern) => matchesPattern(dependency, pattern));
+    const isSourceEligible = (dependency: string): boolean => {
+      if (!dependency.startsWith(scope)) return true;
+      const sourceModule = moduleByName.get(dependency);
+      if (!sourceModule) return true;
+      return eligibleSourceModules.has(sourceModule);
+    };
 
-    const resolveSource = (dependency: string): string | undefined => {
+    const resolveSource = (
+      dependency: string,
+      moduleName: string
+    ): string | undefined => {
       const packageName = getPackageName(dependency);
+      if (hubModule && moduleName !== hubModule) {
+        return path.join(process.cwd(), hubModule, "node_modules", dependency);
+      }
+      if (decafSourceBase && isDecafDependency(dependency)) {
+        return path.join(decafSourceBase, packageName);
+      }
       if (dependency.startsWith(scope)) {
         const modulePath = moduleByName.get(dependency);
         if (modulePath) {
@@ -270,8 +389,8 @@ export class NpmLinkCommand extends Command<typeof options, void> {
       const candidates = Array.from(
         new Set([...getDependencyList(pkg), ...readInstalledPackages(moduleRoot)])
       );
-      const dependencies = candidates.filter((dep) =>
-        shouldLinkDependency(dep)
+      const dependencies = candidates.filter(
+        (dep) => shouldLinkDependency(dep) && isSourceEligible(dep)
       );
 
       if (operation === "link") {
@@ -281,7 +400,7 @@ export class NpmLinkCommand extends Command<typeof options, void> {
           const innerCodePath = dependency.endsWith("styles")
             ? "dist"
             : "lib";
-          const sourceDir = resolveSource(dependency);
+          const sourceDir = resolveSource(dependency, moduleName);
           if (!sourceDir) {
             console.log(
               `Skipping ${dependency} - could not resolve source`

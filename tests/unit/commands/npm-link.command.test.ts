@@ -62,6 +62,103 @@ function runIn(dir: string, answers: Record<string, unknown>) {
   return runCommand(cmd, answers).finally(() => process.chdir(originalCwd));
 }
 
+type ModuleSpec = {
+  name: string;
+  lib?: "lib" | "dist";
+  dependencies?: Record<string, string>;
+  installed?: string[];
+};
+
+function addModule(dir: string, module: string, spec: ModuleSpec): void {
+  writePackageJson(path.join(dir, module), {
+    name: spec.name,
+    version: "1.0.0",
+    ...(spec.dependencies ? { dependencies: spec.dependencies } : {}),
+  });
+  fs.mkdirSync(path.join(dir, module, spec.lib ?? "lib"), {
+    recursive: true,
+  });
+  for (const dep of spec.installed ?? []) {
+    const depLib = path.join(
+      dir,
+      module,
+      "node_modules",
+      dep,
+      dep.endsWith("styles") ? "dist" : "lib"
+    );
+    fs.mkdirSync(depLib, { recursive: true });
+    fs.writeFileSync(path.join(depLib, ".installed"), "installed", "utf-8");
+  }
+}
+
+function isolationWorkspace(): string {
+  const dir = makeScratchDir("npm-link-isolation-");
+  writeGitModules(dir, ["core", "decoration", "app"]);
+  writePackageJson(dir, { name: "@decaf-ts/fake-root", version: "1.0.0" });
+  addModule(dir, "core", { name: "@decaf-ts/core" });
+  addModule(dir, "decoration", { name: "@decaf-ts/decoration" });
+  addModule(dir, "app", {
+    name: "@decaf-ts/app",
+    dependencies: {
+      "@decaf-ts/core": "^1.0.0",
+      "@decaf-ts/decoration": "^1.0.0",
+    },
+    installed: ["@decaf-ts/core", "@decaf-ts/decoration"],
+  });
+  return dir;
+}
+
+function hubWorkspace(): string {
+  const dir = makeScratchDir("npm-link-hub-");
+  writeGitModules(dir, ["core", "for-typeorm", "app"]);
+  writePackageJson(dir, { name: "@decaf-ts/fake-root", version: "1.0.0" });
+  addModule(dir, "core", { name: "@decaf-ts/core" });
+  addModule(dir, "for-typeorm", {
+    name: "@decaf-ts/for-typeorm",
+    dependencies: { "@decaf-ts/core": "^1.0.0" },
+    installed: ["@decaf-ts/core"],
+  });
+  addModule(dir, "app", {
+    name: "@decaf-ts/app",
+    dependencies: { "@decaf-ts/core": "^1.0.0" },
+    installed: ["@decaf-ts/core"],
+  });
+  return dir;
+}
+
+function decafSourceWorkspace(): { dir: string; src: string } {
+  const dir = makeScratchDir("npm-link-src-");
+  writeGitModules(dir, ["app"]);
+  writePackageJson(dir, { name: "@decaf-ts/fake-root", version: "1.0.0" });
+  addModule(dir, "app", {
+    name: "@decaf-ts/app",
+    dependencies: { "@decaf-ts/core": "^1.0.0" },
+    installed: ["@decaf-ts/core"],
+  });
+  const src = makeScratchDir("npm-link-srcroot-");
+  writePackageJson(path.join(src, "core"), {
+    name: "@decaf-ts/core",
+    version: "1.0.0",
+  });
+  fs.mkdirSync(path.join(src, "core", "lib"), { recursive: true });
+  return { dir, src };
+}
+
+function symlinkTarget(target: string): boolean {
+  try {
+    return fs.lstatSync(target).isSymbolicLink();
+  } catch {
+    return false;
+  }
+}
+
+function withExitSpy<T>(fn: (exitSpy: jest.SpyInstance) => Promise<T>): Promise<T> {
+  const exitSpy = jest
+    .spyOn(process, "exit")
+    .mockImplementation((() => undefined) as never);
+  return fn(exitSpy).finally(() => exitSpy.mockRestore());
+}
+
 describe("NpmLinkCommand", () => {
   it("links scoped dependencies to their local module outputs (lib for regular packages, dist for styles)", async () => {
     const dir = linkWorkspace();
@@ -236,5 +333,221 @@ describe("NpmLinkCommand", () => {
         (c) => path.resolve((c[1] as { cwd: string }).cwd).startsWith(dir)
       )
     ).toBe(true);
+  });
+});
+
+describe("NpmLinkCommand module isolation", () => {
+  it("isolation leaves non-selected sources installed", async () => {
+    const dir = isolationWorkspace();
+
+    await runIn(dir, {
+      operation: "link",
+      excludes: [],
+      onlyModules: ["core"],
+    });
+
+    const appCore = path.join(
+      dir,
+      "app",
+      "node_modules",
+      "@decaf-ts",
+      "core",
+      "lib"
+    );
+    const appDecoration = path.join(
+      dir,
+      "app",
+      "node_modules",
+      "@decaf-ts",
+      "decoration",
+      "lib"
+    );
+
+    // app was not selected, so its installed copies survive untouched
+    expect(symlinkTarget(appCore)).toBe(false);
+    expect(symlinkTarget(appDecoration)).toBe(false);
+    expect(fs.existsSync(path.join(appCore, ".installed"))).toBe(true);
+    expect(fs.existsSync(path.join(appDecoration, ".installed"))).toBe(true);
+  });
+
+  it("isolation still links selected sources", async () => {
+    const dir = isolationWorkspace();
+
+    await runIn(dir, {
+      operation: "link",
+      excludes: [],
+      onlyModules: ["core", "app"],
+    });
+
+    const appCore = path.join(
+      dir,
+      "app",
+      "node_modules",
+      "@decaf-ts",
+      "core",
+      "lib"
+    );
+    const appDecoration = path.join(
+      dir,
+      "app",
+      "node_modules",
+      "@decaf-ts",
+      "decoration",
+      "lib"
+    );
+
+    expect(fs.realpathSync(appCore)).toBe(path.resolve(dir, "core", "lib"));
+    // decoration is not selected: its installed copy is left in place
+    expect(symlinkTarget(appDecoration)).toBe(false);
+    expect(fs.existsSync(path.join(appDecoration, ".installed"))).toBe(true);
+  });
+
+  it("unlink respects isolation", async () => {
+    const dir = isolationWorkspace();
+
+    await runIn(dir, {
+      operation: "link",
+      excludes: [],
+      onlyModules: ["core", "app"],
+    });
+    execSyncMock.mockClear();
+
+    await runIn(dir, {
+      operation: "unlink",
+      excludes: [],
+      onlyModules: ["core", "app"],
+    });
+
+    // the isolated link is removed
+    expect(
+      fs.existsSync(path.join(dir, "app", "node_modules", "@decaf-ts", "core"))
+    ).toBe(false);
+    // the non-isolated installed copy is left untouched
+    const appDecoration = path.join(
+      dir,
+      "app",
+      "node_modules",
+      "@decaf-ts",
+      "decoration",
+      "lib"
+    );
+    expect(fs.existsSync(path.join(appDecoration, ".installed"))).toBe(true);
+    // unlink still reinstalls the selected modules
+    expect(execSyncMock).toHaveBeenCalledWith(
+      "npm run do-install",
+      expect.objectContaining({ cwd: path.join(dir, "app") })
+    );
+  });
+});
+
+describe("NpmLinkCommand hub centering", () => {
+  it("centers linked dependencies through the hub module", async () => {
+    const dir = hubWorkspace();
+
+    await runIn(dir, { operation: "link", excludes: [], hub: "for-typeorm" });
+
+    const hubCore = path.join(
+      dir,
+      "for-typeorm",
+      "node_modules",
+      "@decaf-ts",
+      "core",
+      "lib"
+    );
+    const appCore = path.join(
+      dir,
+      "app",
+      "node_modules",
+      "@decaf-ts",
+      "core",
+      "lib"
+    );
+
+    expect(fs.realpathSync(hubCore)).toBe(path.resolve(dir, "core", "lib"));
+    // app resolves through the hub's copy, which itself points at the source
+    expect(fs.realpathSync(appCore)).toBe(path.resolve(dir, "core", "lib"));
+  });
+
+  it("processes the hub even when it is not selected", async () => {
+    const dir = hubWorkspace();
+
+    await runIn(dir, {
+      operation: "link",
+      excludes: [],
+      hub: "for-typeorm",
+      onlyModules: ["app"],
+    });
+
+    const hubCore = path.join(
+      dir,
+      "for-typeorm",
+      "node_modules",
+      "@decaf-ts",
+      "core",
+      "lib"
+    );
+    const appCore = path.join(
+      dir,
+      "app",
+      "node_modules",
+      "@decaf-ts",
+      "core",
+      "lib"
+    );
+
+    expect(fs.realpathSync(hubCore)).toBe(path.resolve(dir, "core", "lib"));
+    expect(fs.realpathSync(appCore)).toBe(path.resolve(dir, "core", "lib"));
+  });
+});
+
+describe("NpmLinkCommand decafSourcePath", () => {
+  it("resolves @decaf-ts dependencies to the decaf source checkout", async () => {
+    const { dir, src } = decafSourceWorkspace();
+
+    await withExitSpy(async (exitSpy) => {
+      await runIn(dir, {
+        operation: "link",
+        excludes: [],
+        packages: ["@decaf-ts/*"],
+        mainPackagePath: "",
+        decafSourcePath: src,
+      });
+
+      const appCore = path.join(
+        dir,
+        "app",
+        "node_modules",
+        "@decaf-ts",
+        "core",
+        "lib"
+      );
+      expect(fs.realpathSync(appCore)).toBe(
+        path.resolve(src, "core", "lib")
+      );
+      // --decafSourcePath satisfies the --packages requirement on its own
+      expect(exitSpy).not.toHaveBeenCalledWith(1);
+    });
+  });
+
+  it("exits 1 and creates no link when decafSourcePath does not exist", async () => {
+    const { dir } = decafSourceWorkspace();
+
+    await withExitSpy(async (exitSpy) => {
+      await runIn(dir, {
+        operation: "link",
+        excludes: [],
+        packages: ["@decaf-ts/*"],
+        mainPackagePath: "",
+        decafSourcePath: "/does/not/exist",
+      });
+
+      expect(exitSpy).toHaveBeenCalledWith(1);
+      // the installed copy survives and was not replaced by a symlink
+      expect(
+        symlinkTarget(
+          path.join(dir, "app", "node_modules", "@decaf-ts", "core", "lib")
+        )
+      ).toBe(false);
+    });
   });
 });
