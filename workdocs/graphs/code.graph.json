@@ -1,0 +1,1963 @@
+{
+  "id": "code:/home/tvenceslau/local-workspace/decaf-ts/utils",
+  "kind": "code",
+  "root": "/home/tvenceslau/local-workspace/decaf-ts/utils",
+  "nodes": [
+    {
+      "id": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/eslint.config.js",
+      "path": "/home/tvenceslau/local-workspace/decaf-ts/utils/eslint.config.js",
+      "kinds": [
+        "code"
+      ]
+    },
+    {
+      "id": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/jest.config.cjs",
+      "path": "/home/tvenceslau/local-workspace/decaf-ts/utils/jest.config.cjs",
+      "kinds": [
+        "code"
+      ]
+    },
+    {
+      "id": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/assets/slogans.ts",
+      "path": "/home/tvenceslau/local-workspace/decaf-ts/utils/src/assets/slogans.ts",
+      "kinds": [
+        "code"
+      ]
+    },
+    {
+      "id": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/bin/build-docs.ts",
+      "path": "/home/tvenceslau/local-workspace/decaf-ts/utils/src/bin/build-docs.ts",
+      "kinds": [
+        "code"
+      ]
+    },
+    {
+      "id": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/bin/build-scripts.ts",
+      "path": "/home/tvenceslau/local-workspace/decaf-ts/utils/src/bin/build-scripts.ts",
+      "kinds": [
+        "code"
+      ]
+    },
+    {
+      "id": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/bin/bundle.ts",
+      "path": "/home/tvenceslau/local-workspace/decaf-ts/utils/src/bin/bundle.ts",
+      "kinds": [
+        "code"
+      ]
+    },
+    {
+      "id": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/bin/compile-matrix.ts",
+      "path": "/home/tvenceslau/local-workspace/decaf-ts/utils/src/bin/compile-matrix.ts",
+      "kinds": [
+        "code"
+      ]
+    },
+    {
+      "id": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/bin/credentials.ts",
+      "path": "/home/tvenceslau/local-workspace/decaf-ts/utils/src/bin/credentials.ts",
+      "kinds": [
+        "code"
+      ]
+    },
+    {
+      "id": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/bin/mirror-repo.ts",
+      "path": "/home/tvenceslau/local-workspace/decaf-ts/utils/src/bin/mirror-repo.ts",
+      "kinds": [
+        "code"
+      ]
+    },
+    {
+      "id": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/bin/modules.ts",
+      "path": "/home/tvenceslau/local-workspace/decaf-ts/utils/src/bin/modules.ts",
+      "kinds": [
+        "code"
+      ]
+    },
+    {
+      "id": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/bin/npm-link.ts",
+      "path": "/home/tvenceslau/local-workspace/decaf-ts/utils/src/bin/npm-link.ts",
+      "kinds": [
+        "code"
+      ]
+    },
+    {
+      "id": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/bin/npm-token.ts",
+      "path": "/home/tvenceslau/local-workspace/decaf-ts/utils/src/bin/npm-token.ts",
+      "kinds": [
+        "code"
+      ]
+    },
+    {
+      "id": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/bin/release-chain-dispatch.ts",
+      "path": "/home/tvenceslau/local-workspace/decaf-ts/utils/src/bin/release-chain-dispatch.ts",
+      "kinds": [
+        "code"
+      ]
+    },
+    {
+      "id": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/bin/release-chain.ts",
+      "path": "/home/tvenceslau/local-workspace/decaf-ts/utils/src/bin/release-chain.ts",
+      "kinds": [
+        "code"
+      ]
+    },
+    {
+      "id": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/bin/run-all.ts",
+      "path": "/home/tvenceslau/local-workspace/decaf-ts/utils/src/bin/run-all.ts",
+      "kinds": [
+        "code"
+      ]
+    },
+    {
+      "id": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/bin/tag-release.ts",
+      "path": "/home/tvenceslau/local-workspace/decaf-ts/utils/src/bin/tag-release.ts",
+      "kinds": [
+        "code"
+      ]
+    },
+    {
+      "id": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/cli/command.ts",
+      "path": "/home/tvenceslau/local-workspace/decaf-ts/utils/src/cli/command.ts",
+      "kinds": [
+        "code"
+      ]
+    },
+    {
+      "id": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/cli/commands/build-docs.command.ts",
+      "path": "/home/tvenceslau/local-workspace/decaf-ts/utils/src/cli/commands/build-docs.command.ts",
+      "kinds": [
+        "code"
+      ]
+    },
+    {
+      "id": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/cli/commands/build-scripts.command.ts",
+      "path": "/home/tvenceslau/local-workspace/decaf-ts/utils/src/cli/commands/build-scripts.command.ts",
+      "kinds": [
+        "code"
+      ]
+    },
+    {
+      "id": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/cli/commands/bundle.command.ts",
+      "path": "/home/tvenceslau/local-workspace/decaf-ts/utils/src/cli/commands/bundle.command.ts",
+      "kinds": [
+        "code"
+      ]
+    },
+    {
+      "id": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/cli/commands/compile-matrix.command.ts",
+      "path": "/home/tvenceslau/local-workspace/decaf-ts/utils/src/cli/commands/compile-matrix.command.ts",
+      "kinds": [
+        "code"
+      ]
+    },
+    {
+      "id": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/cli/commands/credentials.command.ts",
+      "path": "/home/tvenceslau/local-workspace/decaf-ts/utils/src/cli/commands/credentials.command.ts",
+      "kinds": [
+        "code"
+      ]
+    },
+    {
+      "id": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/cli/commands/help.command.ts",
+      "path": "/home/tvenceslau/local-workspace/decaf-ts/utils/src/cli/commands/help.command.ts",
+      "kinds": [
+        "code"
+      ]
+    },
+    {
+      "id": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/cli/commands/index.ts",
+      "path": "/home/tvenceslau/local-workspace/decaf-ts/utils/src/cli/commands/index.ts",
+      "kinds": [
+        "code"
+      ]
+    },
+    {
+      "id": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/cli/commands/mirror-repo.command.ts",
+      "path": "/home/tvenceslau/local-workspace/decaf-ts/utils/src/cli/commands/mirror-repo.command.ts",
+      "kinds": [
+        "code"
+      ]
+    },
+    {
+      "id": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/cli/commands/modules.command.ts",
+      "path": "/home/tvenceslau/local-workspace/decaf-ts/utils/src/cli/commands/modules.command.ts",
+      "kinds": [
+        "code"
+      ]
+    },
+    {
+      "id": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/cli/commands/npm-link.command.ts",
+      "path": "/home/tvenceslau/local-workspace/decaf-ts/utils/src/cli/commands/npm-link.command.ts",
+      "kinds": [
+        "code"
+      ]
+    },
+    {
+      "id": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/cli/commands/npm-token.command.ts",
+      "path": "/home/tvenceslau/local-workspace/decaf-ts/utils/src/cli/commands/npm-token.command.ts",
+      "kinds": [
+        "code"
+      ]
+    },
+    {
+      "id": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/cli/commands/release-chain.command.ts",
+      "path": "/home/tvenceslau/local-workspace/decaf-ts/utils/src/cli/commands/release-chain.command.ts",
+      "kinds": [
+        "code"
+      ]
+    },
+    {
+      "id": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/cli/commands/run-all.command.ts",
+      "path": "/home/tvenceslau/local-workspace/decaf-ts/utils/src/cli/commands/run-all.command.ts",
+      "kinds": [
+        "code"
+      ]
+    },
+    {
+      "id": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/cli/commands/tag-release-shell.command.ts",
+      "path": "/home/tvenceslau/local-workspace/decaf-ts/utils/src/cli/commands/tag-release-shell.command.ts",
+      "kinds": [
+        "code"
+      ]
+    },
+    {
+      "id": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/cli/commands/tag-release.command.ts",
+      "path": "/home/tvenceslau/local-workspace/decaf-ts/utils/src/cli/commands/tag-release.command.ts",
+      "kinds": [
+        "code"
+      ]
+    },
+    {
+      "id": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/cli/constants.ts",
+      "path": "/home/tvenceslau/local-workspace/decaf-ts/utils/src/cli/constants.ts",
+      "kinds": [
+        "code"
+      ]
+    },
+    {
+      "id": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/cli/index.ts",
+      "path": "/home/tvenceslau/local-workspace/decaf-ts/utils/src/cli/index.ts",
+      "kinds": [
+        "code"
+      ]
+    },
+    {
+      "id": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/cli/types.ts",
+      "path": "/home/tvenceslau/local-workspace/decaf-ts/utils/src/cli/types.ts",
+      "kinds": [
+        "code"
+      ]
+    },
+    {
+      "id": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/index.ts",
+      "path": "/home/tvenceslau/local-workspace/decaf-ts/utils/src/index.ts",
+      "kinds": [
+        "code"
+      ]
+    },
+    {
+      "id": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/input/index.ts",
+      "path": "/home/tvenceslau/local-workspace/decaf-ts/utils/src/input/index.ts",
+      "kinds": [
+        "code"
+      ]
+    },
+    {
+      "id": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/input/input.ts",
+      "path": "/home/tvenceslau/local-workspace/decaf-ts/utils/src/input/input.ts",
+      "kinds": [
+        "code"
+      ]
+    },
+    {
+      "id": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/input/types.ts",
+      "path": "/home/tvenceslau/local-workspace/decaf-ts/utils/src/input/types.ts",
+      "kinds": [
+        "code"
+      ]
+    },
+    {
+      "id": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/output/common.ts",
+      "path": "/home/tvenceslau/local-workspace/decaf-ts/utils/src/output/common.ts",
+      "kinds": [
+        "code"
+      ]
+    },
+    {
+      "id": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/output/index.ts",
+      "path": "/home/tvenceslau/local-workspace/decaf-ts/utils/src/output/index.ts",
+      "kinds": [
+        "code"
+      ]
+    },
+    {
+      "id": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/release-chain/index.ts",
+      "path": "/home/tvenceslau/local-workspace/decaf-ts/utils/src/release-chain/index.ts",
+      "kinds": [
+        "code"
+      ]
+    },
+    {
+      "id": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/tests/Consumer.ts",
+      "path": "/home/tvenceslau/local-workspace/decaf-ts/utils/src/tests/Consumer.ts",
+      "kinds": [
+        "code"
+      ]
+    },
+    {
+      "id": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/tests/index.ts",
+      "path": "/home/tvenceslau/local-workspace/decaf-ts/utils/src/tests/index.ts",
+      "kinds": [
+        "code"
+      ]
+    },
+    {
+      "id": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/tests/jest.ts",
+      "path": "/home/tvenceslau/local-workspace/decaf-ts/utils/src/tests/jest.ts",
+      "kinds": [
+        "code"
+      ]
+    },
+    {
+      "id": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/tests/jestAgileTestTeardown.ts",
+      "path": "/home/tvenceslau/local-workspace/decaf-ts/utils/src/tests/jestAgileTestTeardown.ts",
+      "kinds": [
+        "code"
+      ]
+    },
+    {
+      "id": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/tests/jestPerformanceRunner.ts",
+      "path": "/home/tvenceslau/local-workspace/decaf-ts/utils/src/tests/jestPerformanceRunner.ts",
+      "kinds": [
+        "code"
+      ]
+    },
+    {
+      "id": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/tests/jestTestImporter.ts",
+      "path": "/home/tvenceslau/local-workspace/decaf-ts/utils/src/tests/jestTestImporter.ts",
+      "kinds": [
+        "code"
+      ]
+    },
+    {
+      "id": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/tests/jestXrayTeardown.ts",
+      "path": "/home/tvenceslau/local-workspace/decaf-ts/utils/src/tests/jestXrayTeardown.ts",
+      "kinds": [
+        "code"
+      ]
+    },
+    {
+      "id": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/tests/ProducerChildProcess.ts",
+      "path": "/home/tvenceslau/local-workspace/decaf-ts/utils/src/tests/ProducerChildProcess.ts",
+      "kinds": [
+        "code"
+      ]
+    },
+    {
+      "id": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/tests/reporter.ts",
+      "path": "/home/tvenceslau/local-workspace/decaf-ts/utils/src/tests/reporter.ts",
+      "kinds": [
+        "code"
+      ]
+    },
+    {
+      "id": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/tests/TestReporter.ts",
+      "path": "/home/tvenceslau/local-workspace/decaf-ts/utils/src/tests/TestReporter.ts",
+      "kinds": [
+        "code"
+      ]
+    },
+    {
+      "id": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/tests/utils.ts",
+      "path": "/home/tvenceslau/local-workspace/decaf-ts/utils/src/tests/utils.ts",
+      "kinds": [
+        "code"
+      ]
+    },
+    {
+      "id": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/utils/constants.ts",
+      "path": "/home/tvenceslau/local-workspace/decaf-ts/utils/src/utils/constants.ts",
+      "kinds": [
+        "code"
+      ]
+    },
+    {
+      "id": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/utils/fs.ts",
+      "path": "/home/tvenceslau/local-workspace/decaf-ts/utils/src/utils/fs.ts",
+      "kinds": [
+        "code"
+      ]
+    },
+    {
+      "id": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/utils/http.ts",
+      "path": "/home/tvenceslau/local-workspace/decaf-ts/utils/src/utils/http.ts",
+      "kinds": [
+        "code"
+      ]
+    },
+    {
+      "id": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/utils/index.ts",
+      "path": "/home/tvenceslau/local-workspace/decaf-ts/utils/src/utils/index.ts",
+      "kinds": [
+        "code"
+      ]
+    },
+    {
+      "id": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/utils/md.ts",
+      "path": "/home/tvenceslau/local-workspace/decaf-ts/utils/src/utils/md.ts",
+      "kinds": [
+        "code"
+      ]
+    },
+    {
+      "id": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/utils/performanceRunner.ts",
+      "path": "/home/tvenceslau/local-workspace/decaf-ts/utils/src/utils/performanceRunner.ts",
+      "kinds": [
+        "code"
+      ]
+    },
+    {
+      "id": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/utils/timeout.ts",
+      "path": "/home/tvenceslau/local-workspace/decaf-ts/utils/src/utils/timeout.ts",
+      "kinds": [
+        "code"
+      ]
+    },
+    {
+      "id": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/utils/types.ts",
+      "path": "/home/tvenceslau/local-workspace/decaf-ts/utils/src/utils/types.ts",
+      "kinds": [
+        "code"
+      ]
+    },
+    {
+      "id": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/utils/utils.ts",
+      "path": "/home/tvenceslau/local-workspace/decaf-ts/utils/src/utils/utils.ts",
+      "kinds": [
+        "code"
+      ]
+    },
+    {
+      "id": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/writers/index.ts",
+      "path": "/home/tvenceslau/local-workspace/decaf-ts/utils/src/writers/index.ts",
+      "kinds": [
+        "code"
+      ]
+    },
+    {
+      "id": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/writers/OutputWriter.ts",
+      "path": "/home/tvenceslau/local-workspace/decaf-ts/utils/src/writers/OutputWriter.ts",
+      "kinds": [
+        "code"
+      ]
+    },
+    {
+      "id": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/writers/RegexpOutputWriter.ts",
+      "path": "/home/tvenceslau/local-workspace/decaf-ts/utils/src/writers/RegexpOutputWriter.ts",
+      "kinds": [
+        "code"
+      ]
+    },
+    {
+      "id": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/writers/StandardOutputWriter.ts",
+      "path": "/home/tvenceslau/local-workspace/decaf-ts/utils/src/writers/StandardOutputWriter.ts",
+      "kinds": [
+        "code"
+      ]
+    },
+    {
+      "id": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/writers/types.ts",
+      "path": "/home/tvenceslau/local-workspace/decaf-ts/utils/src/writers/types.ts",
+      "kinds": [
+        "code"
+      ]
+    },
+    {
+      "id": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/tests/integration/commandRunner.test.ts",
+      "path": "/home/tvenceslau/local-workspace/decaf-ts/utils/tests/integration/commandRunner.test.ts",
+      "kinds": [
+        "code"
+      ]
+    },
+    {
+      "id": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/tests/integration/consumer-producer.test.ts",
+      "path": "/home/tvenceslau/local-workspace/decaf-ts/utils/tests/integration/consumer-producer.test.ts",
+      "kinds": [
+        "code"
+      ]
+    },
+    {
+      "id": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/tests/integration/fs.real.test.ts",
+      "path": "/home/tvenceslau/local-workspace/decaf-ts/utils/tests/integration/fs.real.test.ts",
+      "kinds": [
+        "code"
+      ]
+    },
+    {
+      "id": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/tests/integration/incrementalEndpointLoad.test.ts",
+      "path": "/home/tvenceslau/local-workspace/decaf-ts/utils/tests/integration/incrementalEndpointLoad.test.ts",
+      "kinds": [
+        "code"
+      ]
+    },
+    {
+      "id": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/tests/integration/reporter.test.ts",
+      "path": "/home/tvenceslau/local-workspace/decaf-ts/utils/tests/integration/reporter.test.ts",
+      "kinds": [
+        "code"
+      ]
+    },
+    {
+      "id": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/tests/module-router.ts",
+      "path": "/home/tvenceslau/local-workspace/decaf-ts/utils/tests/module-router.ts",
+      "kinds": [
+        "code"
+      ]
+    },
+    {
+      "id": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/tests/unit/build-scripts.bundle.test.ts",
+      "path": "/home/tvenceslau/local-workspace/decaf-ts/utils/tests/unit/build-scripts.bundle.test.ts",
+      "kinds": [
+        "code"
+      ]
+    },
+    {
+      "id": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/tests/unit/build-scripts.cjs-from-esm.test.ts",
+      "path": "/home/tvenceslau/local-workspace/decaf-ts/utils/tests/unit/build-scripts.cjs-from-esm.test.ts",
+      "kinds": [
+        "code"
+      ]
+    },
+    {
+      "id": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/tests/unit/build-scripts.dotted-filenames.test.ts",
+      "path": "/home/tvenceslau/local-workspace/decaf-ts/utils/tests/unit/build-scripts.dotted-filenames.test.ts",
+      "kinds": [
+        "code"
+      ]
+    },
+    {
+      "id": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/tests/unit/build-scripts.patchFiles.test.ts",
+      "path": "/home/tvenceslau/local-workspace/decaf-ts/utils/tests/unit/build-scripts.patchFiles.test.ts",
+      "kinds": [
+        "code"
+      ]
+    },
+    {
+      "id": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/tests/unit/command.test.ts",
+      "path": "/home/tvenceslau/local-workspace/decaf-ts/utils/tests/unit/command.test.ts",
+      "kinds": [
+        "code"
+      ]
+    },
+    {
+      "id": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/tests/unit/commands/build-docs.command.test.ts",
+      "path": "/home/tvenceslau/local-workspace/decaf-ts/utils/tests/unit/commands/build-docs.command.test.ts",
+      "kinds": [
+        "code"
+      ]
+    },
+    {
+      "id": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/tests/unit/commands/bundle.command.test.ts",
+      "path": "/home/tvenceslau/local-workspace/decaf-ts/utils/tests/unit/commands/bundle.command.test.ts",
+      "kinds": [
+        "code"
+      ]
+    },
+    {
+      "id": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/tests/unit/commands/credentials-command-injection.test.ts",
+      "path": "/home/tvenceslau/local-workspace/decaf-ts/utils/tests/unit/commands/credentials-command-injection.test.ts",
+      "kinds": [
+        "code"
+      ]
+    },
+    {
+      "id": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/tests/unit/commands/credentials.command.test.ts",
+      "path": "/home/tvenceslau/local-workspace/decaf-ts/utils/tests/unit/commands/credentials.command.test.ts",
+      "kinds": [
+        "code"
+      ]
+    },
+    {
+      "id": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/tests/unit/commands/modules.command.test.ts",
+      "path": "/home/tvenceslau/local-workspace/decaf-ts/utils/tests/unit/commands/modules.command.test.ts",
+      "kinds": [
+        "code"
+      ]
+    },
+    {
+      "id": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/tests/unit/commands/npm-link.command.test.ts",
+      "path": "/home/tvenceslau/local-workspace/decaf-ts/utils/tests/unit/commands/npm-link.command.test.ts",
+      "kinds": [
+        "code"
+      ]
+    },
+    {
+      "id": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/tests/unit/commands/npm-token.command.test.ts",
+      "path": "/home/tvenceslau/local-workspace/decaf-ts/utils/tests/unit/commands/npm-token.command.test.ts",
+      "kinds": [
+        "code"
+      ]
+    },
+    {
+      "id": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/tests/unit/commands/run-all.command.test.ts",
+      "path": "/home/tvenceslau/local-workspace/decaf-ts/utils/tests/unit/commands/run-all.command.test.ts",
+      "kinds": [
+        "code"
+      ]
+    },
+    {
+      "id": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/tests/unit/commands/tag-release.command.test.ts",
+      "path": "/home/tvenceslau/local-workspace/decaf-ts/utils/tests/unit/commands/tag-release.command.test.ts",
+      "kinds": [
+        "code"
+      ]
+    },
+    {
+      "id": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/tests/unit/commands/tag-release.multi-registry.test.ts",
+      "path": "/home/tvenceslau/local-workspace/decaf-ts/utils/tests/unit/commands/tag-release.multi-registry.test.ts",
+      "kinds": [
+        "code"
+      ]
+    },
+    {
+      "id": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/tests/unit/commands/test-support.ts",
+      "path": "/home/tvenceslau/local-workspace/decaf-ts/utils/tests/unit/commands/test-support.ts",
+      "kinds": [
+        "code"
+      ]
+    },
+    {
+      "id": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/tests/unit/fs.test.ts",
+      "path": "/home/tvenceslau/local-workspace/decaf-ts/utils/tests/unit/fs.test.ts",
+      "kinds": [
+        "code"
+      ]
+    },
+    {
+      "id": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/tests/unit/http.test.ts",
+      "path": "/home/tvenceslau/local-workspace/decaf-ts/utils/tests/unit/http.test.ts",
+      "kinds": [
+        "code"
+      ]
+    },
+    {
+      "id": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/tests/unit/input.test.ts",
+      "path": "/home/tvenceslau/local-workspace/decaf-ts/utils/tests/unit/input.test.ts",
+      "kinds": [
+        "code"
+      ]
+    },
+    {
+      "id": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/tests/unit/jest-agiletest-teardown.test.ts",
+      "path": "/home/tvenceslau/local-workspace/decaf-ts/utils/tests/unit/jest-agiletest-teardown.test.ts",
+      "kinds": [
+        "code"
+      ]
+    },
+    {
+      "id": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/tests/unit/jest-helpers.test.ts",
+      "path": "/home/tvenceslau/local-workspace/decaf-ts/utils/tests/unit/jest-helpers.test.ts",
+      "kinds": [
+        "code"
+      ]
+    },
+    {
+      "id": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/tests/unit/jest-xray-teardown.test.ts",
+      "path": "/home/tvenceslau/local-workspace/decaf-ts/utils/tests/unit/jest-xray-teardown.test.ts",
+      "kinds": [
+        "code"
+      ]
+    },
+    {
+      "id": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/tests/unit/npm-link.test.ts",
+      "path": "/home/tvenceslau/local-workspace/decaf-ts/utils/tests/unit/npm-link.test.ts",
+      "kinds": [
+        "code"
+      ]
+    },
+    {
+      "id": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/tests/unit/output.test.ts",
+      "path": "/home/tvenceslau/local-workspace/decaf-ts/utils/tests/unit/output.test.ts",
+      "kinds": [
+        "code"
+      ]
+    },
+    {
+      "id": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/tests/unit/RegexpOutputWriter.test.ts",
+      "path": "/home/tvenceslau/local-workspace/decaf-ts/utils/tests/unit/RegexpOutputWriter.test.ts",
+      "kinds": [
+        "code"
+      ]
+    },
+    {
+      "id": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/tests/unit/StandardOutputWriter.test.ts",
+      "path": "/home/tvenceslau/local-workspace/decaf-ts/utils/tests/unit/StandardOutputWriter.test.ts",
+      "kinds": [
+        "code"
+      ]
+    },
+    {
+      "id": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/tests/unit/tag-release.test.ts",
+      "path": "/home/tvenceslau/local-workspace/decaf-ts/utils/tests/unit/tag-release.test.ts",
+      "kinds": [
+        "code"
+      ]
+    },
+    {
+      "id": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/tests/unit/tests.test.ts",
+      "path": "/home/tvenceslau/local-workspace/decaf-ts/utils/tests/unit/tests.test.ts",
+      "kinds": [
+        "code"
+      ]
+    },
+    {
+      "id": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/tests/unit/timeout.test.ts",
+      "path": "/home/tvenceslau/local-workspace/decaf-ts/utils/tests/unit/timeout.test.ts",
+      "kinds": [
+        "code"
+      ]
+    },
+    {
+      "id": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/tests/unit/utils.test.ts",
+      "path": "/home/tvenceslau/local-workspace/decaf-ts/utils/tests/unit/utils.test.ts",
+      "kinds": [
+        "code"
+      ]
+    },
+    {
+      "id": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/workdocs/reports/html/jest-html-reporters-attach/test-report/result.js",
+      "path": "/home/tvenceslau/local-workspace/decaf-ts/utils/workdocs/reports/html/jest-html-reporters-attach/test-report/result.js",
+      "kinds": [
+        "code"
+      ]
+    },
+    {
+      "id": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/workdocs/reports/jest.coverage.config.cjs",
+      "path": "/home/tvenceslau/local-workspace/decaf-ts/utils/workdocs/reports/jest.coverage.config.cjs",
+      "kinds": [
+        "code"
+      ]
+    }
+  ],
+  "edges": [
+    {
+      "id": "03295bd285b838ce0688f54b36a98c7ef202fde957e24b7495b71155300d403c",
+      "source": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/cli/index.ts",
+      "target": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/cli/commands/index.ts",
+      "kind": "dependency",
+      "specifier": "./commands"
+    },
+    {
+      "id": "04914735cc1954dfcce2a01e9f1671c25d649566e77394f7ff729d4e2e7fa146",
+      "source": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/bin/compile-matrix.ts",
+      "target": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/cli/commands/index.ts",
+      "kind": "dependency",
+      "specifier": "../cli/commands"
+    },
+    {
+      "id": "04d1d06ba77749729a0c115bac4fae381872af258bcd9f9351d7459e4f7614ce",
+      "source": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/tests/reporter.ts",
+      "target": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/tests/TestReporter.ts",
+      "kind": "dependency",
+      "specifier": "./TestReporter"
+    },
+    {
+      "id": "06ef40e28995ee569966a09fa45b9e44fdb0219791fdc96c7789bb9efee9f686",
+      "source": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/cli/commands/mirror-repo.command.ts",
+      "target": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/cli/command.ts",
+      "kind": "dependency",
+      "specifier": "../command"
+    },
+    {
+      "id": "0ab19c5468facfe6bed167f1081d06f8a0ff52df47141ff69cf6b0f045cef1bf",
+      "source": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/tests/index.ts",
+      "target": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/tests/Consumer.ts",
+      "kind": "dependency",
+      "specifier": "./Consumer"
+    },
+    {
+      "id": "0cb185529914c0d515e2620392b237472c69a75c9d3e36ebc499b406fe82876c",
+      "source": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/cli/commands/tag-release.command.ts",
+      "target": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/input/input.ts",
+      "kind": "dependency",
+      "specifier": "../../input/input"
+    },
+    {
+      "id": "0f5f3d90176fc710af53f0bc0dabde21366a095a00d08acba518603279a02397",
+      "source": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/tests/unit/npm-link.test.ts",
+      "target": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/cli/commands/help.command.ts",
+      "kind": "dependency",
+      "specifier": "../../src/cli/commands/help.command"
+    },
+    {
+      "id": "14eb17deec989eda0867f41f3e97d60b624524190f90bcfa66bd038f859a553d",
+      "source": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/tests/unit/timeout.test.ts",
+      "target": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/tests/module-router.ts",
+      "kind": "dependency",
+      "specifier": "../module-router"
+    },
+    {
+      "id": "15fdf047affc961d0e86ca0a98fc0dae234400f5b0d55dc2534d45aa3c1d3792",
+      "source": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/writers/index.ts",
+      "target": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/writers/types.ts",
+      "kind": "dependency",
+      "specifier": "./types"
+    },
+    {
+      "id": "1738c2579ff876a7acb9b398e01b21c396cf6996d9a5fe145aa3e2a45fa1903b",
+      "source": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/cli/commands/index.ts",
+      "target": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/cli/commands/bundle.command.ts",
+      "kind": "dependency",
+      "specifier": "./bundle.command"
+    },
+    {
+      "id": "17e54b0de19d48742890692179b739eaa03a68b4b3c8b26883dbd8d313cfe8f4",
+      "source": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/tests/integration/reporter.test.ts",
+      "target": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/tests/index.ts",
+      "kind": "dependency",
+      "specifier": "../../src/tests"
+    },
+    {
+      "id": "19027f2542d6af09bb3c92b397fe8acf6f84fc545bcd6b4712b87cb3cc6a9513",
+      "source": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/cli/command.ts",
+      "target": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/cli/constants.ts",
+      "kind": "dependency",
+      "specifier": "./constants"
+    },
+    {
+      "id": "198073dca4d5bf53a6c900d369fdf6428335dfd5a05a72a596e75b96defebe52",
+      "source": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/cli/commands/credentials.command.ts",
+      "target": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/cli/commands/help.command.ts",
+      "kind": "dependency",
+      "specifier": "./help.command"
+    },
+    {
+      "id": "1a70fea64bc9b6c5e647d30ffe53eb0ccb481f2cff8a59616a4f3d7bc672c165",
+      "source": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/tests/unit/commands/credentials.command.test.ts",
+      "target": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/cli/commands/credentials.command.ts",
+      "kind": "dependency",
+      "specifier": "../../../src/cli/commands/credentials.command"
+    },
+    {
+      "id": "1bc88c017d51ff31a3e0a63bd480091ae02f987206201eb2219adc51fd90cd3b",
+      "source": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/tests/unit/http.test.ts",
+      "target": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/utils/http.ts",
+      "kind": "dependency",
+      "specifier": "../../src/utils/http"
+    },
+    {
+      "id": "1bd82ee016b7e037b178400cf5deff6d6d6330836982bb86219279332b44b02a",
+      "source": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/tests/unit/commands/build-docs.command.test.ts",
+      "target": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/tests/unit/commands/test-support.ts",
+      "kind": "dependency",
+      "specifier": "./test-support"
+    },
+    {
+      "id": "1d2d85ba36f3761088eb4011afcf2f9d6b1585e15b1a9b3750f424cdfda0e73a",
+      "source": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/cli/commands/npm-token.command.ts",
+      "target": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/cli/command.ts",
+      "kind": "dependency",
+      "specifier": "../command"
+    },
+    {
+      "id": "22930115f562f5bd8d382148de59998d9f7a3c9cae6a7408e34c9a3a1e1c6e4e",
+      "source": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/tests/index.ts",
+      "target": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/tests/utils.ts",
+      "kind": "dependency",
+      "specifier": "./utils"
+    },
+    {
+      "id": "23047fd307bfdc0814b8816c31a82eb0a33f6ba1b6d069cd845f4550b4c138b7",
+      "source": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/cli/command.ts",
+      "target": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/output/common.ts",
+      "kind": "dependency",
+      "specifier": "../output/common"
+    },
+    {
+      "id": "26831d230c8b16c2d0dcee3390fc2b0ba67ce0a2b6f3118f205e5bbeeb0c97cc",
+      "source": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/tests/unit/tag-release.test.ts",
+      "target": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/index.ts",
+      "kind": "dependency",
+      "specifier": "../../src"
+    },
+    {
+      "id": "27a4ec38b930fb76248af667fe14d4fc29a67e7ce33d5813d47c291cbde9a9aa",
+      "source": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/cli/commands/index.ts",
+      "target": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/cli/commands/build-docs.command.ts",
+      "kind": "dependency",
+      "specifier": "./build-docs.command"
+    },
+    {
+      "id": "287a8b6f3b4865ce123c4f547634474cdcfbe578fe8e1ae40282573b25cadb33",
+      "source": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/writers/index.ts",
+      "target": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/writers/StandardOutputWriter.ts",
+      "kind": "dependency",
+      "specifier": "./StandardOutputWriter"
+    },
+    {
+      "id": "296fc642f2f882fb99c1b1b30e5aa66c3cd19dfecd538c65a9a20bbdef057ed9",
+      "source": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/cli/commands/run-all.command.ts",
+      "target": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/cli/commands/modules.command.ts",
+      "kind": "dependency",
+      "specifier": "./modules.command"
+    },
+    {
+      "id": "2a7fd190992848317d09c4eb6c9f8946161701d8b131cf87b9d525a5125f3d65",
+      "source": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/tests/unit/commands/build-docs.command.test.ts",
+      "target": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/cli/commands/build-docs.command.ts",
+      "kind": "dependency",
+      "specifier": "../../../src/cli/commands/build-docs.command"
+    },
+    {
+      "id": "2c7f2a4ca453f5af90d48a4c7754633deab79f684d6c2c1b48f72fcc4ad5b5d7",
+      "source": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/tests/integration/fs.real.test.ts",
+      "target": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/utils/fs.ts",
+      "kind": "dependency",
+      "specifier": "../../src/utils/fs"
+    },
+    {
+      "id": "2dc75449f0599232fdb61693a067950fcbced3c2744fabc9bdf16c2f866f1bc4",
+      "source": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/utils/index.ts",
+      "target": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/utils/utils.ts",
+      "kind": "dependency",
+      "specifier": "./utils"
+    },
+    {
+      "id": "2ef3f11455ba43e9756fd1dafa68da1b654e9c57d3925b5a29f046ee8e5666a2",
+      "source": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/tests/unit/commands/npm-link.command.test.ts",
+      "target": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/tests/unit/commands/test-support.ts",
+      "kind": "dependency",
+      "specifier": "./test-support"
+    },
+    {
+      "id": "2f149b5a40271674cf1a58627de4decc08ab1d6597fb639a20d217fd1b3c9233",
+      "source": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/cli/commands/tag-release-shell.command.ts",
+      "target": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/utils/constants.ts",
+      "kind": "dependency",
+      "specifier": "../../utils/constants"
+    },
+    {
+      "id": "2f594ec085dfe7c68812a3fb29fcd8110e4e0b3e5f0510f513d5381cb985e900",
+      "source": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/cli/command.ts",
+      "target": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/utils/fs.ts",
+      "kind": "dependency",
+      "specifier": "../utils/fs"
+    },
+    {
+      "id": "310b971cb903508615b03e31d0a5a4f5de11cdd5c623c050f2b2632af6cfe262",
+      "source": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/cli/commands/run-all.command.ts",
+      "target": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/cli/commands/help.command.ts",
+      "kind": "dependency",
+      "specifier": "./help.command"
+    },
+    {
+      "id": "32158a029c250056c0f1162c26ab289932460e776af262dc03c129bb7d24b813",
+      "source": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/cli/commands/build-scripts.command.ts",
+      "target": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/cli/command.ts",
+      "kind": "dependency",
+      "specifier": "../command"
+    },
+    {
+      "id": "34fe2cf0a892e984d61ac83cb4e5f60476c9f5634ca8c6fc4fe1159728db4748",
+      "source": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/index.ts",
+      "target": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/cli/index.ts",
+      "kind": "dependency",
+      "specifier": "./cli"
+    },
+    {
+      "id": "35bd6ed074ae0a630255523c9787426feab7404c8bebc62e3548337e517a6d9f",
+      "source": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/tests/jestPerformanceRunner.ts",
+      "target": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/tests/TestReporter.ts",
+      "kind": "dependency",
+      "specifier": "./TestReporter"
+    },
+    {
+      "id": "3815a0c0a1f7919f8f18c2c0b3d4f60390d3892a874089c7fbe7e3bb0677bf0e",
+      "source": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/bin/npm-token.ts",
+      "target": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/cli/commands/index.ts",
+      "kind": "dependency",
+      "specifier": "../cli/commands"
+    },
+    {
+      "id": "3885e95e26537df7feed7bbcc8ee222864141b8d10b1bf245af3aa49ff060685",
+      "source": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/tests/unit/commands/credentials.command.test.ts",
+      "target": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/tests/unit/commands/test-support.ts",
+      "kind": "dependency",
+      "specifier": "./test-support"
+    },
+    {
+      "id": "39118c826f07b76715658ff34e5bd4c47ac539211aa1f4bad96bf32455f85120",
+      "source": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/cli/commands/tag-release.command.ts",
+      "target": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/cli/command.ts",
+      "kind": "dependency",
+      "specifier": "../command"
+    },
+    {
+      "id": "39a649e52ea51379199c1d0a1ccb363d274dff076a2d1d70d29998a65a00b3f6",
+      "source": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/bin/run-all.ts",
+      "target": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/cli/commands/index.ts",
+      "kind": "dependency",
+      "specifier": "../cli/commands"
+    },
+    {
+      "id": "3a00dff3169f535cfcc119b50c2aa06d4949eb14395cd57de9aaea660dba352d",
+      "source": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/tests/unit/commands/tag-release.multi-registry.test.ts",
+      "target": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/cli/commands/tag-release.command.ts",
+      "kind": "dependency",
+      "specifier": "../../../src/cli/commands/tag-release.command"
+    },
+    {
+      "id": "3a022884dc0c6f66cc9ae28a2f6aebb583f1515c1768717375221f2318bcbd8f",
+      "source": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/cli/commands/tag-release.command.ts",
+      "target": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/utils/constants.ts",
+      "kind": "dependency",
+      "specifier": "../../utils/constants"
+    },
+    {
+      "id": "3b2453cac4f574ab96a08ef4e8e7c8840c33d16b43a3b5dec35aee93078222b3",
+      "source": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/cli/commands/tag-release.command.ts",
+      "target": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/cli/commands/help.command.ts",
+      "kind": "dependency",
+      "specifier": "./help.command"
+    },
+    {
+      "id": "3c990286f520bd882da6d8f0bd375ed898c79ee5853681e6a9a00690624d250a",
+      "source": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/cli/commands/mirror-repo.command.ts",
+      "target": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/cli/commands/help.command.ts",
+      "kind": "dependency",
+      "specifier": "./help.command"
+    },
+    {
+      "id": "3d9af213e312322541e05fb5ca5b807f001f2d9883de6dd9ea57bcaa64e37bc9",
+      "source": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/cli/commands/tag-release-shell.command.ts",
+      "target": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/cli/commands/help.command.ts",
+      "kind": "dependency",
+      "specifier": "./help.command"
+    },
+    {
+      "id": "3dea5634e4db269153aec69cb1156e599b8f7dc1223fc4170c2b88156914cc67",
+      "source": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/tests/unit/commands/modules.command.test.ts",
+      "target": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/tests/unit/commands/test-support.ts",
+      "kind": "dependency",
+      "specifier": "./test-support"
+    },
+    {
+      "id": "3fc4f8d244e8ef1b4b4c8c4bb7bacf9813ca32588bba289fd316ddbca5d7c431",
+      "source": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/tests/jestAgileTestTeardown.ts",
+      "target": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/tests/jestTestImporter.ts",
+      "kind": "dependency",
+      "specifier": "./jestTestImporter"
+    },
+    {
+      "id": "40c40e9b073fb361fb6b1e00474510f0450d4498bcfad2020de099db454b858a",
+      "source": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/workdocs/reports/jest.coverage.config.cjs",
+      "target": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/jest.config.cjs",
+      "kind": "dependency",
+      "specifier": "../../jest.config.cjs"
+    },
+    {
+      "id": "4103c3a1b8546583f586dbdba8c51010fc2d919e06d5a936c4a96090268b2bc8",
+      "source": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/utils/utils.ts",
+      "target": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/writers/StandardOutputWriter.ts",
+      "kind": "dependency",
+      "specifier": "../writers/StandardOutputWriter"
+    },
+    {
+      "id": "413ee4d90bf282b49a10f3e67338635b67c9ad8c60225e1b07fa4176702f93e5",
+      "source": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/tests/integration/reporter.test.ts",
+      "target": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/index.ts",
+      "kind": "dependency",
+      "specifier": "../../src/index"
+    },
+    {
+      "id": "436f9e3a8fbe7734ed21d8e4a3fb6cff6c0e51bee61ac8926f477036e2fe382b",
+      "source": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/writers/RegexpOutputWriter.ts",
+      "target": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/writers/StandardOutputWriter.ts",
+      "kind": "dependency",
+      "specifier": "./StandardOutputWriter"
+    },
+    {
+      "id": "4403f70c92085be4113eb29df3ef6490739b1c9d3c774903fc83ac9565ef4f4e",
+      "source": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/tests/unit/npm-link.test.ts",
+      "target": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/cli/commands/npm-link.command.ts",
+      "kind": "dependency",
+      "specifier": "../../src/cli/commands/npm-link.command"
+    },
+    {
+      "id": "4408a17980054d5a6943a6a2bb6d10109d10a80ebee53f6df47b797eb69f68e5",
+      "source": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/tests/unit/build-scripts.patchFiles.test.ts",
+      "target": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/index.ts",
+      "kind": "dependency",
+      "specifier": "../../src"
+    },
+    {
+      "id": "4652220a01e51c20cf2d023361773136a95353de2b17fc415891d62aa650c9e1",
+      "source": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/tests/integration/commandRunner.test.ts",
+      "target": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/writers/RegexpOutputWriter.ts",
+      "kind": "dependency",
+      "specifier": "../../src/writers/RegexpOutputWriter"
+    },
+    {
+      "id": "473411867a9556e6bdad624c489ab7db8d1917c49b48ced868b9927cc5a6c830",
+      "source": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/cli/commands/release-chain.command.ts",
+      "target": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/cli/constants.ts",
+      "kind": "dependency",
+      "specifier": "../constants"
+    },
+    {
+      "id": "480b250b8e358d939c6d0a16b2d5ba6d3711cd70f0c3a443b6e202ab9a74dca5",
+      "source": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/cli/commands/npm-token.command.ts",
+      "target": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/cli/commands/help.command.ts",
+      "kind": "dependency",
+      "specifier": "./help.command"
+    },
+    {
+      "id": "4cce3f3dd6e4c0f9b09a16db1fbbdc0d877f82d49854aa0db0476e638c368d72",
+      "source": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/bin/release-chain-dispatch.ts",
+      "target": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/cli/commands/index.ts",
+      "kind": "dependency",
+      "specifier": "../cli/commands"
+    },
+    {
+      "id": "4d6fa16d5316efa9f5e21f37acf37a7d49cef8d098ae1cee6848cfd46ff8c7d4",
+      "source": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/output/index.ts",
+      "target": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/output/common.ts",
+      "kind": "dependency",
+      "specifier": "./common"
+    },
+    {
+      "id": "4f4feb35ef6cd7fe688567260685089e03951673ad692cab8068ac3c24699fd1",
+      "source": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/cli/commands/credentials.command.ts",
+      "target": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/cli/command.ts",
+      "kind": "dependency",
+      "specifier": "../command"
+    },
+    {
+      "id": "50b8cc11bf5eaf70d737799980685bf95509957690542ccf9004b43df7032ae0",
+      "source": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/tests/unit/StandardOutputWriter.test.ts",
+      "target": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/index.ts",
+      "kind": "dependency",
+      "specifier": "../../src"
+    },
+    {
+      "id": "5630dfe2fa21a075fc4734428efd8a2f3f1cabbd9e6df9618fe2dfdf75206145",
+      "source": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/bin/npm-link.ts",
+      "target": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/cli/commands/index.ts",
+      "kind": "dependency",
+      "specifier": "../cli/commands"
+    },
+    {
+      "id": "59cd5f05817be43f11c475681711a0fa6243fb36a77cda36990a50e39cc68aec",
+      "source": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/tests/unit/commands/npm-token.command.test.ts",
+      "target": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/cli/commands/npm-token.command.ts",
+      "kind": "dependency",
+      "specifier": "../../../src/cli/commands/npm-token.command"
+    },
+    {
+      "id": "5d565be423f334b39328a39ce57cad8ce42e004a963d505ecfb091cd606cc398",
+      "source": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/writers/index.ts",
+      "target": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/writers/RegexpOutputWriter.ts",
+      "kind": "dependency",
+      "specifier": "./RegexpOutputWriter"
+    },
+    {
+      "id": "5fb524a513a07408789dc0530238b9474866cf73db69ea22ec9139efc4c4d8ec",
+      "source": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/tests/TestReporter.ts",
+      "target": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/utils/fs.ts",
+      "kind": "dependency",
+      "specifier": "../utils/fs"
+    },
+    {
+      "id": "5ff6a207bc6ebd908763cf3551fa3a8355495c58526aa63cfb673dda4f3be7eb",
+      "source": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/tests/jest.ts",
+      "target": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/tests/reporter.ts",
+      "kind": "dependency",
+      "specifier": "./reporter"
+    },
+    {
+      "id": "60d739ad5c095856a875c6441c388fb19fede77fdd4865145b8670a6431542b7",
+      "source": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/tests/unit/jest-agiletest-teardown.test.ts",
+      "target": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/tests/index.ts",
+      "kind": "dependency",
+      "specifier": "../../src/tests"
+    },
+    {
+      "id": "634a8dd0c7e12eb25978d0f11e11a8e11081475b9f875ff0fa83ba52848b02dd",
+      "source": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/cli/commands/tag-release-shell.command.ts",
+      "target": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/cli/commands/credentials.command.ts",
+      "kind": "dependency",
+      "specifier": "./credentials.command"
+    },
+    {
+      "id": "6460ac6a94438c003ac20494bdd0b9542e110b3613cb3397db3c43f5fac9537b",
+      "source": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/cli/commands/index.ts",
+      "target": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/cli/commands/npm-link.command.ts",
+      "kind": "dependency",
+      "specifier": "./npm-link.command"
+    },
+    {
+      "id": "65324800c5d7059db290d9ffb4995c428cec4f6d5fe8a1be117f99f4eed8285f",
+      "source": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/tests/unit/build-scripts.bundle.test.ts",
+      "target": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/index.ts",
+      "kind": "dependency",
+      "specifier": "../../src"
+    },
+    {
+      "id": "6781365985a19f6fa14490688eb1179a92e979edf89a24fd11cc17e4ed0a49f1",
+      "source": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/tests/index.ts",
+      "target": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/tests/jestAgileTestTeardown.ts",
+      "kind": "dependency",
+      "specifier": "./jestAgileTestTeardown"
+    },
+    {
+      "id": "6918beddfffb84e3149698e08e2a8d9aee5dc7a64b54040931dddd4ef54550bc",
+      "source": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/cli/commands/tag-release-shell.command.ts",
+      "target": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/input/input.ts",
+      "kind": "dependency",
+      "specifier": "../../input/input"
+    },
+    {
+      "id": "6dd4256f9631cfc15aaa1bc61581391dfc5e58dfacd35e02239e9ef5b69a5870",
+      "source": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/cli/commands/compile-matrix.command.ts",
+      "target": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/cli/commands/help.command.ts",
+      "kind": "dependency",
+      "specifier": "./help.command"
+    },
+    {
+      "id": "70d8a038792c6534a9f1b22dca9e7643c6ba1c448375c0bb92a794854efbf614",
+      "source": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/tests/unit/utils.test.ts",
+      "target": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/utils/utils.ts",
+      "kind": "dependency",
+      "specifier": "../../src/utils/utils"
+    },
+    {
+      "id": "7525d3fc80296e738d6ede2533b0a35c8f0d8ea6c5ec17883c27b16d9cc023c0",
+      "source": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/tests/unit/commands/run-all.command.test.ts",
+      "target": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/tests/unit/commands/test-support.ts",
+      "kind": "dependency",
+      "specifier": "./test-support"
+    },
+    {
+      "id": "778ff5fb8ef73d691cd6166c171dc0f6caba3453f099eefb852bf86e69ce0fe0",
+      "source": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/cli/commands/release-chain.command.ts",
+      "target": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/cli/commands/help.command.ts",
+      "kind": "dependency",
+      "specifier": "./help.command"
+    },
+    {
+      "id": "78ee88f70deac541c5eabcc87ec883311dee9f093156b8f941f343215092dcf4",
+      "source": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/tests/unit/output.test.ts",
+      "target": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/index.ts",
+      "kind": "dependency",
+      "specifier": "../../src"
+    },
+    {
+      "id": "7985e88a1df0b7154cc95281132a59c910d433d5cd51cebfcb90f60921ab2aa5",
+      "source": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/tests/unit/command.test.ts",
+      "target": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/output/common.ts",
+      "kind": "dependency",
+      "specifier": "../../src/output/common"
+    },
+    {
+      "id": "79fdce55d7ef8c84524b626cda1c0a5e9df858b50993fb582cebf609a11180ac",
+      "source": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/cli/commands/build-scripts.command.ts",
+      "target": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/cli/constants.ts",
+      "kind": "dependency",
+      "specifier": "../constants"
+    },
+    {
+      "id": "7aa0d70785f0d2e6bd302327283973f472e80c356fccaf6d0059c1f5f37a8c9d",
+      "source": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/tests/unit/commands/npm-token.command.test.ts",
+      "target": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/tests/unit/commands/test-support.ts",
+      "kind": "dependency",
+      "specifier": "./test-support"
+    },
+    {
+      "id": "7c9308403303665967f6f50aac9b5bcfa2f762188b93bd5e9d4c5641294c2771",
+      "source": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/utils/index.ts",
+      "target": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/utils/http.ts",
+      "kind": "dependency",
+      "specifier": "./http"
+    },
+    {
+      "id": "7cea45991c625c5688e6abd8bf1c0184747893f6d1b25850d2d9403a9ffe4668",
+      "source": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/tests/unit/command.test.ts",
+      "target": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/input/input.ts",
+      "kind": "dependency",
+      "specifier": "../../src/input/input"
+    },
+    {
+      "id": "7eb921d7bdb416399e831abf32e7dae4b744aa4879d4cf65a0ffdb08e8e2d005",
+      "source": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/tests/unit/commands/bundle.command.test.ts",
+      "target": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/cli/commands/bundle.command.ts",
+      "kind": "dependency",
+      "specifier": "../../../src/cli/commands/bundle.command"
+    },
+    {
+      "id": "836d21e748e85d4c35db3cef1009e876c00910533efec95593bd0a2b76ea2184",
+      "source": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/tests/unit/commands/modules.command.test.ts",
+      "target": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/cli/commands/modules.command.ts",
+      "kind": "dependency",
+      "specifier": "../../../src/cli/commands/modules.command"
+    },
+    {
+      "id": "84079d1b484137b76a67a51fc4f82ee9f716d3c04268739dc331b713d778f01f",
+      "source": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/tests/unit/command.test.ts",
+      "target": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/cli/command.ts",
+      "kind": "dependency",
+      "specifier": "../../src/cli/command"
+    },
+    {
+      "id": "8423acddb6074f1c4641eae37d9c76ebc6573c6ae2e701da5628642eae68b012",
+      "source": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/cli/commands/build-scripts.command.ts",
+      "target": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/utils/index.ts",
+      "kind": "dependency",
+      "specifier": "../../utils"
+    },
+    {
+      "id": "87f36320407b4184587a159a997dedf534d04cacb1376665a3cc3bb48e24d068",
+      "source": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/cli/index.ts",
+      "target": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/cli/types.ts",
+      "kind": "dependency",
+      "specifier": "./types"
+    },
+    {
+      "id": "8935d67c64a0396d7082826d32455e5c9d677f5c7d684dfb3ef8a6eafb61bcfc",
+      "source": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/cli/index.ts",
+      "target": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/cli/constants.ts",
+      "kind": "dependency",
+      "specifier": "./constants"
+    },
+    {
+      "id": "89c8af94c6d1f8b324dc9413f5299bb70a36bc3ca6a31219682c9dd99c58f153",
+      "source": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/cli/commands/index.ts",
+      "target": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/cli/commands/compile-matrix.command.ts",
+      "kind": "dependency",
+      "specifier": "./compile-matrix.command"
+    },
+    {
+      "id": "8ae60ebf520cbe72fd4a5fffb45987f88e528ead6ec23af6dadc7112f3cd8eb2",
+      "source": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/cli/commands/index.ts",
+      "target": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/cli/commands/npm-token.command.ts",
+      "kind": "dependency",
+      "specifier": "./npm-token.command"
+    },
+    {
+      "id": "8b563c739faaa204f6422febcb796d37ad5cbdae37b937690ec2de85bc307e44",
+      "source": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/cli/commands/index.ts",
+      "target": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/cli/commands/mirror-repo.command.ts",
+      "kind": "dependency",
+      "specifier": "./mirror-repo.command"
+    },
+    {
+      "id": "8ccc6bcdf313c041c0ae07815dc0f3ffb2cf898f47cf2d363d1e9c66bc2e8d3a",
+      "source": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/tests/jestPerformanceRunner.ts",
+      "target": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/utils/performanceRunner.ts",
+      "kind": "dependency",
+      "specifier": "../utils/performanceRunner"
+    },
+    {
+      "id": "8f41da7ea5626aaba43c4ba056937e0501322886989db66735f7067d2087de5d",
+      "source": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/bin/mirror-repo.ts",
+      "target": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/cli/commands/index.ts",
+      "kind": "dependency",
+      "specifier": "../cli/commands"
+    },
+    {
+      "id": "8f75e2744061224adb8a402507e188c61f5f2841f91e63ff9ec159eee2abba6b",
+      "source": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/cli/commands/build-docs.command.ts",
+      "target": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/cli/command.ts",
+      "kind": "dependency",
+      "specifier": "../command"
+    },
+    {
+      "id": "902032117dcf8fd9356e361cc626586a2680aeaa139518d92927565cfb65df7e",
+      "source": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/cli/commands/release-chain.command.ts",
+      "target": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/utils/index.ts",
+      "kind": "dependency",
+      "specifier": "../../utils"
+    },
+    {
+      "id": "903c396dbd3d1735440845821c936e3601b7692ea64d478dd9e19d88ff6fcd15",
+      "source": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/cli/commands/tag-release.command.ts",
+      "target": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/cli/commands/credentials.command.ts",
+      "kind": "dependency",
+      "specifier": "./credentials.command"
+    },
+    {
+      "id": "904724c6991f238ac9a0d53fb882ef874a9329b21a105bfb8a8d359324cc6a67",
+      "source": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/cli/index.ts",
+      "target": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/cli/command.ts",
+      "kind": "dependency",
+      "specifier": "./command"
+    },
+    {
+      "id": "921d6f8fd459865bec819a6bbe0c062b6a75611e6a13907ad1f3a7d444acc011",
+      "source": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/cli/commands/index.ts",
+      "target": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/cli/commands/modules.command.ts",
+      "kind": "dependency",
+      "specifier": "./modules.command"
+    },
+    {
+      "id": "92ac8d50ac79a76b3755840ec5d42902881066e5f5551e96468ccd13b81f6def",
+      "source": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/bin/bundle.ts",
+      "target": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/cli/commands/index.ts",
+      "kind": "dependency",
+      "specifier": "../cli/commands"
+    },
+    {
+      "id": "9519a41c6f7d1694a688fa54384e759d90bc3f2adb13d49f31d540e1bd748592",
+      "source": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/tests/integration/commandRunner.test.ts",
+      "target": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/utils/utils.ts",
+      "kind": "dependency",
+      "specifier": "../../src/utils/utils"
+    },
+    {
+      "id": "95b5566d584d3e1b61a83967c15330b60a5eb7517a7c651241268c40003703dd",
+      "source": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/cli/commands/index.ts",
+      "target": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/cli/commands/build-scripts.command.ts",
+      "kind": "dependency",
+      "specifier": "./build-scripts.command"
+    },
+    {
+      "id": "9757cd396dc03449c3307b8a7a2da5cbe357118a5babb784df1d0924708db4e3",
+      "source": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/tests/unit/timeout.test.ts",
+      "target": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/utils/timeout.ts",
+      "kind": "dependency",
+      "specifier": "../../src/utils/timeout"
+    },
+    {
+      "id": "9a25e1e8cfdeeb07fbd5468b10612ca9b700b478f7932322d3fdbe9ede58e8ac",
+      "source": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/tests/unit/commands/credentials-command-injection.test.ts",
+      "target": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/cli/commands/credentials.command.ts",
+      "kind": "dependency",
+      "specifier": "../../../src/cli/commands/credentials.command"
+    },
+    {
+      "id": "9acbe64e1924710c9748bcae030b170f3ab1c284907f440375eac845beecb240",
+      "source": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/bin/build-docs.ts",
+      "target": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/cli/commands/index.ts",
+      "kind": "dependency",
+      "specifier": "../cli/commands"
+    },
+    {
+      "id": "9ae96113bc6886662cea940fdac9a08a470ab3be8ff8bbef7035fe8ec6ff41a0",
+      "source": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/bin/tag-release.ts",
+      "target": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/cli/commands/index.ts",
+      "kind": "dependency",
+      "specifier": "../cli/commands"
+    },
+    {
+      "id": "9b0a85caa566a31452af82784dd447bc9fac1a9d6306570a9897ecb7de59642b",
+      "source": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/cli/commands/npm-link.command.ts",
+      "target": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/cli/commands/help.command.ts",
+      "kind": "dependency",
+      "specifier": "./help.command"
+    },
+    {
+      "id": "9b402e0cb22d6c974fb0660c50a0a749e7128b62d09e876769026a126c27147f",
+      "source": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/tests/index.ts",
+      "target": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/tests/reporter.ts",
+      "kind": "dependency",
+      "specifier": "./reporter"
+    },
+    {
+      "id": "9de2afea559de6ebc01c4c08b724d22dc6da4002a36b26fe6032870444372316",
+      "source": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/tests/unit/StandardOutputWriter.test.ts",
+      "target": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/utils/constants.ts",
+      "kind": "dependency",
+      "specifier": "../../src/utils/constants"
+    },
+    {
+      "id": "a02443c9fe4db9f3e465c0439ba732dfdffb0dd231dfd1a0089396820583d409",
+      "source": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/tests/index.ts",
+      "target": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/tests/jest.ts",
+      "kind": "dependency",
+      "specifier": "./jest"
+    },
+    {
+      "id": "a0f73e8500f872694887651ff67a68069384f670fa9287c7cc60c61fe2989134",
+      "source": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/tests/unit/input.test.ts",
+      "target": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/input/input.ts",
+      "kind": "dependency",
+      "specifier": "../../src/input/input"
+    },
+    {
+      "id": "a11105d40b140b0b22668429e1afa547cea997d6e76a782216a0de386dbceddf",
+      "source": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/cli/commands/bundle.command.ts",
+      "target": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/cli/commands/credentials.command.ts",
+      "kind": "dependency",
+      "specifier": "./credentials.command"
+    },
+    {
+      "id": "a17880712c8f0624069b33050bb62f2ede70d0134f0d6030ee1acd23dea1a3c8",
+      "source": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/writers/StandardOutputWriter.ts",
+      "target": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/utils/constants.ts",
+      "kind": "dependency",
+      "specifier": "../utils/constants"
+    },
+    {
+      "id": "a3637df2b5274d53d8790a777a314c892e537bdce58a80aa8d3750870c3c3be5",
+      "source": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/tests/utils.ts",
+      "target": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/writers/index.ts",
+      "kind": "dependency",
+      "specifier": "../writers"
+    },
+    {
+      "id": "a36d65f1a509774e666986f74d1d797929ab060d9dbed6a952ed02d7f0b94aa1",
+      "source": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/index.ts",
+      "target": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/input/index.ts",
+      "kind": "dependency",
+      "specifier": "./input"
+    },
+    {
+      "id": "a68d3b0eb0bc99d54f6dd3e83925c825b298950241ae4af6b6ffbee902f3ffec",
+      "source": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/index.ts",
+      "target": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/utils/index.ts",
+      "kind": "dependency",
+      "specifier": "./utils"
+    },
+    {
+      "id": "aabc95f3d0719b841443c40a45385cd985170f0061e2acbb05312eb8d63f07cd",
+      "source": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/input/index.ts",
+      "target": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/input/input.ts",
+      "kind": "dependency",
+      "specifier": "./input"
+    },
+    {
+      "id": "ab4d50174e58cf1da39f7e20324aed6a04fdd687559d322937f84c931d40ee22",
+      "source": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/utils/utils.ts",
+      "target": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/utils/constants.ts",
+      "kind": "dependency",
+      "specifier": "./constants"
+    },
+    {
+      "id": "adaec2e321caccfe26d6fdea4a8284820e87a5ebff280acb08c7eee947f82c3f",
+      "source": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/tests/unit/npm-link.test.ts",
+      "target": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/cli/commands/modules.command.ts",
+      "kind": "dependency",
+      "specifier": "../../src/cli/commands/modules.command"
+    },
+    {
+      "id": "af904ec7fefabebbe8f7f1299e795120714be0b5c6109f4fad0247c22a4acc1b",
+      "source": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/utils/index.ts",
+      "target": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/utils/types.ts",
+      "kind": "dependency",
+      "specifier": "./types"
+    },
+    {
+      "id": "b10bab11929c50aa1584bb4ff7c8930c19a8e8a1b514f2f6eed11d9ab690042d",
+      "source": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/tests/unit/commands/bundle.command.test.ts",
+      "target": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/tests/unit/commands/test-support.ts",
+      "kind": "dependency",
+      "specifier": "./test-support"
+    },
+    {
+      "id": "b1805c79abb316f4e1dcdcc1aaf1ede082b2a223f76acbb47bc78010d77e8db7",
+      "source": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/utils/fs.ts",
+      "target": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/utils/utils.ts",
+      "kind": "dependency",
+      "specifier": "./utils"
+    },
+    {
+      "id": "b2739d937b8a0bccc5ee2bcc81b36418bd2a27f7367d28cf7f12b4202f9af232",
+      "source": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/tests/unit/commands/npm-link.command.test.ts",
+      "target": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/cli/commands/npm-link.command.ts",
+      "kind": "dependency",
+      "specifier": "../../../src/cli/commands/npm-link.command"
+    },
+    {
+      "id": "b2b423e7036ca12aca22111adc911a57589a8bda9c1eff2b7d06f17639d43ac3",
+      "source": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/cli/commands/build-docs.command.ts",
+      "target": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/cli/commands/help.command.ts",
+      "kind": "dependency",
+      "specifier": "./help.command"
+    },
+    {
+      "id": "b2eb2bf3a5240c9fde4045b0430793dbd8f9aca0f12e571d3b32723da4638201",
+      "source": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/index.ts",
+      "target": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/release-chain/index.ts",
+      "kind": "dependency",
+      "specifier": "./release-chain"
+    },
+    {
+      "id": "b73c7a0905a31d8b7481e656242dbd464a4005d81893f6b98e65f3c1b44cd622",
+      "source": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/cli/commands/index.ts",
+      "target": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/cli/commands/credentials.command.ts",
+      "kind": "dependency",
+      "specifier": "./credentials.command"
+    },
+    {
+      "id": "b7edf0589082d68774a0b7e1097617c0e29db662ea9f2d68425f228c1be491c2",
+      "source": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/input/index.ts",
+      "target": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/input/types.ts",
+      "kind": "dependency",
+      "specifier": "./types"
+    },
+    {
+      "id": "b997a4c00dd78e25c2b76abae8ffccb833d417c73b48fecf91f9eb3f7502b993",
+      "source": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/cli/commands/npm-token.command.ts",
+      "target": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/cli/commands/modules.command.ts",
+      "kind": "dependency",
+      "specifier": "./modules.command"
+    },
+    {
+      "id": "bdc9e260d8b04d30933c9a6805b78861c29bc921100ba5fdde5556b34f634b9a",
+      "source": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/cli/commands/run-all.command.ts",
+      "target": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/cli/command.ts",
+      "kind": "dependency",
+      "specifier": "../command"
+    },
+    {
+      "id": "c08c4180e53a6a027f2ebbc83847e1726587d6129604b1ba5c3fa11ec94fde67",
+      "source": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/cli/commands/bundle.command.ts",
+      "target": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/cli/commands/help.command.ts",
+      "kind": "dependency",
+      "specifier": "./help.command"
+    },
+    {
+      "id": "c099a5f31c17985aa5b84ac6d62c9d930c6c0e82c3ddd071239f691a6e9a0d84",
+      "source": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/tests/unit/tests.test.ts",
+      "target": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/tests/index.ts",
+      "kind": "dependency",
+      "specifier": "../../src/tests"
+    },
+    {
+      "id": "c0ec0969ed17779e90bca4117345e110cf0ed49d220a0492dd0c66cf20d614c8",
+      "source": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/cli/commands/index.ts",
+      "target": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/cli/commands/tag-release.command.ts",
+      "kind": "dependency",
+      "specifier": "./tag-release.command"
+    },
+    {
+      "id": "c33ee56ca4f934af9983cd28c1198f32e57bcd25aa2d7f14e8567d4592f89fac",
+      "source": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/tests/index.ts",
+      "target": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/tests/jestPerformanceRunner.ts",
+      "kind": "dependency",
+      "specifier": "./jestPerformanceRunner"
+    },
+    {
+      "id": "c38939966ad0be3497ef0996f254228cd19a6b5ffb952b211d5e25ea30d7fcf2",
+      "source": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/tests/unit/build-scripts.cjs-from-esm.test.ts",
+      "target": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/index.ts",
+      "kind": "dependency",
+      "specifier": "../../src"
+    },
+    {
+      "id": "c70ff9e0dccffa2640792625b2cac378d18806839d6002fbf4c1e0e76f4cea91",
+      "source": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/cli/commands/index.ts",
+      "target": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/cli/commands/tag-release-shell.command.ts",
+      "kind": "dependency",
+      "specifier": "./tag-release-shell.command"
+    },
+    {
+      "id": "c8141c2a96598a72e39d00b40edc23a281cd48596e0c4102f491420a091bdc5a",
+      "source": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/cli/commands/npm-link.command.ts",
+      "target": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/cli/commands/modules.command.ts",
+      "kind": "dependency",
+      "specifier": "./modules.command"
+    },
+    {
+      "id": "cac6cc52dee22fea56c93a4d27b8c1b61a70b30a2683f17a7b9696740cb9c28a",
+      "source": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/tests/unit/commands/run-all.command.test.ts",
+      "target": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/cli/commands/run-all.command.ts",
+      "kind": "dependency",
+      "specifier": "../../../src/cli/commands/run-all.command"
+    },
+    {
+      "id": "cafea0c01d89cdd11207be5e29658247b72061240cb99e4206bfe54dbd0bce2e",
+      "source": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/utils/index.ts",
+      "target": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/utils/constants.ts",
+      "kind": "dependency",
+      "specifier": "./constants"
+    },
+    {
+      "id": "cbdd7a90d727eb59c849439aae6ca2a8f500e87522823f7b62120e37b13b794c",
+      "source": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/tests/unit/commands/tag-release.multi-registry.test.ts",
+      "target": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/tests/unit/commands/test-support.ts",
+      "kind": "dependency",
+      "specifier": "./test-support"
+    },
+    {
+      "id": "cc750850d21e6c48df5de16ec9a0e5aa41cf2c720d3ea200270fc965c34014ce",
+      "source": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/tests/Consumer.ts",
+      "target": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/tests/TestReporter.ts",
+      "kind": "dependency",
+      "specifier": "./TestReporter"
+    },
+    {
+      "id": "cd0745352c54a9ade698aafaea1258007383a456760058f872e0daaa17aae34d",
+      "source": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/cli/command.ts",
+      "target": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/input/input.ts",
+      "kind": "dependency",
+      "specifier": "../input/input"
+    },
+    {
+      "id": "cdb2b347f723d01a616661d8101e2f0671eb940407d02522f34d61f07f95f194",
+      "source": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/bin/modules.ts",
+      "target": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/cli/commands/index.ts",
+      "kind": "dependency",
+      "specifier": "../cli/commands"
+    },
+    {
+      "id": "ce16205c4980ab773aa16d34f8fa9abb89e84a6ac93acf54ada09f399ec87c2c",
+      "source": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/cli/commands/bundle.command.ts",
+      "target": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/cli/command.ts",
+      "kind": "dependency",
+      "specifier": "../command"
+    },
+    {
+      "id": "ce22645a9afc42560b953b98588c6454f71ed13d3385e814240030e3cee9acbb",
+      "source": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/cli/commands/tag-release-shell.command.ts",
+      "target": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/cli/command.ts",
+      "kind": "dependency",
+      "specifier": "../command"
+    },
+    {
+      "id": "ce240d0efdf34214d31c5b23fff559cfe98f77c81baea0f7401b30f30137b445",
+      "source": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/bin/build-scripts.ts",
+      "target": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/cli/commands/index.ts",
+      "kind": "dependency",
+      "specifier": "../cli/commands"
+    },
+    {
+      "id": "ce509d976ba1da96317afa719ce78b867a9ca8ca2998c224714ad41971c027f2",
+      "source": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/tests/unit/jest-helpers.test.ts",
+      "target": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/tests/index.ts",
+      "kind": "dependency",
+      "specifier": "../../src/tests"
+    },
+    {
+      "id": "cef69ad7a85fc996b903c7d92df1f2c08e70c705f012fe93af72494adb3724fb",
+      "source": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/tests/jestXrayTeardown.ts",
+      "target": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/tests/jestTestImporter.ts",
+      "kind": "dependency",
+      "specifier": "./jestTestImporter"
+    },
+    {
+      "id": "d0178e2e361ae63cd39a16c104f0aa72d2fc5e0e346de0ea9ff6c63fc606d391",
+      "source": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/index.ts",
+      "target": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/writers/index.ts",
+      "kind": "dependency",
+      "specifier": "./writers"
+    },
+    {
+      "id": "d076992988a2783a73372b1cbc353a2d000064947398bdf613e85e85bbb5a43d",
+      "source": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/utils/index.ts",
+      "target": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/utils/fs.ts",
+      "kind": "dependency",
+      "specifier": "./fs"
+    },
+    {
+      "id": "d18a099841cdf112209648a7f74db45dbc3a43bdc856738e46f4004037138b91",
+      "source": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/cli/commands/compile-matrix.command.ts",
+      "target": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/cli/command.ts",
+      "kind": "dependency",
+      "specifier": "../command"
+    },
+    {
+      "id": "d2745c767009bbca252cb3b897c627ea190f3c004f788f54c8ef29cbaa5a5a79",
+      "source": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/tests/integration/incrementalEndpointLoad.test.ts",
+      "target": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/tests/jestPerformanceRunner.ts",
+      "kind": "dependency",
+      "specifier": "../../src/tests/jestPerformanceRunner"
+    },
+    {
+      "id": "d4e628e0f6aeb9ee37ebdba063837fe5c717430a41eef56c8f4fabd2f0204f38",
+      "source": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/bin/credentials.ts",
+      "target": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/cli/commands/index.ts",
+      "kind": "dependency",
+      "specifier": "../cli/commands"
+    },
+    {
+      "id": "d51f3bc1aacd79edc46c9ae53a65483967eb38ff4d5f9b38deeef85484d767cb",
+      "source": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/tests/unit/RegexpOutputWriter.test.ts",
+      "target": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/writers/RegexpOutputWriter.ts",
+      "kind": "dependency",
+      "specifier": "../../src/writers/RegexpOutputWriter"
+    },
+    {
+      "id": "d546f2549ab70f31c7908736bacf0cef1263636ce9f85b97e29885d087de45e7",
+      "source": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/tests/index.ts",
+      "target": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/tests/jestXrayTeardown.ts",
+      "kind": "dependency",
+      "specifier": "./jestXrayTeardown"
+    },
+    {
+      "id": "d8d958a8aa0a1a723ba51e56981bea313cb3bc5ba9b3db830db7c389b5923246",
+      "source": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/cli/commands/modules.command.ts",
+      "target": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/cli/commands/help.command.ts",
+      "kind": "dependency",
+      "specifier": "./help.command"
+    },
+    {
+      "id": "d93ccbb375d43856d30e086d3686a165a97e8895701dcaa8d69392d8b9851bc8",
+      "source": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/tests/index.ts",
+      "target": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/tests/TestReporter.ts",
+      "kind": "dependency",
+      "specifier": "./TestReporter"
+    },
+    {
+      "id": "db691f83fdd99f2652f36bd8d4d1e4318461e7fdf106b9f23b16af8c817d3e4e",
+      "source": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/tests/unit/commands/tag-release.command.test.ts",
+      "target": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/tests/unit/commands/test-support.ts",
+      "kind": "dependency",
+      "specifier": "./test-support"
+    },
+    {
+      "id": "de9bcedfe3d99f88fbcbf81922e49bb396f180e88a978c9de65afe054269d3a3",
+      "source": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/tests/unit/build-scripts.dotted-filenames.test.ts",
+      "target": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/index.ts",
+      "kind": "dependency",
+      "specifier": "../../src"
+    },
+    {
+      "id": "ded3b9c4c6d9e1c802726dadaa5846523bf59c08f48064374585275be72e31b0",
+      "source": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/tests/unit/jest-xray-teardown.test.ts",
+      "target": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/tests/index.ts",
+      "kind": "dependency",
+      "specifier": "../../src/tests"
+    },
+    {
+      "id": "e0e47d82ba66fda2c3584a91cb3b70a803d062cd97fc67338b8cb5a6980ff35d",
+      "source": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/tests/unit/commands/tag-release.command.test.ts",
+      "target": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/cli/commands/tag-release.command.ts",
+      "kind": "dependency",
+      "specifier": "../../../src/cli/commands/tag-release.command"
+    },
+    {
+      "id": "e19a28699950e831fb08da605242d2aa0da25c1894823fed7fd517d79f809983",
+      "source": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/cli/commands/index.ts",
+      "target": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/cli/commands/release-chain.command.ts",
+      "kind": "dependency",
+      "specifier": "./release-chain.command"
+    },
+    {
+      "id": "e34478be51db623f0fc73d95dcd314848a85a4a608282c0f569b88a62457001e",
+      "source": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/tests/utils.ts",
+      "target": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/utils/utils.ts",
+      "kind": "dependency",
+      "specifier": "../utils/utils"
+    },
+    {
+      "id": "e5376ccc951e1b0288022517142cace4c834f6eb426018be974f63c47922842e",
+      "source": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/bin/release-chain.ts",
+      "target": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/cli/commands/index.ts",
+      "kind": "dependency",
+      "specifier": "../cli/commands"
+    },
+    {
+      "id": "e5719d0faf15b04d5c2926438e94cbf950c01e26e27a4b62b3e50595d41e06fd",
+      "source": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/cli/commands/index.ts",
+      "target": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/cli/commands/run-all.command.ts",
+      "kind": "dependency",
+      "specifier": "./run-all.command"
+    },
+    {
+      "id": "e5feb1911db5323c5af4585eb7bad6511791699ed78586cdfb73841268a5d934",
+      "source": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/tests/unit/command.test.ts",
+      "target": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/utils/fs.ts",
+      "kind": "dependency",
+      "specifier": "../../src/utils/fs"
+    },
+    {
+      "id": "e7c49e71943408c69599837fd7225019e712326e19acc6839e511b9e29272339",
+      "source": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/output/common.ts",
+      "target": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/assets/slogans.ts",
+      "kind": "dependency",
+      "specifier": "../assets/slogans"
+    },
+    {
+      "id": "e90d39893db67c2614d8eee5d58799ba75ed4b98cb37d36d28b0d27170d51122",
+      "source": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/cli/commands/modules.command.ts",
+      "target": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/cli/command.ts",
+      "kind": "dependency",
+      "specifier": "../command"
+    },
+    {
+      "id": "e95a3885ba86ba83a830f34538e66a20c6de72adcaffb5249127540e82e9e6cb",
+      "source": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/tests/unit/tag-release.test.ts",
+      "target": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/cli/commands/index.ts",
+      "kind": "dependency",
+      "specifier": "../../src/cli/commands"
+    },
+    {
+      "id": "eacfd4f7b3101b203ae9d8efab2f5e5c8b458f567063d42234969ebb67779a7f",
+      "source": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/tests/unit/tests.test.ts",
+      "target": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/index.ts",
+      "kind": "dependency",
+      "specifier": "../../src/index"
+    },
+    {
+      "id": "eb0a5e54155da533ed63d2155078bffd0e762638e01a6afe626249c091d7aead",
+      "source": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/utils/index.ts",
+      "target": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/utils/performanceRunner.ts",
+      "kind": "dependency",
+      "specifier": "./performanceRunner"
+    },
+    {
+      "id": "edf4c5c17f2ee3fee1216ee6cd0d149c865a3264358891989cd644c503ecb039",
+      "source": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/writers/index.ts",
+      "target": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/writers/OutputWriter.ts",
+      "kind": "dependency",
+      "specifier": "./OutputWriter"
+    },
+    {
+      "id": "ee18f2594b40bd4e0f54eb83e26e7a83331a1fa707014bcc9d90dce82c223796",
+      "source": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/tests/unit/tests.test.ts",
+      "target": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/utils/fs.ts",
+      "kind": "dependency",
+      "specifier": "../../src/utils/fs"
+    },
+    {
+      "id": "ee49fbfdf95b61088d5ebc80063f5a03bb3544bfc9653b5cb1fff8f68d51b212",
+      "source": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/cli/commands/npm-link.command.ts",
+      "target": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/cli/command.ts",
+      "kind": "dependency",
+      "specifier": "../command"
+    },
+    {
+      "id": "ef06cb0b7c2a92c79486cebeb1784fd0294d9d5b84eaa16269ed6655086d3c8c",
+      "source": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/cli/commands/release-chain.command.ts",
+      "target": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/cli/command.ts",
+      "kind": "dependency",
+      "specifier": "../command"
+    },
+    {
+      "id": "f5d9d980d3198f099e1840515eeb1f84bca17c1c822b5d55acc3799dd15d9f00",
+      "source": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/cli/commands/credentials.command.ts",
+      "target": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/input/input.ts",
+      "kind": "dependency",
+      "specifier": "../../input/input"
+    },
+    {
+      "id": "f8c5c11fbd326624835c444ce3aa48084f9b526b4e3073dce3f30d991523fe17",
+      "source": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/tests/unit/jest-helpers.test.ts",
+      "target": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/tests/TestReporter.ts",
+      "kind": "dependency",
+      "specifier": "../../src/tests/TestReporter"
+    },
+    {
+      "id": "fcc4b68ccf2557fc7c2a98b050dcad0fe5f9cb1787d4b0f9b66cb1b2220e3119",
+      "source": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/tests/unit/fs.test.ts",
+      "target": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/utils/fs.ts",
+      "kind": "dependency",
+      "specifier": "../../src/utils/fs"
+    },
+    {
+      "id": "fd17e4039076cc8eae833a5866e245bfb6fbd3d32999d81f025ad4cfacc1056e",
+      "source": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/cli/commands/release-chain.command.ts",
+      "target": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/release-chain/index.ts",
+      "kind": "dependency",
+      "specifier": "../../release-chain"
+    },
+    {
+      "id": "fe8d62d06ba499f1f6a85165a66141b8e456354ceb09d01e3ee70fc37db8aed8",
+      "source": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/index.ts",
+      "target": "file:/home/tvenceslau/local-workspace/decaf-ts/utils/src/output/index.ts",
+      "kind": "dependency",
+      "specifier": "./output"
+    }
+  ],
+  "fingerprint": "f154ccd28ed01dc1daaf7266a3cdcda62a9190ec4dbe0b4807bf285bec6ca29f"
+}

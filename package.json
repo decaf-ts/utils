@@ -139,14 +139,13 @@
     "eslint-config-prettier": "^10.1.2",
     "eslint-plugin-prettier": "^5.2.6",
     "globals": "^16.0.0",
-    "jest": "30.4.2",
+    "jest": "30.5.2",
     "jest-html-reporters": "3.1.7",
     "jest-junit": "17.0.0",
     "jsdoc": "^4.0.4",
     "jsdoc-mermaid": "^1.0.0",
     "markdown-include": "^0.4.3",
     "minimist": "^1.2.8",
-    "nodemon": "^3.1.9",
     "npm-check-updates": "^18.0.0",
     "prettier": "3.8.3",
     "prompts": "^2.4.2",
@@ -160,5 +159,8 @@
     "typed-object-accumulator": "latest",
     "typescript": "^5.8.3",
     "typescript-eslint": "^8.31.0"
+  },
+  "overrides": {
+    "js-yaml": "5.4.1"
   }
 }
