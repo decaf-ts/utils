@@ -3,6 +3,8 @@ import fs from "fs";
 import { installIfNotAvailable } from "../utils/fs";
 import { SimpleDependencyMap } from "../utils/types";
 import { MdTableDefinition } from "../utils/md";
+import { createExpect, type ExpectApi } from "./expect";
+import { resolveAdapterSync } from "./frameworks/resolver";
 
 /**
  * @interface AddAttachParams
@@ -194,6 +196,8 @@ export class TestReporter {
     );
   }
 
+  private expectFacade?: ExpectApi;
+
   constructor(
     protected testCase: string = "tests",
     protected basePath = TestReporter.storagePath
@@ -203,6 +207,17 @@ export class TestReporter {
     if (!fs.existsSync(this.basePath)) {
       fs.mkdirSync(parentPath, { recursive: true });
     }
+  }
+
+  /**
+   * @description Reporter-scoped chainable expectation facade
+   * @summary All assertions made through this facade accumulate on one
+   * report owned by this reporter instance
+   * @return {ExpectApi} the reporter-scoped expectation facade
+   */
+  get expect(): ExpectApi {
+    this.expectFacade ??= createExpect(this);
+    return this.expectFacade;
   }
 
   /**
@@ -422,9 +437,9 @@ export class TestReporter {
   ): Promise<void> {
     let itName = "unknown-it";
     try {
-      const state = (global as any).expect?.getState();
-      if (state?.currentTestName) {
-        itName = state.currentTestName;
+      const currentTestName = resolveAdapterSync().currentTestName();
+      if (currentTestName) {
+        itName = currentTestName;
         if (itName.startsWith(this.testCase)) {
           itName = itName.substring(this.testCase.length).trim();
         }

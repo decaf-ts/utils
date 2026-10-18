@@ -34,4 +34,25 @@ The Output module offers utilities for formatting and displaying output:
 - Common output formatting functions
 - Banner display capabilities
 
+#### Testing Helpers Subpath (`@decaf-ts/utils/tests`)
+The `./tests` subpath packages a test-support toolkit backported verbatim from
+`@decaf-ts/for-testing`, with no `utils -> testing` dependency edge (the API is copied, not
+re-exported, so depending on `@decaf-ts/utils/tests` never pulls in `@decaf-ts/for-testing`):
+- `it` / `it.report` — jest-analog test registration; `it.report(...)` (with `.skip`/`.only`/
+  `.each`, array and tagged-table forms) reports a failing test's `message` and `cause`
+  through the test-scoped reporter before rethrowing.
+- `expect` — chainable, framework-agnostic assertion facade
+  (`expect(actual).referredToAs(label).to.*`, with `.not` negating the next matcher), also
+  available reporter-scoped as `TestReporter#expect`; assertions are proxied to the host
+  runner (jest, vitest or Playwright) through framework adapters selected via
+  `configure({ framework })`, the `DECAF_TEST_FRAMEWORK` environment variable or runner
+  environment sniffing.
+- Reporter plumbing — `setReporter` / `getReporter`,
+  `ensureReporterCollectsEvidencesConfig` and `reportObjects`.
+- Retrocompat helpers — `itReportsOnFailure` and `ReportExpect`, both deprecated in favor of
+  `it.report` / `expect` but still fully functional.
+
+The provider teardowns (Xray / AgileTest) and the `decaf test report` CLI remain exclusive to
+`@decaf-ts/for-testing`.
+
 This library serves as a light version of the Decaf CLI tool, providing all the essential utilities needed for building robust command-line applications with consistent input handling, output formatting, and error management.
