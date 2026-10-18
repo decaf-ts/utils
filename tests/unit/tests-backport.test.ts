@@ -186,23 +186,42 @@ describe("@decaf-ts/utils/tests backport", () => {
     }
   );
 
-  it("persists standalone expect assertions through reportObjects", async () => {
-    const reporter = {
-      expect: backportCreateExpect(),
+  it("persists reporter-scoped expect assertions and resets after reportObjects", async () => {
+    const reporter: any = {
       reportObject: jest.fn().mockResolvedValue(undefined),
     };
-    setReporter(reporter as never);
+    reporter.expect = backportCreateExpect(reporter);
+    setReporter(reporter);
 
+    const facade = backportCreateExpect(reporter);
     backportExpect(2).referredToAs("value").to.be(2);
-    await reportObjects(reporter as never, reporter.expect, {
+
+    expect(reporter.expect.getReport()).toContain(
+      "Expected value to be 2 and received 2"
+    );
+    expect(facade.getReport()).toContain(
+      "Expected value to be 2 and received 2"
+    );
+
+    const renderedReport = reporter.expect.getReport();
+    await reportObjects(reporter, reporter.expect, {
       status: 200,
       data: { ok: true },
     });
 
     expect(reporter.reportObject).toHaveBeenCalledTimes(2);
-    expect(reporter.expect.getReport()).toContain(
-      "Expected value to be 2 and received 2"
-    );
+    expect(reporter.reportObject).toHaveBeenNthCalledWith(1, "response", {
+      status: "Passed",
+      report: renderedReport,
+    });
+    expect(reporter.reportObject).toHaveBeenNthCalledWith(2, "report", {
+      status: 200,
+      report: renderedReport,
+      response: { ok: true },
+    });
+    expect(reporter.expect.getReport()).toBe("");
+    expect(reporter.expect.getErrors()).toEqual([]);
+    expect(facade.getReport()).toBe("");
   });
 
   it("has no dependency edge from utils to for-testing", () => {
