@@ -4,6 +4,7 @@ import { execSync } from "node:child_process";
 import { Logging } from "@decaf-ts/logging";
 import { NpmLinkCommand } from "../../src/cli/commands/npm-link.command";
 import { readGitModulesDeep } from "../../src/cli/commands/modules.command";
+import { printCommandHelp } from "../../src/cli/commands/help.command";
 
 jest.mock("node:fs", () => ({
   readFileSync: jest.fn(),
@@ -318,6 +319,111 @@ describe("NpmLinkCommand", () => {
     expect(fs.symlinkSync).toHaveBeenCalledTimes(1);
     expect((fs.symlinkSync as jest.Mock).mock.calls[0][1]).toBe(
       "/repo/backend/node_modules/@decaf-ts/core/lib"
+    );
+  });
+
+  it("only links dependencies whose source module is selected by --onlyModules", async () => {
+    (readGitModulesDeep as jest.Mock).mockReturnValue([
+      "core",
+      "decoration",
+      "app",
+    ]);
+    (fs.readFileSync as jest.Mock).mockImplementation((filePath: string) => {
+      if (filePath === path.join("/repo", "package.json")) {
+        return JSON.stringify({ name: "@decaf-ts/fake-root" });
+      }
+      if (filePath === path.join("/repo", "core", "package.json")) {
+        return JSON.stringify({ name: "@decaf-ts/core" });
+      }
+      if (filePath === path.join("/repo", "decoration", "package.json")) {
+        return JSON.stringify({ name: "@decaf-ts/decoration" });
+      }
+      if (filePath === path.join("/repo", "app", "package.json")) {
+        return JSON.stringify({
+          name: "@decaf-ts/app",
+          dependencies: {
+            "@decaf-ts/core": "^1.0.0",
+            "@decaf-ts/decoration": "^1.0.0",
+          },
+        });
+      }
+      throw new Error(`Unexpected file read: ${filePath}`);
+    });
+    (fs.existsSync as jest.Mock).mockReturnValue(true);
+
+    const command = new NpmLinkCommand();
+    await (command as any).run({
+      maxTraversal: "2",
+      excludes: [],
+      include: [],
+      onlyModules: ["core", "app"],
+      packages: [],
+      mainPackagePath: "",
+      operation: "link",
+    });
+
+    // only app's selected core dependency is linked; decoration keeps its install
+    expect(fs.symlinkSync).toHaveBeenCalledTimes(1);
+    expect((fs.symlinkSync as jest.Mock).mock.calls[0][1]).toBe(
+      "/repo/app/node_modules/@decaf-ts/core/lib"
+    );
+  });
+
+  it("resolves @decaf-ts dependencies from --decafSourcePath without --mainPackagePath", async () => {
+    (readGitModulesDeep as jest.Mock).mockReturnValue(["app"]);
+    (fs.readFileSync as jest.Mock).mockImplementation((filePath: string) => {
+      if (filePath === path.join("/repo", "package.json")) {
+        return JSON.stringify({ name: "@decaf-ts/fake-root" });
+      }
+      if (filePath === path.join("/repo", "app", "package.json")) {
+        return JSON.stringify({
+          name: "@decaf-ts/app",
+          dependencies: { "@decaf-ts/core": "^1.0.0" },
+        });
+      }
+      throw new Error(`Unexpected file read: ${filePath}`);
+    });
+    (fs.existsSync as jest.Mock).mockReturnValue(true);
+
+    const command = new NpmLinkCommand();
+    await (command as any).run({
+      maxTraversal: "2",
+      excludes: [],
+      include: [],
+      onlyModules: [],
+      packages: ["@decaf-ts/*"],
+      mainPackagePath: "",
+      decafSourcePath: "/repo/decaf-src",
+      operation: "link",
+    });
+
+    expect(process.exit).not.toHaveBeenCalledWith(1);
+    expect(fs.symlinkSync).toHaveBeenCalledTimes(1);
+    expect((fs.symlinkSync as jest.Mock).mock.calls[0][1]).toBe(
+      "/repo/app/node_modules/@decaf-ts/core/lib"
+    );
+    expect((fs.symlinkSync as jest.Mock).mock.calls[0][0]).toBe(
+      path.relative(
+        "/repo/app/node_modules/@decaf-ts/core",
+        "/repo/decaf-src/core/lib"
+      )
+    );
+  });
+
+  it("advertises --onlyModules, --hub and --decafSourcePath in help", () => {
+    const command = new NpmLinkCommand();
+    (command as any).help({});
+
+    const helpOptions = (printCommandHelp as jest.Mock).mock.calls[0][4] as {
+      flag: string;
+    }[];
+    const flags = helpOptions.map((option) => option.flag);
+    expect(flags).toEqual(
+      expect.arrayContaining([
+        "--onlyModules <items...>",
+        "--hub <module>",
+        "--decafSourcePath <path>",
+      ])
     );
   });
 });

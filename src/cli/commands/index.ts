@@ -9,3 +9,5 @@ export * from "./tag-release-shell.command";
 export * from "./credentials.command";
 export * from "./compile-matrix.command";
 export * from "./mirror-repo.command";
+export * from "./bundle.command";
+export * from "./build-docs.command";

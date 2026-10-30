@@ -25,5 +25,5 @@ on:
 
 jobs:
   analyze:
-    uses: decaf-ts/reusable-actions/.github/workflows/codeql-analysis.yml@main
+    uses: decaf-ts/reusable-actions/.github/workflows/codeql-analysis.yml@master
     secrets: inherit

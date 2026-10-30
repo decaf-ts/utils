@@ -15,7 +15,33 @@ function isTestEnvironment() {
   );
 }
 
-function patchString(
+/**
+ * @description Patches a string with the given replacement values.
+ * @summary For every `key -> value` entry, replaces all occurrences of the
+ * (regex-escaped) key with the value. Used by {@link patchFile} and by the
+ * build tooling to inject placeholders such as `##PACKAGE_SIZE##` into the
+ * README.
+ * @param {string} input - Content to patch.
+ * @param {Record<string, number | string>} values - Map of literal keys to replacement values.
+ * @param {string} [flags="g"] - RegExp flags applied to every replacement pass.
+ * @param {function(string): boolean} [filter] - Optional predicate on the matched substring; accepted for API compatibility (the replacement value is applied regardless of its outcome).
+ * @return {string} The patched content.
+ * @function patchString
+ *
+ * @mermaid
+ * sequenceDiagram
+ *   participant Caller
+ *   participant patchString
+ *   participant RegExp
+ *   Caller->>patchString: Call with input and values
+ *   loop over each key/value entry
+ *     patchString->>RegExp: escapeRegExp(key) with flags
+ *     RegExp-->>patchString: literal-match pattern
+ *     patchString->>patchString: replace matches with value
+ *   end
+ *   patchString-->>Caller: patched content
+ */
+export function patchString(
   input: string,
   values: Record<string, number | string>,
   flags: string = "g",

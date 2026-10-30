@@ -147,9 +147,10 @@ export abstract class Command<I, R> extends LoggedClass {
    */
   async execute(): Promise<R | string | void> {
     const args: ParseArgsResult = UserInput.parseArgs(this.inputs);
-    const env = LoggedEnvironment.accumulate(DefaultCommandValues).accumulate(
-      args.values
-    );
+    const env: any = LoggedEnvironment.accumulate(
+      DefaultCommandValues
+    ).accumulate(args.values);
+    env.positionals = args.positionals;
     const { version, help, banner } = env;
 
     if (version) {

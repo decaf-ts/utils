@@ -10,3 +10,5 @@ export * from "./it";
 export * from "./jest";
 export * from "./frameworks/types";
 export * from "./frameworks/resolver";
+export * from "./jestXrayTeardown";
+export * from "./jestAgileTestTeardown";

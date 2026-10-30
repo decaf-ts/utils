@@ -1,0 +1,33 @@
+{
+  "name": "@decaf-ts/<dist name>",
+  "version": "<version>",
+  "description": "<description>",
+  "type": "module",
+  "exports": {
+    "require": "./lib/index.cjs",
+    "import": "./lib/esm/index.js"
+  },
+  "types": "lib/index.d.ts",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/decaf-ts/decaf-ts.git"
+  },
+  "engines": {
+    "node": ">=20.0.0",
+    "npm": ">=10.0.0"
+  },
+  "files": [
+    "lib",
+    "dist"
+  ],
+  "keywords": [
+  ],
+  "author": "Tiago Venceslau and Contributors",
+  "license": "LGPL",
+  "bugs": {
+    "url": "https://github.com/decaf-ts/decaf-ts/issues"
+  },
+  "homepage": "https://github.com/decaf-ts/decaf-ts#readme",
+  "dependencies": {
+  }
+}

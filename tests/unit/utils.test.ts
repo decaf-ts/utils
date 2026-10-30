@@ -4,10 +4,10 @@ describe("utils", () => {
   describe("lockify", () => {
     it("should execute functions sequentially", async () => {
       const results: number[] = [];
-      const slowFunction = (val: number) =>
+      const slowFunction = (val: unknown) =>
         new Promise<void>((resolve) =>
           setTimeout(() => {
-            results.push(val);
+            results.push(val as number);
             resolve();
           }, 10)
         );

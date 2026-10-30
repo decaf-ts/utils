@@ -202,6 +202,46 @@ credentials --action get --name github # should print the token
 # 3. Future release scripts will now use the keychain automatically
 ```
 
+#### Building and Publishing the Aggregate Bundles
+
+The `BundleCommand` replaces the legacy root `bin/bundle.js` script: it reads
+`bundles.json` and `package-template.json` (single-copy command assets shipped
+in `@decaf-ts/utils`), generates one `@decaf-ts/dist-*` aggregate package per
+`bundles.json` entry under `--target` (default `<base-path>/bin/releases`),
+resolves every bundled dependency's version from the workspace, merges npm
+overrides, then runs `npm install` and `npm publish --access public` in each
+generated bundle folder (waiting `--timeout` seconds between publishes).
+Tokens are resolved through the credentials resolver (env var -> OS keychain ->
+legacy file) and are never logged. `--dry-run` (or `DRY_RUN=1`) generates the
+manifests only.
+
+```sh
+# Preview the generated manifests without installing or publishing
+bundle --dry-run
+
+# Full run from the workspace root, custom target and publish pacing
+bundle --target ./releases --timeout 30
+
+# Via the decaf CLI wrapper
+decaf utils bundle --dry-run
+decaf utils bundle --base-path . --target ./releases --timeout 30
+```
+
+#### Staging the Documentation Folder
+
+The `BuildDocsCommand` replaces the legacy `bin/build-docs.sh` script: it
+removes and recreates the docs folder (default `<base-path>/docs`) and copies
+the README (default `<base-path>/README.md`) into it as `docs/README.md`.
+
+```sh
+build-docs
+build-docs --base-path ./integrations
+
+# Via the decaf CLI wrapper
+decaf utils build-docs
+decaf utils build-docs --base-path ./integrations
+```
+
 ### Input Module
 
 #### Creating Interactive Prompts

@@ -30,14 +30,14 @@ describe("ReleaseScript", () => {
   describe.skip("prepareVersion", () => {
     it("should return the provided valid tag", async () => {
       jest.spyOn(releaseScript, "testVersion").mockReturnValue("v1.2.3");
-      const tag = await releaseScript.prepareVersion("v1.2.3");
+      const tag = await releaseScript.prepareVersion("v1.2.3", "minor");
       expect(tag).toBe("v1.2.3");
     });
 
     it("should prompt for a new tag if the tag is invalid or not provided", async () => {
       jest.spyOn(releaseScript, "testVersion").mockReturnValue(undefined);
       jest.spyOn(UserInput, "insistForText").mockResolvedValue("v2.0.0");
-      const tag = await releaseScript.prepareVersion("");
+      const tag = await releaseScript.prepareVersion("", "minor");
       expect(tag).toBe("v2.0.0");
     });
   });
