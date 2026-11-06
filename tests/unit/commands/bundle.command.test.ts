@@ -78,6 +78,23 @@ function readJson(p: string): Record<string, any> {
   return JSON.parse(fs.readFileSync(p, "utf-8"));
 }
 
+function findUtilsRoot(from: string): string {
+  let current = path.resolve(from);
+  while (true) {
+    if (
+      fs.existsSync(path.join(current, "package.json")) &&
+      fs.existsSync(path.join(current, "src", "assets", "releases", "bundles.json"))
+    ) {
+      return current;
+    }
+    const parent = path.dirname(current);
+    if (parent === current) {
+      throw new Error(`Could not locate @decaf-ts/utils root from ${from}`);
+    }
+    current = parent;
+  }
+}
+
 // The command shells out for install/publish; block it in every test so a
 // bug can never publish anything from the test suite.
 jest.mock("node:child_process", () => ({
@@ -178,24 +195,36 @@ describe("BundleCommand", () => {
   it("falls back to the relocated command assets in @decaf-ts/utils when no --templates is given", async () => {
     // read-only against the real decaf-ts workspace: DRY_RUN only generates
     // manifests into a scratch target and never installs/publishes
-    const workspaceRoot = path.resolve(__dirname, "../../../..");
-    const assets = path.resolve(
-      workspaceRoot,
-      "utils",
-      "src",
-      "assets",
-      "releases"
-    );
+    const utilsRoot = findUtilsRoot(__dirname);
+    const assets = path.join(utilsRoot, "src", "assets", "releases");
     const bundles = readJson(path.join(assets, "bundles.json"));
     const expectedBundles = Object.keys(bundles);
     expect(expectedBundles.length).toBeGreaterThanOrEqual(8);
 
-    const target = path.join(makeScratchDir("bundle-assets-"), "releases");
-    const rootPkg = readJson(path.join(workspaceRoot, "package.json"));
+    const workspace = makeScratchDir("bundle-assets-");
+    const rootPkg = { name: "@decaf-ts/workspace", version: "1.2.3" };
+    writePackageJson(workspace, rootPkg);
+    // Supply lightweight workspace manifests for every package referenced by
+    // the real relocated config, so this test works in a standalone checkout.
+    for (const entry of Object.values(bundles) as Array<Record<string, unknown>>) {
+      for (const dependency of [
+        ...((entry.dependencies as string[] | undefined) ?? []),
+        ...((entry.devDependencies as string[] | undefined) ?? []),
+      ]) {
+        if (dependency.startsWith("@decaf-ts/dist-")) continue;
+        const folder = dependency.split("/").pop()!;
+        writePackageJson(path.join(workspace, folder), {
+          name: dependency,
+          version: "1.0.0",
+        });
+      }
+    }
+
+    const target = path.join(makeScratchDir("bundle-assets-out-"), "releases");
     const cmd = new BundleCommand();
 
     await runCommand(cmd, {
-      basePath: workspaceRoot,
+      basePath: workspace,
       target,
       templates: undefined,
       timeout: "0",
