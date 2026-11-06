@@ -47,12 +47,17 @@
     "add:shebang": "sed -i -e '1i#!/usr/bin/env node\\' ./lib/cjs/bin/*.cjs && chmod +x lib/cjs/bin/*.cjs",
     "build": "tsx ./src/bin/build-scripts.ts --dev && npm run add:shebang",
     "build:prod": "tsx ./src/bin/build-scripts.ts --prod && npm run add:shebang",
+    "test": "jest --runInBand --detectOpenHandles",
+    "test:unit": "jest --testPathPatterns=\"/tests/unit\" --passWithNoTests --detectOpenHandles",
+    "test:integration": "jest --testPathPatterns=\"/tests/(integration)\" --passWithNoTests --detectOpenHandles",
+    "test:all": "jest --testPathPatterns=\"/tests\" --passWithNoTests",
     "test:circular": "dpdm -T --no-warning --no-tree ./src/index.ts",
     "prepare-it-tests": "echo \"prepare-it-tests: no infra to boot\"",
+    "coverage": "rimraf ./workdocs/reports/data/*.json && npm run test:all -- --coverage --config=./workdocs/reports/jest.coverage.config.cjs",
     "lint": "eslint .",
     "lint-fix": "eslint --fix .",
-    "prepare-pr": "npm run lint-fix && npm run build:prod && npm run docs",
-    "prepare-release": "npm run lint-fix && npm run build:prod && npm run docs",
+    "prepare-pr": "npm run lint-fix && npm run build:prod && npm run coverage && npm run docs",
+    "prepare-release": "npm run lint-fix && npm run build:prod && npm run coverage && npm run docs",
     "release": "tsx ./src/bin/tag-release.ts",
     "clean-publish": "npx clean-publish",
     "drawings": "for FILE in workdocs/drawings/*.drawio; do echo \"converting $FILE to image...\" && docker run --rm -v $(pwd):/data rlespinasse/drawio-export --format png $FILE; done && cp -rf workdocs/drawings/export/* workdocs/resources/",
@@ -63,7 +68,9 @@
     "repo:setup": "codex exec \"$(cat ./.codex/prompts/repo-setup.md)\nbase_path is ./\"",
     "repo:doc": "codex exec \"$(cat ./.codex/prompts/doc.md) $(cat ./.codex/prompts/bulk-docs.md)\nbase_path is ./\"",
     "repo:readme": "codex exec \"$(cat ./.codex/prompts/update-readme.md)\nbase_path is ./\"",
-    "sync-codex": "./bin/sync-codex.sh"
+    "sync-codex": "./bin/sync-codex.sh",
+    "repo:tests": "codex exec \"$(cat ./.codex/prompts/bulk-tests.md)\nbase_path is ./ and coverage is 95%\" -s workspace-write",
+    "repo:pr": "npm run repo:doc && npm run repo:tests && npm run repo:readme"
   },
   "repository": {
     "type": "git",
@@ -157,6 +164,10 @@
     }
   },
   "devDependencies": {
-    "@decaf-ts/for-testing": "^1.3.4"
+    "@types/jest": "^30.0.0",
+    "jest": "^30.5.2",
+    "jest-html-reporters": "^3.1.7",
+    "jest-junit": "^17.0.0",
+    "ts-jest": "^29.4.15"
   }
 }
