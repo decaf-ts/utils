@@ -161,7 +161,8 @@
     "minimatch": "^11.0.5",
     "typescript-eslint": {
       "minimatch": "^11.0.5"
-    }
+    },
+    "deepmerge": "^4.2.1"
   },
   "devDependencies": {
     "@types/jest": "^30.0.0",
