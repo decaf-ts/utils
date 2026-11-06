@@ -1,7 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
 import { LoggingConfig } from "@decaf-ts/logging";
-import { NotFoundError, ValidationError } from "@decaf-ts/db-decorators";
 import { Command } from "../command";
 import { DefaultCommandValues } from "../constants";
 import { printCommandHelp } from "./help.command";
@@ -23,10 +22,10 @@ const options = {
 
 /**
  * @class BuildDocsCommand
- * @extends {Command<typeof options, void>}
+ * @extends {Command}
  * @description Stages the package README into the docs folder.
  * @summary Resolves the package root, README and docs folder (all defaulting
- * under the current working directory), fails fast with a {@link NotFoundError}
+ * under the current working directory), fails fast with an {@link Error}
  * when the README is missing, then removes and recreates the docs folder and
  * copies the README into it as `docs/README.md`. Keeps the legacy
  * `bin/build-docs.sh` behavior so docs staging stays interchangeable across
@@ -77,9 +76,9 @@ export class BuildDocsCommand extends Command<typeof options, void> {
    * @summary Empty/blank answers fall back to the defaults (`cwd`, `<base-path>/README.md`,
    * `<base-path>/docs`); the docs folder is removed and recreated before the
    * README is copied in.
-   * @param {LoggingConfig & typeof DefaultCommandValues & { basePath: unknown; readme: unknown; docsDir: unknown }} answers - Parsed command answers.
+   * @param {Object} answers - Parsed command answers, including logging settings and the base path, README, and docs directory options.
    * @return {Promise<void>}
-   * @throws {NotFoundError} When the resolved README file does not exist.
+   * @throws {Error} When the resolved README file does not exist.
    */
   protected async run(
     answers: LoggingConfig &
@@ -104,7 +103,7 @@ export class BuildDocsCommand extends Command<typeof options, void> {
         : path.join(basePath, "README.md");
 
     if (!fs.existsSync(readme))
-      throw new NotFoundError(`README not found: ${readme}`);
+      throw new Error(`README not found: ${readme}`);
 
     // F3: never let an rmSync run against the filesystem root or the base path
     // itself — a stray --docs-dir could otherwise wipe the whole workspace.
@@ -112,7 +111,7 @@ export class BuildDocsCommand extends Command<typeof options, void> {
       docsDir === path.parse(docsDir).root ||
       docsDir === path.resolve(basePath)
     ) {
-      throw new ValidationError(
+      throw new TypeError(
         `Refusing to remove docs directory "${docsDir}": it resolves to the filesystem root or the base path.`
       );
     }

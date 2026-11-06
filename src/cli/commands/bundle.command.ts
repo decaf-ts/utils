@@ -2,7 +2,6 @@ import fs from "node:fs";
 import path from "node:path";
 import { execSync } from "node:child_process";
 import { LoggingConfig, Logger } from "@decaf-ts/logging";
-import { NotFoundError, ValidationError } from "@decaf-ts/db-decorators";
 import { Command } from "../command";
 import { DefaultCommandValues } from "../constants";
 import { printCommandHelp } from "./help.command";
@@ -252,14 +251,14 @@ function resolveTemplatesDir(explicit?: string): string {
       return candidate;
     }
   }
-  throw new NotFoundError(
+  throw new Error(
     `Bundle templates not found. Searched: ${candidates.join(", ")}`
   );
 }
 
 /**
  * @class BundleCommand
- * @extends {Command<typeof options, void>}
+ * @extends {Command}
  * @description Builds and publishes the aggregated `@decaf-ts/dist-*` bundle
  * packages.
  * @summary Mirrors the legacy `bin/bundle.js` script: reads `bundles.json` and
@@ -335,13 +334,13 @@ export class BundleCommand extends Command<typeof options, void> {
    * @summary Resolution order: the dependency's own workspace `package.json`,
    * the workspace root version when the dependency is itself a declared bundle,
    * a nested workspace folder named after the full dependency, the root version
-   * for `@decaf-ts/dist-*` self-references, and finally a {@link NotFoundError}.
+   * for `@decaf-ts/dist-*` self-references, and finally an {@link Error}.
    * @param {string} basePath - Workspace root holding the decaf-ts packages.
    * @param {BundlesConfig} bundles - Parsed `bundles.json` configuration.
    * @param {string} rootVersion - Version of the workspace root `package.json`.
    * @param {string} dependency - Dependency name to resolve.
    * @return {string} Resolved semantic version.
-   * @throws {NotFoundError} When no workspace manifest or bundle entry can provide a version.
+   * @throws {Error} When no workspace manifest or bundle entry can provide a version.
    */
   private resolveDependencyVersion(
     basePath: string,
@@ -367,7 +366,7 @@ export class BundleCommand extends Command<typeof options, void> {
     if (dependency.startsWith("@decaf-ts/dist-")) {
       return rootVersion;
     }
-    throw new NotFoundError(
+    throw new Error(
       `Cannot resolve version for dependency '${dependency}'. Ensure the package exists in the workspace or the bundles.json entry references a known bundle.`
     );
   }
@@ -500,7 +499,7 @@ export class BundleCommand extends Command<typeof options, void> {
    * @param {string} version - Version applied to the generated manifest.
    * @param {BundleEntry} entry - Normalized `bundles.json` entry for the bundle.
    * @return {void}
-   * @throws {NotFoundError} When a bundled dependency's version cannot be resolved.
+   * @throws {Error} When a bundled dependency's version cannot be resolved.
    */
   private createBundle(
     log: Logger,
@@ -646,10 +645,10 @@ export class BundleCommand extends Command<typeof options, void> {
    * templates folder plus the workspace root manifest, then generates each
    * bundle sequentially via {@link BundleCommand.createBundle}, waiting
    * `timeout` seconds between bundles so the registry catches up.
-   * @param {LoggingConfig & typeof DefaultCommandValues & { basePath: unknown; target: unknown; templates: unknown; timeout: unknown; "dry-run": unknown; "git-token": unknown; "npm-token": unknown }} answers - Parsed command answers.
+   * @param {Object} answers - Parsed command answers, including logging settings and the base path, target, templates, timeout, dry-run, and token options.
    * @return {Promise<void>}
-   * @throws {NotFoundError} When the templates folder or a dependency version cannot be resolved.
-   * @throws {ValidationError} When a `--git-token`/`--npm-token` secret name fails the /^[A-Za-z0-9._-]+$/ boundary validation, or a `bundles.json` bundle name could escape the target directory.
+   * @throws {Error} When the templates folder or a dependency version cannot be resolved.
+   * @throws {TypeError} When a `--git-token`/`--npm-token` secret name fails the /^[A-Za-z0-9._-]+$/ boundary validation, or a `bundles.json` bundle name could escape the target directory.
    */
   protected async run(
     answers: LoggingConfig &
@@ -694,7 +693,7 @@ export class BundleCommand extends Command<typeof options, void> {
     for (const flag of ["--git-token", "--npm-token"]) {
       const value = flag === "--git-token" ? gitTokenName : npmTokenName;
       if (!secretNamePattern.test(value)) {
-        throw new ValidationError(
+        throw new TypeError(
           `Invalid ${flag} secret name "${value}": must match /^[A-Za-z0-9._-]+$/.`
         );
       }
@@ -714,7 +713,7 @@ export class BundleCommand extends Command<typeof options, void> {
       // F2: the bundle name is used as a target subpath below targetPath for
       // rmSync/mkdir; reject anything that could escape the target directory.
       if (!/^[a-z0-9][a-z0-9._-]*$/i.test(bundle)) {
-        throw new ValidationError(
+        throw new TypeError(
           `Invalid bundle name "${bundle}" in bundles.json: must match /^[a-z0-9][a-z0-9._-]*$/i.`
         );
       }

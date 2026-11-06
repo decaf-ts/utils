@@ -18,7 +18,6 @@
     ],
     "dependencies": [
       "@decaf-ts/logging",
-      "@decaf-ts/db-decorators",
       "@decaf-ts/decorator-validation",
       "@decaf-ts/decoration"
     ]

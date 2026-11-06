@@ -4,11 +4,8 @@ import {
   buildAssetBuckets,
   DEFAULT_ASSETS_PATH,
   DEFAULT_JUNIT_PATH,
-  extractJiraField,
   findExistingAssociatedPrecondition,
   parseJunitFile,
-  type EvidenceAttachment,
-  type ParsedPrecondition,
   type ParsedTestCase,
 } from "./jestTestImporter";
 

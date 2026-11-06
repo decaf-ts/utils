@@ -1,6 +1,5 @@
 import fs from "node:fs";
 import path from "node:path";
-import { InternalError } from "@decaf-ts/db-decorators";
 import {
   buildAssetBuckets,
   DEFAULT_ASSETS_PATH,
@@ -82,7 +81,7 @@ const pushPayloadToAgileTest = async (
   );
   const responseText = await response.text();
   if (!response.ok) {
-    throw new InternalError(
+    throw new Error(
       `Failed to upload results to AgileTest (${response.status}): ${responseText}`
     );
   }
@@ -144,7 +143,7 @@ export const runJestAgileTestTeardown = async (): Promise<void> => {
   const junitPath = path.resolve(junitPathRaw);
 
   if (!fs.existsSync(junitPath)) {
-    throw new InternalError(`JUnit file not found at ${junitPath}`);
+    throw new Error(`JUnit file not found at ${junitPath}`);
   }
 
   const buckets = buildAssetBuckets(assetsPath);

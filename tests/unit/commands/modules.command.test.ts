@@ -5,11 +5,7 @@ import {
   readGitModules,
   readGitModulesDeep,
 } from "../../../src/cli/commands/modules.command";
-import {
-  makeScratchDir,
-  runCommand,
-  writeGitModules,
-} from "./test-support";
+import { makeScratchDir, runCommand, writeGitModules } from "./test-support";
 
 describe("readGitModules", () => {
   it("parses every submodule path from .gitmodules", () => {
@@ -77,7 +73,7 @@ describe("ModulesCommand", () => {
     writeGitModules(dir, ["alpha", "beta"]);
 
     const cmd = new ModulesCommand();
-     
+
     const logged: string[] = [];
     const fakeLogger = {
       info: (msg: string) => logged.push(msg),
@@ -85,7 +81,7 @@ describe("ModulesCommand", () => {
       for: () => fakeLogger,
     };
     // LoggedClass caches the logger in the private _log field
-     
+
     (cmd as any)._log = fakeLogger;
 
     await runCommand(cmd, { basePath: dir });
