@@ -66,26 +66,9 @@ The Output module offers utilities for formatting and displaying output:
 - Common output formatting functions
 - Banner display capabilities
 
-#### Testing Helpers Subpath (`@decaf-ts/utils/tests`)
-The `./tests` subpath packages a test-support toolkit backported verbatim from
-`@decaf-ts/for-testing`, with no `utils -> testing` dependency edge (the API is copied, not
-re-exported, so depending on `@decaf-ts/utils/tests` never pulls in `@decaf-ts/for-testing`):
-- `it` / `it.report` — jest-analog test registration; `it.report(...)` (with `.skip`/`.only`/
-  `.each`, array and tagged-table forms) reports a failing test's `message` and `cause`
-  through the test-scoped reporter before rethrowing.
-- `expect` — chainable, framework-agnostic assertion facade
-  (`expect(actual).referredToAs(label).to.*`, with `.not` negating the next matcher), also
-  available reporter-scoped as `TestReporter#expect`; assertions are proxied to the host
-  runner (jest, vitest or Playwright) through framework adapters selected via
-  `configure({ framework })`, the `DECAF_TEST_FRAMEWORK` environment variable or runner
-  environment sniffing.
-- Reporter plumbing — `setReporter` / `getReporter`,
-  `ensureReporterCollectsEvidencesConfig` and `reportObjects`.
-- Retrocompat helpers — `itReportsOnFailure` and `ReportExpect`, both deprecated in favor of
-  `it.report` / `expect` but still fully functional.
+#### Testing Helpers
 
-The provider teardowns (Xray / AgileTest) and the `decaf test report` CLI remain exclusive to
-`@decaf-ts/for-testing`.
+Testing helpers are maintained in `@decaf-ts/for-testing`; this package no longer exports `@decaf-ts/utils/tests`.
 
 This library serves as a light version of the Decaf CLI tool, providing all the essential utilities needed for building robust command-line applications with consistent input handling, output formatting, and error management.
 
@@ -590,86 +573,9 @@ console.log(toPascalCase(text));  // 'HelloWorld'
 console.log(toENVFormat(text));   // 'HELLO_WORLD'
 ```
 
-### Testing Helpers (`@decaf-ts/utils/tests`)
+### Testing Helpers
 
-The `@decaf-ts/utils/tests` subpath packages a test-support toolkit backported verbatim from
-`@decaf-ts/for-testing`. It has no `utils -> testing` dependency edge: the reported-testing
-API is copied into this package, so depending on `@decaf-ts/utils/tests` never pulls in
-`@decaf-ts/for-testing`. The provider teardowns (`runJestXrayTeardown`,
-`runJestAgileTestTeardown`) and the `decaf test report` CLI stay in `@decaf-ts/for-testing`.
-
-```typescript
-import { it, expect } from '@decaf-ts/utils/tests';
-```
-
-#### Reported tests with `it` and `it.report`
-
-`it` is a jest-analog registration facade: `it`, `it.skip`, `it.only`, `it.todo`, `it.each`
-and `it.concurrent` proxy straight to the host test runner's own primitives, and
-`it.report(name, fn, opts?)` additionally wraps the test so a thrown failure's `message` and
-`cause` are persisted through the test-scoped reporter before the error is rethrown.
-`it.report.skip`, `it.report.only` and `it.report.each` (array form and tagged-template table
-form with `$field` / `$row.field` and `$#` name substitution) are also available. The optional
-options object accepts `reporter` (defaults to `getReporter()`) and `timeout` (forwarded to
-the framework when supported):
-
-```typescript
-import { it, expect } from '@decaf-ts/utils/tests';
-
-it.report("creates a resource", async () => {
-  const response = await fetch("https://example.org/api/resource", { method: "POST" });
-  expect(response.status).referredToAs("status").to.be(200);
-});
-
-it.report.each`
-  value | expected
-  ${1}  | ${2}
-  ${3}  | ${4}
-`("doubles $value", ({ value, expected }: { value: number; expected: number }) => {
-  expect(value * 2).referredToAs("doubled").to.be(expected);
-});
-```
-
-#### Assertions with `expect`
-
-`expect(actual)` builds a chainable, framework-agnostic assertion facade. Supported matchers:
-`to.be`, `to.equal`, `to.contain`, `to.beGreaterThan`, `to.beGreaterThanOrEqual`,
-`to.beLessThan`, `to.beLessThanOrEqual`, `to.beDefined` and `to.beTruthy`; `.not` negates only
-the next matcher. Each matcher records one report line and one failure entry instead of
-aborting the test, and the underlying assertion runs through the host runner's own `expect`,
-so failure semantics match the framework. Accumulated assertions are persisted with
-`reportObjects(reporter, reporter.expect, response)`, which writes the response and report
-objects and throws when the report carries failed assertions.
-
-Two accumulator scopes share the same API: the reporter-scoped `TestReporter#expect` facade
-(all assertions through one reporter instance accumulate on a single report) and the
-standalone `expect` export, which reuses the installed reporter's facade when one exists
-(see `setReporter`) and otherwise falls back to a shared standalone accumulator.
-
-#### Framework adapters
-
-Registration and assertions are proxied to the host test runner through a framework adapter.
-Selection order: `configure({ framework: "jest" | "vitest" | "playwright" })`, then the
-`DECAF_TEST_FRAMEWORK=jest|vitest|playwright` environment variable, then runner environment
-sniffing (`JEST_WORKER_ID`, `VITEST`/`VITEST_WORKSPACE_ID`/`VITEST_MODE`,
-`PLAYWRIGHT_TEST`/`PLAYWRIGHT_TEST_BASE_URL`/`PLAYWRIGHT_BROWSERS_PATH`), then the default
-order jest → vitest → playwright until one resolves. The adapter is cached process-wide
-(`resetAdapter()` clears it); when nothing resolves, the error names both override knobs.
-Playwright deviations: `it.todo` maps to `test.fixme`, `it.each` and `it.concurrent` are not
-available (descriptive error), and the `timeout` option is ignored.
-
-#### Reporter plumbing and retrocompatibility
-
-- `setReporter(rep)` / `getReporter()` install and read the test-scoped reporter instance,
-  typically from a jest setup file; `ensureReporterCollectsEvidencesConfig()` defaults
-  `TEST_REPORTER_STORAGE_ENABLED` and `TEST_REPORTER_STORAGE_PATH` so evidence collection is
-  on for tests using the helpers.
-- `reportObjects(reporter, report, response, reportKeyValuePairs?)` writes the response and
-  accumulated report objects and throws when the report carries failed assertions.
-- The legacy helpers still work but are deprecated: `itReportsOnFailure(name, handler, skip?)`
-  is a thin wrapper over `it.report(name, fn)` / `it.report.skip(name, fn)`, and the
-  `ReportExpect` chain (`assertToBe`, `assertToContain`, ...) is replaced by
-  `expect(actual).referredToAs("property").to.*`.
+Testing helpers are maintained in [`@decaf-ts/for-testing`](https://github.com/decaf-ts/for-testing); this package no longer provides the `@decaf-ts/utils/tests` subpath.
 
 ### Writers Module
 
