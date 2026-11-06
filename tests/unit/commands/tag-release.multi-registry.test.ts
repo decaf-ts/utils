@@ -1,5 +1,5 @@
 import { execSync } from "node:child_process";
-import { mkdirSync, writeFileSync } from "node:fs";
+import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import {
   DEFAULT_PUBLISH_TARGETS,
@@ -34,6 +34,7 @@ const calls = (): Array<[string, any]> =>
 
 function writeJsrJson(dir: string): string {
   mkdirSync(dir, { recursive: true });
+  writePackageJson(dir, { name: "@scope/pkg", version: "2.0.0" });
   const file = join(dir, "jsr.json");
   writeFileSync(file, JSON.stringify({ name: "@scope/pkg", version: "1.0.0" }), "utf-8");
   return file;
@@ -53,6 +54,12 @@ function ctx(cwd: string, overrides: Partial<PublishContext> = {}): PublishConte
 describe("tag-release multi-registry publish targets", () => {
   beforeEach(() => {
     execSyncMock.mockClear();
+    execSyncMock.mockImplementation((command: string) => {
+      if (command.startsWith("npm view ")) {
+        throw new Error("version is not published");
+      }
+      return "";
+    });
   });
 
   describe("npm target", () => {
@@ -109,6 +116,31 @@ describe("tag-release multi-registry publish targets", () => {
 
       expect(calls()[0][0]).toContain('pnpm publish "./dist/lib"');
     });
+
+    it("skips pnpm when npm already has the package version", () => {
+      const dir = makeScratchDir("tr-pnpm-existing-");
+      writePackageJson(dir, { name: "@scope/pkg", version: "1.2.3" });
+      execSyncMock.mockImplementation((command: string) => {
+        if (command.startsWith("npm view ")) return "1.2.3";
+        return "";
+      });
+
+      new PnpmPublishTarget().publish(ctx(dir));
+
+      expect(calls()).toHaveLength(1);
+      expect(calls()[0][0]).toBe('npm view "@scope/pkg@1.2.3" version');
+    });
+
+    it("does not query the registry during a dry run", () => {
+      const dir = makeScratchDir("tr-pnpm-dry-run-");
+      writePackageJson(dir, { name: "@scope/pkg", version: "1.2.3" });
+
+      new PnpmPublishTarget().publish(ctx(dir, { dryRun: true }));
+
+      expect(calls()).toHaveLength(1);
+      expect(calls()[0][0]).toContain("pnpm publish");
+      expect(calls()[0][0]).toContain("--dry-run");
+    });
   });
 
   describe("jsr target", () => {
@@ -120,8 +152,9 @@ describe("tag-release multi-registry publish targets", () => {
 
       expect(execSyncMock).toHaveBeenCalledTimes(1);
       const [command, options] = calls()[0];
-      expect(command).toBe("npx jsr publish");
+      expect(command).toBe("npx --yes jsr publish --allow-dirty");
       expect(options.cwd).toBe(dir);
+      expect(JSON.parse(readFileSync(join(dir, "jsr.json"), "utf8")).version).toBe("2.0.0");
     });
 
     it("skips silently when no JSR config is discoverable", () => {
@@ -147,7 +180,22 @@ describe("tag-release multi-registry publish targets", () => {
       new JsrPublishTarget(".", { enabled: true }).publish(ctx(dir));
 
       expect(execSyncMock).toHaveBeenCalledTimes(1);
-      expect(calls()[0][0]).toBe("npx jsr publish");
+      expect(calls()[0][0]).toBe("npx --yes jsr publish --allow-dirty");
+    });
+
+    it("syncs the package version in a JSONC JSR config", () => {
+      const dir = makeScratchDir("tr-jsr-jsonc-");
+      writePackageJson(dir, { name: "@scope/pkg", version: "2.0.0" });
+      const config = join(dir, "deno.jsonc");
+      writeFileSync(
+        config,
+        '{\n  // JSR package config\n  "name": "@scope/pkg",\n  "version": "1.0.0",\n  "exports": { ".": "./mod.ts", },\n}\n',
+        "utf8"
+      );
+
+      new JsrPublishTarget().publish(ctx(dir));
+
+      expect(JSON.parse(readFileSync(config, "utf8")).version).toBe("2.0.0");
     });
 
     it("appends --dry-run from the context dryRun flag", () => {
@@ -156,7 +204,7 @@ describe("tag-release multi-registry publish targets", () => {
 
       new JsrPublishTarget().publish(ctx(dir, { dryRun: true }));
 
-      expect(calls()[0][0]).toBe("npx jsr publish --dry-run");
+      expect(calls()[0][0]).toBe("npx --yes jsr publish --allow-dirty --dry-run");
     });
 
     it("appends --dry-run from the target's own dryRun config", () => {
@@ -165,7 +213,7 @@ describe("tag-release multi-registry publish targets", () => {
 
       new JsrPublishTarget(".", { dryRun: true }).publish(ctx(dir));
 
-      expect(calls()[0][0]).toBe("npx jsr publish --dry-run");
+      expect(calls()[0][0]).toBe("npx --yes jsr publish --allow-dirty --dry-run");
     });
   });
 
@@ -176,25 +224,26 @@ describe("tag-release multi-registry publish targets", () => {
 
       new RootPublishStrategy().publish(ctx(dir));
 
-      const commands = calls().map((c) => c[0]);
+      const commands = calls().map((c) => c[0]).filter((c) => !c.startsWith("npm view "));
       expect(commands).toHaveLength(3);
       expect(commands[0]).toContain("npm publish");
       expect(commands[1]).toContain("pnpm publish");
-      expect(commands[2]).toBe("npx jsr publish");
+      expect(commands[2]).toBe("npx --yes jsr publish --allow-dirty");
     });
 
     it("subdirectory strategy builds first, then publishes all three from ./dist/lib", () => {
       const dir = makeScratchDir("tr-combined-sub-");
       writeJsrJson(join(dir, "dist/lib"));
+      writePackageJson(dir, { name: "@scope/root", version: "3.0.0" });
 
       new SubdirectoryPublishStrategy("dist/lib", "build:prod").publish(ctx(dir));
 
-      const commands = calls().map((c) => c[0]);
+      const commands = calls().map((c) => c[0]).filter((c) => !c.startsWith("npm view "));
       expect(commands).toHaveLength(4);
       expect(commands[0]).toBe("npm run build:prod");
       expect(commands[1]).toContain('npm publish "./dist/lib"');
       expect(commands[2]).toContain('pnpm publish "./dist/lib"');
-      expect(commands[3]).toBe("npx jsr publish");
+      expect(commands[3]).toBe("npx --yes jsr publish --allow-dirty");
     });
   });
 
@@ -305,7 +354,7 @@ describe("tag-release multi-registry publish targets", () => {
       );
 
       const [command, options] = calls()[0];
-      expect(command).toBe("npx jsr publish");
+      expect(command).toBe("npx --yes jsr publish --allow-dirty");
       expect(command).not.toContain("placeholder-jsr-token-value");
       expect(options.env.JSR_TOKEN).toBe("placeholder-jsr-token-value");
     });

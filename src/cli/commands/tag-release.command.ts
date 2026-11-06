@@ -1,6 +1,6 @@
 /* istanbul ignore file */
 import { execSync } from "node:child_process";
-import { existsSync, readFileSync } from "node:fs";
+import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { isAbsolute, join } from "node:path";
 import {
   SemVersion,
@@ -254,6 +254,29 @@ export class PnpmPublishTarget implements PublishTarget {
   constructor(private readonly dir: string = ".") {}
 
   publish(ctx: PublishContext): void {
+    // npm and pnpm publish to the same registry. A package version can only be
+    // created once, so pnpm is a fallback client when that version is not there.
+    const packageDir =
+      this.dir === "."
+        ? ctx.cwd
+        : isAbsolute(this.dir)
+          ? this.dir
+          : join(ctx.cwd, this.dir);
+    let pkg: { name?: unknown; version?: unknown };
+    try {
+      pkg = JSON.parse(readFileSync(join(packageDir, "package.json"), "utf8"));
+    } catch {
+      pkg = {};
+    }
+    if (
+      !ctx.dryRun &&
+      typeof pkg.name === "string" &&
+      typeof pkg.version === "string" &&
+      npmRegistryHasVersion(pkg.name, pkg.version, ctx)
+    ) {
+      return;
+    }
+
     const tagFlag = ctx.isPrerelease ? " --tag prerelease" : "";
     const command = `pnpm publish${publishDirArg(this.dir)} --no-git-checks ${accessFlag(ctx)}${tagFlag}${dryRunFlag(ctx)}`;
     execSync(command, {
@@ -286,13 +309,93 @@ export class JsrPublishTarget implements PublishTarget {
     if (!configFile && this.config.enabled !== true) {
       return;
     }
-    const command = `npx jsr publish${dryRunFlag(ctx, this.config.dryRun)}`;
+    if (configFile) {
+      const packageJson = JSON.parse(
+        readFileSync(join(ctx.cwd, "package.json"), "utf8")
+      );
+      if (typeof packageJson.version === "string") {
+        syncJsrVersion(configFile, packageJson.version);
+      }
+    }
+    const command = `npx --yes jsr publish --allow-dirty${dryRunFlag(ctx, this.config.dryRun)}`;
     execSync(command, {
       cwd,
       stdio: "inherit",
       env: jsrPublishEnv(ctx),
     });
   }
+}
+
+// Returns true when npm already has this immutable version. npm and pnpm use the
+// same registry, so publishing it again through pnpm would fail as a duplicate.
+function npmRegistryHasVersion(
+  name: string,
+  version: string,
+  ctx: PublishContext
+): boolean {
+  try {
+    execSync(
+      `npm view "${assertShellSafe(`${name}@${version}`, "package reference")}" version`,
+      {
+        cwd: ctx.cwd,
+        stdio: "ignore",
+        env: npmPublishEnv(ctx),
+      }
+    );
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+// Strip JSONC comments and trailing commas outside strings so JSR config files
+// can be updated without accidentally changing comment-like text inside values.
+function stripJsoncSyntax(source: string): string {
+  let output = "";
+  let inString = false;
+  let escaped = false;
+  for (let i = 0; i < source.length; i++) {
+    const char = source[i];
+    if (inString) {
+      output += char;
+      if (escaped) escaped = false;
+      else if (char === "\\") escaped = true;
+      else if (char === '"') inString = false;
+      continue;
+    }
+    if (char === '"') {
+      inString = true;
+      output += char;
+      continue;
+    }
+    if (char === "/" && source[i + 1] === "/") {
+      while (i < source.length && source[i] !== "\n") i++;
+      output += "\n";
+      continue;
+    }
+    if (char === "/" && source[i + 1] === "*") {
+      i += 2;
+      while (i < source.length && !(source[i] === "*" && source[i + 1] === "/")) {
+        if (source[i] === "\n") output += "\n";
+        i++;
+      }
+      i++;
+      continue;
+    }
+    if (char === ",") {
+      let next = i + 1;
+      while (/\s/.test(source[next] || "")) next++;
+      if (source[next] === "}" || source[next] === "]") continue;
+    }
+    output += char;
+  }
+  return output;
+}
+
+function syncJsrVersion(configFile: string, version: string): void {
+  const config = JSON.parse(stripJsoncSyntax(readFileSync(configFile, "utf8")));
+  config.version = version;
+  writeFileSync(configFile, `${JSON.stringify(config, null, 2)}\n`);
 }
 
 // Resolves the JSR config file for a package directory, mirroring JSR's own
