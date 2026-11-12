@@ -1,5 +1,11 @@
 name: "Run on PR Merge to Master"
 
+# Triggers the release cycle on any merged PR (including renovate security PRs):
+#   bump version/tag -> push tag
+# The pushed tag then triggers release-on-tag (security gates + GitHub Release)
+# and publish-on-release (npm publish).
+# Thin caller of decaf-ts/reusable-actions/.github/workflows/release-on-merge-pr.yml.
+
 on:
   pull_request:
     types:
@@ -11,8 +17,4 @@ jobs:
     uses: decaf-ts/reusable-actions/.github/workflows/release-on-merge-pr.yml@master
     permissions:
       contents: write
-      id-token: write
-      packages: read
-      pages: write
-      security-events: write
     secrets: inherit
