@@ -54,6 +54,10 @@ const options = {
     type: "string",
     default: undefined,
   },
+  allowFromBranch: {
+    type: "boolean",
+    default: false,
+  },
   "jsr-token": {
     type: "string",
     default: "jsr",
@@ -618,7 +622,8 @@ export class ReleaseScript extends Command<typeof options, void> {
     return factory(config);
   }
 
-  private ensureReleaseBranch(): void {
+  private ensureReleaseBranch(allowFromBranch = false): void {
+    if (allowFromBranch) return;
     const currentBranch = execSync("git rev-parse --abbrev-ref HEAD", {
       cwd: process.cwd(),
       encoding: "utf8",
@@ -834,7 +839,7 @@ export class ReleaseScript extends Command<typeof options, void> {
       } & { positionals: string[] }
   ): Promise<void> {
     const log = this.log.for(this.run);
-    this.ensureReleaseBranch();
+    this.ensureReleaseBranch(args.allowFromBranch === true);
 
     const publishAccessValue = args.private === true ? "restricted" : "public";
     const gitTokenName = `${args["git-token"] || "github"}`;

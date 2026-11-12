@@ -11,4 +11,10 @@ on:
 jobs:
   deploy:
     uses: decaf-ts/reusable-actions/.github/workflows/release-on-tag.yaml@master
+    permissions:
+      contents: write
+      id-token: write
+      packages: read
+      pages: write
+      security-events: write
     secrets: inherit
