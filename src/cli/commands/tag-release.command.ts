@@ -58,6 +58,10 @@ const options = {
     type: "boolean",
     default: false,
   },
+  "allow-from-branch": {
+    type: "boolean",
+    default: false,
+  },
   "jsr-token": {
     type: "string",
     default: "jsr",
@@ -790,6 +794,11 @@ export class ReleaseScript extends Command<typeof options, void> {
           description: "Git user name embedded in authenticated pushes",
         },
         {
+          flag: "--allow-from-branch",
+          description: "Skip the master/main branch guard",
+          defaultValue: "false",
+        },
+        {
           flag: "--jsr-token <name>",
           description:
             "Secret name for the JSR (deno) publish token (optional; JSR also supports ambient/OIDC auth)",
@@ -839,7 +848,9 @@ export class ReleaseScript extends Command<typeof options, void> {
       } & { positionals: string[] }
   ): Promise<void> {
     const log = this.log.for(this.run);
-    this.ensureReleaseBranch(args.allowFromBranch === true);
+    this.ensureReleaseBranch(
+      args.allowFromBranch === true || args["allow-from-branch"] === true
+    );
 
     const publishAccessValue = args.private === true ? "restricted" : "public";
     const gitTokenName = `${args["git-token"] || "github"}`;
